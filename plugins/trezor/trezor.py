@@ -2,15 +2,15 @@ from binascii import hexlify, unhexlify
 import traceback
 import sys
 
-from electrum.util import bfh, bh2u, versiontuple, UserCancelled
-from electrum.bitcoin import (b58_address_to_hash160, xpub_from_pubkey,
+from electrum_nmc.util import bfh, bh2u, versiontuple, UserCancelled
+from electrum_nmc.bitcoin import (b58_address_to_hash160, xpub_from_pubkey,
                               TYPE_ADDRESS, TYPE_SCRIPT, is_address)
-from electrum import constants
-from electrum.i18n import _
-from electrum.plugins import BasePlugin, Device
-from electrum.transaction import deserialize, Transaction
-from electrum.keystore import Hardware_KeyStore, is_xpubkey, parse_xpubkey, xtype_from_derivation
-from electrum.base_wizard import ScriptTypeNotSupported
+from electrum_nmc import constants
+from electrum_nmc.i18n import _
+from electrum_nmc.plugins import BasePlugin, Device
+from electrum_nmc.transaction import deserialize, Transaction
+from electrum_nmc.keystore import Hardware_KeyStore, is_xpubkey, parse_xpubkey, xtype_from_derivation
+from electrum_nmc.base_wizard import ScriptTypeNotSupported
 
 from ..hw_wallet import HW_PluginBase
 

@@ -36,42 +36,42 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
         else:
             usr_share = os.path.expanduser('~/.local/share')
     data_files += [
-        (os.path.join(usr_share, 'applications/'), ['electrum.desktop']),
+        (os.path.join(usr_share, 'applications/'), ['electrum-nmc.desktop']),
         (os.path.join(usr_share, icons_dirname), ['icons/electrum.png'])
     ]
 
 setup(
-    name="Electrum",
+    name="Electrum-NMC",
     version=version.ELECTRUM_VERSION,
     install_requires=requirements,
     extras_require={
         'full': requirements_hw + ['pycryptodomex'],
     },
     packages=[
-        'electrum',
-        'electrum_gui',
-        'electrum_gui.qt',
-        'electrum_plugins',
-        'electrum_plugins.audio_modem',
-        'electrum_plugins.cosigner_pool',
-        'electrum_plugins.email_requests',
-        'electrum_plugins.greenaddress_instant',
-        'electrum_plugins.hw_wallet',
-        'electrum_plugins.keepkey',
-        'electrum_plugins.labels',
-        'electrum_plugins.ledger',
-        'electrum_plugins.trezor',
-        'electrum_plugins.digitalbitbox',
-        'electrum_plugins.trustedcoin',
-        'electrum_plugins.virtualkeyboard',
+        'electrum_nmc',
+        'electrum_nmc_gui',
+        'electrum_nmc_gui.qt',
+        'electrum_nmc_plugins',
+        'electrum_nmc_plugins.audio_modem',
+        'electrum_nmc_plugins.cosigner_pool',
+        'electrum_nmc_plugins.email_requests',
+        'electrum_nmc_plugins.greenaddress_instant',
+        'electrum_nmc_plugins.hw_wallet',
+        'electrum_nmc_plugins.keepkey',
+        'electrum_nmc_plugins.labels',
+        'electrum_nmc_plugins.ledger',
+        'electrum_nmc_plugins.trezor',
+        'electrum_nmc_plugins.digitalbitbox',
+        'electrum_nmc_plugins.trustedcoin',
+        'electrum_nmc_plugins.virtualkeyboard',
     ],
     package_dir={
-        'electrum': 'lib',
-        'electrum_gui': 'gui',
-        'electrum_plugins': 'plugins',
+        'electrum_nmc': 'lib',
+        'electrum_nmc_gui': 'gui',
+        'electrum_nmc_plugins': 'plugins',
     },
     package_data={
-        'electrum': [
+        'electrum_nmc': [
             'servers.json',
             'servers_testnet.json',
             'servers_regtest.json',
@@ -83,12 +83,12 @@ setup(
             'locale/*/LC_MESSAGES/electrum.mo',
         ]
     },
-    scripts=['electrum'],
+    scripts=['electrum-nmc'],
     data_files=data_files,
-    description="Lightweight Bitcoin Wallet",
-    author="Thomas Voegtlin",
-    author_email="thomasv@electrum.org",
+    description="Lightweight Namecoin Wallet",
+    author="Namecoin Developers; Based on Electrum by Thomas Voegtlin",
+    author_email="jeremy@namecoin.org",
     license="MIT Licence",
-    url="https://electrum.org",
-    long_description="""Lightweight Bitcoin Wallet"""
+    url="https://www.namecoin.org",
+    long_description="""Lightweight Namecoin Wallet"""
 )

@@ -1,7 +1,7 @@
 Building Mac OS binaries
 ========================
 
-This guide explains how to build Electrum binaries for macOS systems.
+This guide explains how to build Electrum-NMC binaries for macOS systems.
 
 The build process consists of two steps:
 
@@ -13,24 +13,24 @@ makes the binaries incompatible with older versions.
 Before starting, make sure that the Xcode command line tools are installed (e.g. you have `git`).
 
 
-    cd electrum
+    cd electrum-nmc
     ./contrib/build-osx/make_osx
     
-This creates a folder named Electrum.app.
+This creates a folder named Electrum-NMC.app.
 
 ## 2. Building the image 
 The usual way to distribute macOS applications is to use image files containing the 
 application. Although these images can be created on a Mac with the built-in `hdiutil`,
 they are not deterministic.
 
-Instead, we use the toolchain that Bitcoin uses: genisoimage and libdmg-hfsplus.
+Instead, we use the toolchain that Namecoin uses: genisoimage and libdmg-hfsplus.
 These tools do not work on macOS, so you need a separate Linux machine (or VM).
 
-Copy the Electrum.app directory over and install the dependencies, e.g.:
+Copy the Electrum-NMC.app directory over and install the dependencies, e.g.:
 
     apt install libcap-dev cmake make gcc faketime
     
 Then you can just invoke `package.sh` with the path to the app:
 
-    cd electrum
-    ./contrib/build-osx/package.sh ~/Electrum.app/
+    cd electrum-nmc
+    ./contrib/build-osx/package.sh ~/Electrum-NMC.app/

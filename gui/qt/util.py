@@ -10,9 +10,9 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from electrum.i18n import _
-from electrum.util import FileImportFailed, FileExportFailed
-from electrum.paymentrequest import PR_UNPAID, PR_PAID, PR_EXPIRED
+from electrum_nmc.i18n import _
+from electrum_nmc.util import FileImportFailed, FileExportFailed
+from electrum_nmc.paymentrequest import PR_UNPAID, PR_PAID, PR_EXPIRED
 
 
 if platform.system() == 'Windows':

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAME_ROOT=electrum
+NAME_ROOT=electrum-nmc
 PYTHON_VERSION=3.5.4
 
 # These settings probably don't need any change
@@ -19,13 +19,13 @@ set -e
 mkdir -p tmp
 cd tmp
 
-if [ -d ./electrum ]; then
-  rm ./electrum -rf
+if [ -d ./electrum-nmc ]; then
+  rm ./electrum-nmc -rf
 fi
 
-git clone https://github.com/spesmilo/electrum -b master
+git clone https://github.com/namecoin/electrum-nmc -b master
 
-pushd electrum
+pushd electrum-nmc
 if [ ! -z "$1" ]; then
     git checkout $1
 fi
@@ -47,18 +47,18 @@ echo "Last commit: $VERSION"
 find -exec touch -d '2000-11-11T11:11:11+00:00' {} +
 popd
 
-rm -rf $WINEPREFIX/drive_c/electrum
-cp -r electrum $WINEPREFIX/drive_c/electrum
-cp electrum/LICENCE .
-cp -r ./electrum/contrib/deterministic-build/electrum-locale/locale $WINEPREFIX/drive_c/electrum/lib/
-cp ./electrum/contrib/deterministic-build/electrum-icons/icons_rc.py $WINEPREFIX/drive_c/electrum/gui/qt/
+rm -rf $WINEPREFIX/drive_c/electrum-nmc
+cp -r electrum-nmc $WINEPREFIX/drive_c/electrum-nmc
+cp electrum-nmc/LICENCE .
+cp -r ./electrum-nmc/contrib/deterministic-build/electrum-locale/locale $WINEPREFIX/drive_c/electrum-nmc/lib/
+cp ./electrum-nmc/contrib/deterministic-build/electrum-icons/icons_rc.py $WINEPREFIX/drive_c/electrum-nmc/gui/qt/
 
 # Install frozen dependencies
 $PYTHON -m pip install -r ../../deterministic-build/requirements.txt
 
 $PYTHON -m pip install -r ../../deterministic-build/requirements-hw.txt
 
-pushd $WINEPREFIX/drive_c/electrum
+pushd $WINEPREFIX/drive_c/electrum-nmc
 $PYTHON setup.py install
 popd
 
@@ -79,8 +79,8 @@ popd
 wine "$WINEPREFIX/drive_c/Program Files (x86)/NSIS/makensis.exe" /DPRODUCT_VERSION=$VERSION electrum.nsi
 
 cd dist
-mv electrum-setup.exe $NAME_ROOT-$VERSION-setup.exe
+mv electrum-nmc-setup.exe $NAME_ROOT-$VERSION-setup.exe
 cd ..
 
 echo "Done."
-md5sum dist/electrum*exe
+md5sum dist/electrum-nmc*exe

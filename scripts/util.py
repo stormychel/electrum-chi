@@ -1,8 +1,8 @@
 import select, time, queue
-# import electrum
-from electrum import Connection, Interface, SimpleConfig
+# import electrum_nmc as electrum
+from electrum_nmc import Connection, Interface, SimpleConfig
 
-from electrum.network import parse_servers
+from electrum_nmc.network import parse_servers
 from collections import defaultdict
 
 # electrum.util.set_verbosity(1)

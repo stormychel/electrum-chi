@@ -13,7 +13,7 @@ else:
 PYTHON_VERSION = '3.5.4'
 PYHOME = 'c:/python' + PYTHON_VERSION
 
-home = 'C:\\electrum\\'
+home = 'C:\\electrum-nmc\\'
 
 # see https://github.com/pyinstaller/pyinstaller/issues/2005
 hiddenimports = []
@@ -29,14 +29,14 @@ binaries = [(PYHOME+"/libusb-1.0.dll", ".")]
 binaries += [b for b in collect_dynamic_libs('PyQt5') if 'qwindowsvista' in b[0]]
 
 datas = [
-    (home+'lib/currencies.json', 'electrum'),
-    (home+'lib/servers.json', 'electrum'),
-    (home+'lib/checkpoints.json', 'electrum'),
-    (home+'lib/servers_testnet.json', 'electrum'),
-    (home+'lib/checkpoints_testnet.json', 'electrum'),
-    (home+'lib/wordlist/english.txt', 'electrum/wordlist'),
-    (home+'lib/locale', 'electrum/locale'),
-    (home+'plugins', 'electrum_plugins'),
+    (home+'lib/currencies.json', 'electrum_nmc'),
+    (home+'lib/servers.json', 'electrum_nmc'),
+    (home+'lib/checkpoints.json', 'electrum_nmc'),
+    (home+'lib/servers_testnet.json', 'electrum_nmc'),
+    (home+'lib/checkpoints_testnet.json', 'electrum_nmc'),
+    (home+'lib/wordlist/english.txt', 'electrum_nmc/wordlist'),
+    (home+'lib/locale', 'electrum_nmc/locale'),
+    (home+'plugins', 'electrum_nmc_plugins'),
     ('C:\\Program Files (x86)\\ZBar\\bin\\', '.')
 ]
 datas += collect_data_files('trezorlib')
@@ -44,7 +44,7 @@ datas += collect_data_files('btchip')
 datas += collect_data_files('keepkeylib')
 
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
-a = Analysis([home+'electrum',
+a = Analysis([home+'electrum-nmc',
               home+'gui/qt/main_window.py',
               home+'gui/text.py',
               home+'lib/util.py',
@@ -88,7 +88,7 @@ exe_standalone = EXE(
     a.scripts,
     a.binaries,
     a.datas, 
-    name=os.path.join('build\\pyi.win32\\electrum', cmdline_name + ".exe"),
+    name=os.path.join('build\\pyi.win32\\electrum-nmc', cmdline_name + ".exe"),
     debug=False,
     strip=None,
     upx=False,
@@ -101,7 +101,7 @@ exe_portable = EXE(
     a.scripts,
     a.binaries,
     a.datas + [ ('is_portable', 'README.md', 'DATA' ) ],
-    name=os.path.join('build\\pyi.win32\\electrum', cmdline_name + "-portable.exe"),
+    name=os.path.join('build\\pyi.win32\\electrum-nmc', cmdline_name + "-portable.exe"),
     debug=False,
     strip=None,
     upx=False,
@@ -115,7 +115,7 @@ exe_dependent = EXE(
     pyz,
     a.scripts,
     exclude_binaries=True,
-    name=os.path.join('build\\pyi.win32\\electrum', cmdline_name),
+    name=os.path.join('build\\pyi.win32\\electrum-nmc', cmdline_name),
     debug=False,
     strip=None,
     upx=False,
@@ -132,4 +132,4 @@ coll = COLLECT(
     debug=False,
     icon=home+'icons/electrum.ico',
     console=False,
-    name=os.path.join('dist', 'electrum'))
+    name=os.path.join('dist', 'electrum-nmc'))

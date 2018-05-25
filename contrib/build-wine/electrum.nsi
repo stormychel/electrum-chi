@@ -72,7 +72,7 @@
   !define MUI_ABORTWARNING
   !define MUI_ABORTWARNING_TEXT "Are you sure you wish to abort the installation of ${PRODUCT_NAME}?"
   
-  !define MUI_ICON "tmp\electrum\icons\electrum.ico"
+  !define MUI_ICON "tmp\electrum-nmc\icons\electrum.ico"
   
 ;--------------------------------
 ;Pages
@@ -110,7 +110,7 @@ Section
   Delete "$SMPROGRAMS\${PRODUCT_NAME}\*.*"
   
   ;Files to pack into the installer
-  File /r "dist\electrum\*.*"
+  File /r "dist\electrum-nmc\*.*"
   File "..\..\icons\electrum.ico"
 
   ;Store installation folder

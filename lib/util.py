@@ -30,6 +30,7 @@ import traceback
 import urllib
 import threading
 import hmac
+import stat
 
 from .i18n import _
 
@@ -156,6 +157,8 @@ class MyEncoder(json.JSONEncoder):
             return str(obj)
         if isinstance(obj, datetime):
             return obj.isoformat(' ')[:-3]
+        if isinstance(obj, set):
+            return list(obj)
         return super(MyEncoder, self).default(obj)
 
 class PrintError(object):
@@ -443,6 +446,10 @@ def user_dir():
     else:
         #raise Exception("No home directory found in environment variables.")
         return
+
+def is_valid_email(s):
+    regexp = r"[^@]+@[^@]+\.[^@]+"
+    return re.match(regexp, s) is not None
 
 
 def format_satoshis_plain(x, decimal_point = 8):
@@ -859,3 +866,12 @@ def export_meta(meta, fileName):
     except (IOError, os.error) as e:
         traceback.print_exc(file=sys.stderr)
         raise FileExportFailed(e)
+
+
+def make_dir(path, allow_symlink=True):
+    """Make directory if it does not yet exist."""
+    if not os.path.exists(path):
+        if not allow_symlink and os.path.islink(path):
+            raise Exception('Dangling link: ' + path)
+        os.mkdir(path)
+        os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)

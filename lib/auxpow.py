@@ -109,3 +109,15 @@ def deserialize_merkle_branch(s):
     index = vds.read_int32()
     return hashes, index, s[vds.read_cursor:]
 
+def hash_parent_header(header):
+    if not auxpow_active(header):
+        return electrum_nmc.blockchain.hash_header(header)
+
+    verify_auxpow(header)
+
+    return electrum_nmc.blockchain.hash_header(header['auxpow']['parent_header'])
+
+# TODO: Implement this
+def verify_auxpow(header):
+    pass
+

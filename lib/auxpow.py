@@ -43,15 +43,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import binascii
+
 # electrum_nmc.blockchain is an absolute import because cyclic imports must be
 # absolute prior to Python 3.5.
 import electrum_nmc.blockchain
-from .bitcoin import hash_encode
+from .bitcoin import hash_encode, hash_decode
+from .crypto import Hash
 from .transaction import BCDataStream, Transaction
 from .util import bfh, bh2u
 
 BLOCK_VERSION_AUXPOW_BIT = 0x100
 MIN_AUXPOW_HEIGHT = 19200
+
+# TODO: move this to network constants
+CHAIN_ID = 1
 
 def auxpow_active(base_header):
     height_allows_auxpow = base_header['block_height'] >= MIN_AUXPOW_HEIGHT
@@ -59,11 +65,14 @@ def auxpow_active(base_header):
 
     return height_allows_auxpow and version_allows_auxpow
 
+def get_chain_id(base_header):
+    return base_header['version'] >> 16
+
 def deserialize_auxpow_header(base_header, s, expect_trailing_data=False):
     auxpow_header = {}
 
     # Chain ID is the top 16 bits of the 32-bit version.
-    auxpow_header['chain_id'] = base_header['version'] >> 16
+    auxpow_header['chain_id'] = get_chain_id(base_header)
 
     # The parent coinbase transaction is first.
     # Deserialize it and save the trailing data.
@@ -117,7 +126,161 @@ def hash_parent_header(header):
 
     return electrum_nmc.blockchain.hash_header(header['auxpow']['parent_header'])
 
-# TODO: Implement this
+# Reimplementation of btcutils.check_merkle_branch from Electrum-DOGE.
+# btcutils seems to have an unclear license and no obvious Git repo, so it
+# seemed wiser to re-implement.
+# This re-implementation is roughly based on libdohj's calculateMerkleRoot.
+def calculate_merkle_root(leaf, merkle_branch, index):
+    target = hash_decode(leaf)
+    mask = index
+
+    for merkle_step in merkle_branch:
+        if mask & 1 == 0: # 0 means it goes on the right
+            data_to_hash = target + hash_decode(merkle_step)
+        else:
+            data_to_hash = hash_decode(merkle_step) + target
+        target = Hash(data_to_hash)
+        mask = mask >> 1
+
+    return hash_encode(target)
+
+# Copied from Electrum-DOGE
+# TODO: Audit this function carefully.
+# https://github.com/kR105/i0coin/compare/bitcoin:master...master#diff-610df86e65fce009eb271c2a4f7394ccR262
+def calc_merkle_index(chain_id, nonce, merkle_size):
+    rand = nonce
+    rand = (rand * 1103515245 + 12345) & 0xffffffff
+    rand += chain_id
+    rand = (rand * 1103515245 + 12345) & 0xffffffff
+    return rand % merkle_size
+
+# Copied from Electrum-DOGE
+# TODO: Audit this function carefully.
 def verify_auxpow(header):
-    pass
+    auxhash = electrum_nmc.blockchain.hash_header(header)
+    auxpow = header['auxpow']
+
+    parent_block = auxpow['parent_header']
+    coinbase = auxpow['parent_coinbase_tx']
+    coinbase_hash = coinbase.txid()
+
+    chain_merkle_branch = auxpow['chain_merkle_branch']
+    chain_index = auxpow['chain_merkle_index']
+
+    coinbase_merkle_branch = auxpow['coinbase_merkle_branch']
+    coinbase_index = auxpow['coinbase_merkle_index']
+
+    #if (get_chain_id(parent_block) == chain_id)
+    #  return error("Aux POW parent has our chain ID");
+
+    if (get_chain_id(parent_block) == CHAIN_ID):
+        raise Exception('Aux POW parent has our chain ID')
+
+    #// Check that the chain merkle root is in the coinbase
+    #uint256 nRootHash = CBlock::CheckMerkleBranch(hashAuxBlock, vChainMerkleBranch, nChainIndex);
+    #vector<unsigned char> vchRootHash(nRootHash.begin(), nRootHash.end());
+    #std::reverse(vchRootHash.begin(), vchRootHash.end()); // correct endian
+
+    # Check that the chain merkle root is in the coinbase
+    root_hash = calculate_merkle_root(auxhash, chain_merkle_branch, chain_index)
+
+    # Check that we are in the parent block merkle tree
+    # if (CBlock::CheckMerkleBranch(GetHash(), vMerkleBranch, nIndex) != parentBlock.hashMerkleRoot)
+    #    return error("Aux POW merkle root incorrect");
+    if (calculate_merkle_root(coinbase_hash, coinbase_merkle_branch, coinbase_index) != parent_block['merkle_root']):
+        raise Exception('Aux POW merkle root incorrect')
+
+    #// Check that the same work is not submitted twice to our chain.
+    #//
+
+    #CScript::const_iterator pcHead =
+        #std::search(script.begin(), script.end(), UBEGIN(pchMergedMiningHeader), UEND(pchMergedMiningHeader));
+
+    #CScript::const_iterator pc =
+        #std::search(script.begin(), script.end(), vchRootHash.begin(), vchRootHash.end());
+
+    #if (pc == script.end())
+        #return error("Aux POW missing chain merkle root in parent coinbase");
+
+    script = coinbase.inputs()[0]['scriptSig']
+    pos = script.find(root_hash)
+
+    # todo: if pos == -1 ??
+    if pos == -1:
+        raise Exception('Aux POW missing chain merkle root in parent coinbase')
+
+    #todo: make sure only submitted once
+    #if (pcHead != script.end())
+    #{
+        #// Enforce only one chain merkle root by checking that a single instance of the merged
+        #// mining header exists just before.
+        #if (script.end() != std::search(pcHead + 1, script.end(), UBEGIN(pchMergedMiningHeader), UEND(pchMergedMiningHeader)))
+            #return error("Multiple merged mining headers in coinbase");
+        #if (pcHead + sizeof(pchMergedMiningHeader) != pc)
+            #return error("Merged mining header is not just before chain merkle root");
+    #}
+    #else
+    #{
+        #// For backward compatibility.
+        #// Enforce only one chain merkle root by checking that it starts early in the coinbase.
+        #// 8-12 bytes are enough to encode extraNonce and nBits.
+        #if (pc - script.begin() > 20)
+            #return error("Aux POW chain merkle root must start in the first 20 bytes of the parent coinbase");
+    #}
+
+
+    #// Ensure we are at a deterministic point in the merkle leaves by hashing
+    #// a nonce and our chain ID and comparing to the index.
+    #pc += vchRootHash.size();
+    #if (script.end() - pc < 8)
+        #return error("Aux POW missing chain merkle tree size and nonce in parent coinbase");
+
+    pos = pos + len(root_hash)
+    if (len(script) - pos < 8):
+        raise Exception('Aux POW missing chain merkle tree size and nonce in parent coinbase')
+
+     #int nSize;
+    #memcpy(&nSize, &pc[0], 4);
+    #if (nSize != (1 << vChainMerkleBranch.size()))
+        #return error("Aux POW merkle branch size does not match parent coinbase");
+
+    def hex_to_int(s):
+        b = bytes.fromhex(s)
+        b_reversed = b[::-1]
+        h = binascii.hexlify(b_reversed).decode('ascii')
+        return int(h, 16)
+
+    size = hex_to_int(script[pos:pos+8])
+    nonce = hex_to_int(script[pos+8:pos+16])
+
+    #print 'size',size
+    #print 'nonce',nonce
+    #print '(1 << len(chain_merkle_branch)))', (1 << len(chain_merkle_branch))
+    #size = hex_to_int(script[pos:pos+4])
+    #nonce = hex_to_int(script[pos+4:pos+8])
+
+    if (size != (1 << len(chain_merkle_branch))):
+        raise Exception('Aux POW merkle branch size does not match parent coinbase')
+
+    #int nNonce;
+    #memcpy(&nNonce, &pc[4], 4);
+    #// Choose a pseudo-random slot in the chain merkle tree
+    #// but have it be fixed for a size/nonce/chain combination.
+    #//
+    #// This prevents the same work from being used twice for the
+    #// same chain while reducing the chance that two chains clash
+    #// for the same slot.
+    #unsigned int rand = nNonce;
+    #rand = rand * 1103515245 + 12345;
+    #rand += nChainID;
+    #rand = rand * 1103515245 + 12345;
+
+    #if (nChainIndex != (rand % nSize))
+        #return error("Aux POW wrong index");
+
+    index = calc_merkle_index(CHAIN_ID, nonce, size)
+    #print 'index', index
+
+    if (chain_index != index):
+        raise Exception('Aux POW wrong index')
 

@@ -46,7 +46,7 @@ def serialize_header(res):
         + int_to_hex(int(res.get('nonce')), 4)
     return s
 
-def deserialize_header(s, height):
+def deserialize_header(s, height, expect_trailing_data=False):
     if not s:
         raise Exception('Invalid header: {}'.format(s))
     if len(s) < 80:
@@ -62,9 +62,18 @@ def deserialize_header(s, height):
     h['block_height'] = height
 
     if auxpow.auxpow_active(h):
-        h['auxpow'] = auxpow.deserialize_auxpow_header(h, s[80:])
-    elif len(s) != 80:
-        raise Exception('Invalid header length: {}'.format(len(s)))
+        if expect_trailing_data:
+            h['auxpow'], trailing_data = auxpow.deserialize_auxpow_header(h, s[80:], expect_trailing_data=True)
+        else:
+            h['auxpow'] = auxpow.deserialize_auxpow_header(h, s[80:])
+    else:
+        if expect_trailing_data:
+            trailing_data = s[80:]
+        elif len(s) != 80:
+            raise Exception('Invalid header length: {}'.format(len(s)))
+
+    if expect_trailing_data:
+        return h, trailing_data
 
     return h
 
@@ -178,14 +187,15 @@ class Blockchain(util.PrintError):
             raise Exception("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
 
     def verify_chunk(self, index, data):
-        num = len(data) // 80
+        trailing_data = data
         prev_hash = self.get_hash(index * 2016 - 1)
         target = self.get_target(index-1)
-        for i in range(num):
-            raw_header = data[i*80:(i+1) * 80]
-            header = deserialize_header(raw_header, index*2016 + i)
+        i = 0
+        while len(trailing_data) > 0:
+            header, trailing_data = deserialize_header(trailing_data, index*2016 + i, expect_trailing_data=True)
             self.verify_header(header, prev_hash, target)
             prev_hash = hash_header(header)
+            i = i + 1
 
     def path(self):
         d = util.get_headers_dir(self.config)

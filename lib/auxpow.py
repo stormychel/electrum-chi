@@ -59,7 +59,7 @@ def auxpow_active(base_header):
 
     return height_allows_auxpow and version_allows_auxpow
 
-def deserialize_auxpow_header(base_header, s):
+def deserialize_auxpow_header(base_header, s, expect_trailing_data=False):
     auxpow_header = {}
 
     # Chain ID is the top 16 bits of the 32-bit version.
@@ -81,13 +81,18 @@ def deserialize_auxpow_header(base_header, s):
     auxpow_header['coinbase_merkle_branch'], auxpow_header['coinbase_merkle_index'], s = deserialize_merkle_branch(s)
     auxpow_header['chain_merkle_branch'], auxpow_header['chain_merkle_index'], s = deserialize_merkle_branch(s)
     
-    # Finally there's the parent header.  Deserialize it.
-    # deserialize_header will error if there's any trailing data,
-    # so we don't need to check it here.
-    auxpow_header['parent_header'] = electrum_nmc.blockchain.deserialize_header(s, 1)
+    # Finally there's the parent header.  Deserialize it, along with any
+    # trailing data if requested.
+    if expect_trailing_data:
+        auxpow_header['parent_header'], trailing_data = electrum_nmc.blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data)
+    else:
+        auxpow_header['parent_header'] = electrum_nmc.blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data)
     # The parent block header doesn't have any block height,
     # so delete that field.  (We used 1 as a dummy value above.)
     del auxpow_header['parent_header']['block_height']
+
+    if expect_trailing_data:
+        return auxpow_header, trailing_data
 
     return auxpow_header
 

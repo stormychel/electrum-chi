@@ -28,6 +28,8 @@ from .bitcoin import Hash, hash_encode, int_to_hex, rev_hex
 from . import constants
 from .util import bfh, bh2u
 
+from . import auxpow
+
 MAX_TARGET = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
 
 
@@ -47,7 +49,7 @@ def serialize_header(res):
 def deserialize_header(s, height):
     if not s:
         raise Exception('Invalid header: {}'.format(s))
-    if len(s) != 80:
+    if len(s) < 80:
         raise Exception('Invalid header length: {}'.format(len(s)))
     hex_to_int = lambda s: int('0x' + bh2u(s[::-1]), 16)
     h = {}
@@ -58,6 +60,12 @@ def deserialize_header(s, height):
     h['bits'] = hex_to_int(s[72:76])
     h['nonce'] = hex_to_int(s[76:80])
     h['block_height'] = height
+
+    if auxpow.auxpow_active(h):
+        h['auxpow'] = auxpow.deserialize_auxpow_header(h, s[80:])
+    elif len(s) != 80:
+        raise Exception('Invalid header length: {}'.format(len(s)))
+
     return h
 
 def hash_header(header):

@@ -560,7 +560,7 @@ def parse_output(vds, i):
     return d
 
 
-def deserialize(raw: str, force_full_parse=False) -> dict:
+def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False) -> dict:
     raw_bytes = bfh(raw)
     d = {}
     if raw_bytes[:5] == PARTIAL_TXN_HEADER_MAGIC:
@@ -592,9 +592,12 @@ def deserialize(raw: str, force_full_parse=False) -> dict:
             txin = d['inputs'][i]
             parse_witness(vds, txin, full_parse=full_parse)
     d['lockTime'] = vds.read_uint32()
-    if vds.can_read_more():
+    if vds.can_read_more() and not expect_trailing_data:
         raise SerializationError('extra junk at the end')
-    return d
+    if not expect_trailing_data:
+        return d
+    # The caller is expecting trailing data to be present; return that trailing data in hex format
+    return d, bh2u(raw_bytes[vds.read_cursor:])
 
 
 # pay & redeem scripts
@@ -620,7 +623,7 @@ class Transaction:
             self.raw = self.serialize()
         return self.raw
 
-    def __init__(self, raw):
+    def __init__(self, raw, expect_trailing_data=False):
         if raw is None:
             self.raw = None
         elif isinstance(raw, str):
@@ -637,6 +640,7 @@ class Transaction:
         # this value will get properly set when deserializing
         self.is_partial_originally = True
         self._segwit_ser = None  # None means "don't know"
+        self.expect_trailing_data = expect_trailing_data
 
     def update(self, raw):
         self.raw = raw
@@ -718,14 +722,22 @@ class Transaction:
             #self.raw = self.serialize()
         if self._inputs is not None:
             return
-        d = deserialize(self.raw, force_full_parse)
+        if self.expect_trailing_data:
+            d, trailing_data = deserialize(self.raw, force_full_parse, expect_trailing_data=self.expect_trailing_data)
+        else:
+            d = deserialize(self.raw, force_full_parse)
         self._inputs = d['inputs']
         self._outputs = [(x['type'], x['address'], x['value']) for x in d['outputs']]
         self.locktime = d['lockTime']
         self.version = d['version']
         self.is_partial_originally = d['partial']
         self._segwit_ser = d['segwit_ser']
-        return d
+        if self.expect_trailing_data:
+            self.raw = self.raw[:-len(trailing_data)]
+            self.expect_trailing_data = False
+            return d, trailing_data
+        else:
+            return d
 
     @classmethod
     def from_io(klass, inputs, outputs, locktime=0):

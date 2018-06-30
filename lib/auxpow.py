@@ -69,6 +69,9 @@ def get_chain_id(base_header):
     return base_header['version'] >> 16
 
 def deserialize_auxpow_header(base_header, s, expect_trailing_data=False):
+    if len(s) == 0 and not expect_trailing_data:
+        return None
+
     auxpow_header = {}
 
     # Chain ID is the top 16 bits of the 32-bit version.
@@ -117,6 +120,19 @@ def deserialize_merkle_branch(s):
         hashes.append(hash_encode(_hash))
     index = vds.read_int32()
     return hashes, index, s[vds.read_cursor:]
+
+# TODO: This is dead code that will probably be removed.
+def strip_auxpow_headers(index, chunk):
+    result = bytearray()
+    trailing_data = chunk
+
+    i = 0
+    while len(trailing_data) > 0:
+        header, trailing_data = electrum_nmc.blockchain.deserialize_header(trailing_data, index*2016 + i, expect_trailing_data=True)
+        result.extend(bfh(electrum_nmc.blockchain.serialize_header(header)))
+        i = i + 1
+
+    return bytes(result)
 
 def hash_parent_header(header):
     if not auxpow_active(header):

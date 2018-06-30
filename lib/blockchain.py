@@ -187,6 +187,7 @@ class Blockchain(util.PrintError):
             raise Exception("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
 
     def verify_chunk(self, index, data):
+        stripped = bytearray()
         trailing_data = data
         prev_hash = self.get_hash(index * 2016 - 1)
         target = self.get_target(index-1)
@@ -195,7 +196,13 @@ class Blockchain(util.PrintError):
             header, trailing_data = deserialize_header(trailing_data, index*2016 + i, expect_trailing_data=True)
             self.verify_header(header, prev_hash, target)
             prev_hash = hash_header(header)
+
+            # Strip auxpow header for disk
+            stripped.extend(bfh(serialize_header(header)))
+
             i = i + 1
+
+        return bytes(stripped)
 
     def path(self):
         d = util.get_headers_dir(self.config)
@@ -381,7 +388,8 @@ class Blockchain(util.PrintError):
     def connect_chunk(self, idx, hexdata):
         try:
             data = bfh(hexdata)
-            self.verify_chunk(idx, data)
+            # verify_chunk also strips the AuxPoW headers
+            data = self.verify_chunk(idx, data)
             #self.print_error("validated chunk %d" % idx)
             self.save_chunk(idx, data)
             return True

@@ -178,7 +178,7 @@ def verify_auxpow(header):
 
     parent_block = auxpow['parent_header']
     coinbase = auxpow['parent_coinbase_tx']
-    coinbase_hash = coinbase.txid()
+    coinbase_hash = fast_txid(coinbase)
 
     chain_merkle_branch = auxpow['chain_merkle_branch']
     chain_index = auxpow['chain_merkle_index']
@@ -299,4 +299,9 @@ def verify_auxpow(header):
 
     if (chain_index != index):
         raise Exception('Aux POW wrong index')
+
+# This is calculated the same as the Transaction.txid() method, but doesn't
+# reserialize it.
+def fast_txid(tx):
+    return bh2u(Hash(bfh(tx.raw))[::-1])
 

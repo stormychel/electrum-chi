@@ -80,10 +80,9 @@ def deserialize_auxpow_header(base_header, s, expect_trailing_data=False):
 
     # The parent coinbase transaction is first.
     # Deserialize it and save the trailing data.
-    parent_coinbase_tx = Transaction(bh2u(s), expect_trailing_data=True)
-    parent_coinbase_tx_dict, s_hex = fast_tx_deserialize(parent_coinbase_tx)
+    parent_coinbase_tx = Transaction(None, expect_trailing_data=True, raw_bytes=s, expect_trailing_bytes=True)
+    parent_coinbase_tx_dict, s = fast_tx_deserialize(parent_coinbase_tx)
     auxpow_header['parent_coinbase_tx'] = parent_coinbase_tx
-    s = bfh(s_hex)
 
     # Next is the parent block hash.  According to the Bitcoin.it wiki,
     # this field is not actually consensus-critical.  So we don't save it.
@@ -304,7 +303,7 @@ def verify_auxpow(header):
 # This is calculated the same as the Transaction.txid() method, but doesn't
 # reserialize it.
 def fast_txid(tx):
-    return bh2u(Hash(bfh(tx.raw))[::-1])
+    return bh2u(Hash(tx.raw_bytes)[::-1])
 
 def fast_tx_deserialize(tx):
     def stub(_bytes, *, net=None):

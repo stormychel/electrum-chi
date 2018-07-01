@@ -560,8 +560,9 @@ def parse_output(vds, i):
     return d
 
 
-def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False) -> dict:
-    raw_bytes = bfh(raw)
+def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False, raw_bytes=None, expect_trailing_bytes=False) -> dict:
+    if raw_bytes is None:
+        raw_bytes = bfh(raw)
     d = {}
     if raw_bytes[:5] == PARTIAL_TXN_HEADER_MAGIC:
         d['partial'] = is_partial = True
@@ -596,6 +597,9 @@ def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False) ->
         raise SerializationError('extra junk at the end')
     if not expect_trailing_data:
         return d
+    # The caller is expecting trailing data to be present; return that trailing data in bytes format
+    if expect_trailing_bytes:
+        return d, raw_bytes[vds.read_cursor:]
     # The caller is expecting trailing data to be present; return that trailing data in hex format
     return d, bh2u(raw_bytes[vds.read_cursor:])
 
@@ -623,13 +627,16 @@ class Transaction:
             self.raw = self.serialize()
         return self.raw
 
-    def __init__(self, raw, expect_trailing_data=False):
+    def __init__(self, raw, expect_trailing_data=False, raw_bytes=None, expect_trailing_bytes=False):
         if raw is None:
             self.raw = None
+            self.raw_bytes = raw_bytes
         elif isinstance(raw, str):
             self.raw = raw.strip() if raw else None
+            self.raw_bytes = raw_bytes
         elif isinstance(raw, dict):
             self.raw = raw['hex']
+            self.raw_bytes = raw_bytes
         else:
             raise Exception("cannot initialize transaction", raw)
         self._inputs = None
@@ -641,6 +648,7 @@ class Transaction:
         self.is_partial_originally = True
         self._segwit_ser = None  # None means "don't know"
         self.expect_trailing_data = expect_trailing_data
+        self.expect_trailing_bytes = expect_trailing_bytes
 
     def update(self, raw):
         self.raw = raw
@@ -717,15 +725,15 @@ class Transaction:
         txin['witness'] = None    # force re-serialization
 
     def deserialize(self, force_full_parse=False):
-        if self.raw is None:
+        if self.raw is None and self.raw_bytes is None:
             return
             #self.raw = self.serialize()
         if self._inputs is not None:
             return
         if self.expect_trailing_data:
-            d, trailing_data = deserialize(self.raw, force_full_parse, expect_trailing_data=self.expect_trailing_data)
+            d, trailing_data = deserialize(self.raw, force_full_parse, expect_trailing_data=self.expect_trailing_data, raw_bytes=self.raw_bytes, expect_trailing_bytes=self.expect_trailing_bytes)
         else:
-            d = deserialize(self.raw, force_full_parse)
+            d = deserialize(self.raw, force_full_parse, raw_bytes=self.raw_bytes)
         self._inputs = d['inputs']
         self._outputs = [(x['type'], x['address'], x['value']) for x in d['outputs']]
         self.locktime = d['lockTime']
@@ -733,7 +741,16 @@ class Transaction:
         self.is_partial_originally = d['partial']
         self._segwit_ser = d['segwit_ser']
         if self.expect_trailing_data:
-            self.raw = self.raw[:-len(trailing_data)]
+            if self.expect_trailing_bytes:
+                if self.raw is not None:
+                    self.raw = self.raw[:(-2*len(trailing_data))]
+                if self.raw_bytes is not None:
+                    self.raw_bytes = self.raw_bytes[:-len(trailing_data)]
+            else:
+                if self.raw is not None:
+                    self.raw = self.raw[:-len(trailing_data)]
+                if self.raw_bytes is not None:
+                    self.raw_bytes = self.raw_bytes[:(-len(trailing_data)//2)]
             self.expect_trailing_data = False
             return d, trailing_data
         else:

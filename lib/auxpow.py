@@ -50,7 +50,8 @@ import binascii
 import electrum_nmc.blockchain
 from .bitcoin import hash_encode, hash_decode
 from .crypto import Hash
-from .transaction import BCDataStream, Transaction
+from . import transaction
+from .transaction import BCDataStream, Transaction, TYPE_SCRIPT
 from .util import bfh, bh2u
 
 BLOCK_VERSION_AUXPOW_BIT = 0x100
@@ -80,7 +81,7 @@ def deserialize_auxpow_header(base_header, s, expect_trailing_data=False):
     # The parent coinbase transaction is first.
     # Deserialize it and save the trailing data.
     parent_coinbase_tx = Transaction(bh2u(s), expect_trailing_data=True)
-    parent_coinbase_tx_dict, s_hex = parent_coinbase_tx.deserialize()
+    parent_coinbase_tx_dict, s_hex = fast_tx_deserialize(parent_coinbase_tx)
     auxpow_header['parent_coinbase_tx'] = parent_coinbase_tx
     s = bfh(s_hex)
 
@@ -305,3 +306,18 @@ def verify_auxpow(header):
 def fast_txid(tx):
     return bh2u(Hash(bfh(tx.raw))[::-1])
 
+def fast_tx_deserialize(tx):
+    def stub(_bytes, *, net=None):
+        return TYPE_SCRIPT, bh2u(b'')
+
+    # Monkeypatch output address parsing with a stub, since we only care about
+    # inputs.
+    real_get_address_from_output_script = transaction.get_address_from_output_script
+    transaction.get_address_from_output_script = stub
+
+    result = tx.deserialize()
+
+    # Restore the real output address parser.
+    transaction.get_address_from_output_script = real_get_address_from_output_script
+
+    return result

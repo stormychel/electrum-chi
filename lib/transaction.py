@@ -732,6 +732,8 @@ class Transaction:
         txin['scriptSig'] = None  # force re-serialization
         txin['witness'] = None    # force re-serialization
 
+    # If expect_trailing_data == True, also returns start position of trailing
+    # data.
     def deserialize(self, force_full_parse=False):
         if self.raw is None and self.raw_bytes is None:
             return
@@ -740,10 +742,6 @@ class Transaction:
             return
         if self.expect_trailing_data:
             d, start_position = deserialize(self.raw, force_full_parse, expect_trailing_data=self.expect_trailing_data, raw_bytes=self.raw_bytes, expect_trailing_bytes=self.expect_trailing_bytes, copy_input=self.copy_input)
-            if self.expect_trailing_bytes:
-                trailing_data = self.raw_bytes[start_position:]
-            else:
-                raise Exception("Unimplemented: trailing data in hex")
         else:
             d = deserialize(self.raw, force_full_parse, raw_bytes=self.raw_bytes)
         self._inputs = d['inputs']
@@ -755,16 +753,16 @@ class Transaction:
         if self.expect_trailing_data:
             if self.expect_trailing_bytes:
                 if self.raw is not None:
-                    self.raw = self.raw[:(-2*len(trailing_data))]
+                    self.raw = self.raw[:(2*start_position)]
                 if self.raw_bytes is not None:
-                    self.raw_bytes = self.raw_bytes[:-len(trailing_data)]
+                    self.raw_bytes = self.raw_bytes[:start_position]
             else:
                 if self.raw is not None:
-                    self.raw = self.raw[:-len(trailing_data)]
+                    self.raw = self.raw[:start_position]
                 if self.raw_bytes is not None:
-                    self.raw_bytes = self.raw_bytes[:(-len(trailing_data)//2)]
+                    self.raw_bytes = self.raw_bytes[:(start_position//2)]
             self.expect_trailing_data = False
-            return d, trailing_data
+            return d, start_position
         else:
             return d
 

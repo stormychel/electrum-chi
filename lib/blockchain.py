@@ -64,9 +64,9 @@ def deserialize_header(s, height, expect_trailing_data=False, start_position=0):
 
     if auxpow.auxpow_active(h):
         if expect_trailing_data:
-            h['auxpow'], trailing_data = auxpow.deserialize_auxpow_header(h, s[start_position+80:], expect_trailing_data=True)
+            h['auxpow'], trailing_data = auxpow.deserialize_auxpow_header(h, s, expect_trailing_data=True, start_position=start_position+80)
         else:
-            h['auxpow'] = auxpow.deserialize_auxpow_header(h, s[start_position+80:])
+            h['auxpow'] = auxpow.deserialize_auxpow_header(h, s, start_position=start_position+80)
     else:
         if expect_trailing_data:
             trailing_data = s[start_position+80:]

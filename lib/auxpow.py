@@ -69,14 +69,16 @@ def auxpow_active(base_header):
 def get_chain_id(base_header):
     return base_header['version'] >> 16
 
-def deserialize_auxpow_header(base_header, s, expect_trailing_data=False):
-    if len(s) == 0 and not expect_trailing_data:
+def deserialize_auxpow_header(base_header, s, expect_trailing_data=False, start_position=0):
+    if len(s) - start_position == 0 and not expect_trailing_data:
         return None
 
     auxpow_header = {}
 
     # Chain ID is the top 16 bits of the 32-bit version.
     auxpow_header['chain_id'] = get_chain_id(base_header)
+
+    s = s[start_position:]
 
     # The parent coinbase transaction is first.
     # Deserialize it and save the trailing data.

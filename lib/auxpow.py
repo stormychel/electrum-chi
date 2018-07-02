@@ -117,7 +117,7 @@ def deserialize_auxpow_header(base_header, s, expect_trailing_data=False):
 # TODO: Audit this function carefully.
 def deserialize_merkle_branch(s, start_position=0):
     vds = BCDataStream()
-    vds.write(s)
+    vds.input = s
     vds.read_cursor = start_position
     hashes = []
     n_hashes = vds.read_compact_size()

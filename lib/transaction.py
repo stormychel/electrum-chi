@@ -560,6 +560,8 @@ def parse_output(vds, i):
     return d
 
 
+# if expect_trailing_data, returns (deserialized transaction, start position of
+# trailing data)
 def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False, raw_bytes=None, expect_trailing_bytes=False) -> dict:
     if raw_bytes is None:
         raw_bytes = bfh(raw)
@@ -597,11 +599,13 @@ def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False, ra
         raise SerializationError('extra junk at the end')
     if not expect_trailing_data:
         return d
-    # The caller is expecting trailing data to be present; return that trailing data in bytes format
+    # The caller is expecting trailing data to be present; return starting
+    # position of trailing data in bytes format
     if expect_trailing_bytes:
-        return d, raw_bytes[vds.read_cursor:]
-    # The caller is expecting trailing data to be present; return that trailing data in hex format
-    return d, bh2u(raw_bytes[vds.read_cursor:])
+        return d, vds.read_cursor
+    # The caller is expecting trailing data to be present; return starting
+    # position of trailing data in hex format
+    raise Exception("Unimplemented: starting position for trailing data in hex format")
 
 
 # pay & redeem scripts
@@ -731,7 +735,11 @@ class Transaction:
         if self._inputs is not None:
             return
         if self.expect_trailing_data:
-            d, trailing_data = deserialize(self.raw, force_full_parse, expect_trailing_data=self.expect_trailing_data, raw_bytes=self.raw_bytes, expect_trailing_bytes=self.expect_trailing_bytes)
+            d, start_position = deserialize(self.raw, force_full_parse, expect_trailing_data=self.expect_trailing_data, raw_bytes=self.raw_bytes, expect_trailing_bytes=self.expect_trailing_bytes)
+            if self.expect_trailing_bytes:
+                trailing_data = self.raw_bytes[start_position:]
+            else:
+                raise Exception("Unimplemented: trailing data in hex")
         else:
             d = deserialize(self.raw, force_full_parse, raw_bytes=self.raw_bytes)
         self._inputs = d['inputs']

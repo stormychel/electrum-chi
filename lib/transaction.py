@@ -562,7 +562,7 @@ def parse_output(vds, i):
 
 # if expect_trailing_data, returns (deserialized transaction, start position of
 # trailing data)
-def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False, raw_bytes=None, expect_trailing_bytes=False) -> dict:
+def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False, raw_bytes=None, expect_trailing_bytes=False, copy_input=True) -> dict:
     if raw_bytes is None:
         raw_bytes = bfh(raw)
     d = {}
@@ -577,7 +577,10 @@ def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False, ra
         d['partial'] = is_partial = False
     full_parse = force_full_parse or is_partial
     vds = BCDataStream()
-    vds.write(raw_bytes)
+    if copy_input:
+        vds.write(raw_bytes)
+    else:
+        vds.input = raw_bytes
     d['version'] = vds.read_int32()
     n_vin = vds.read_compact_size()
     is_segwit = (n_vin == 0)
@@ -631,7 +634,7 @@ class Transaction:
             self.raw = self.serialize()
         return self.raw
 
-    def __init__(self, raw, expect_trailing_data=False, raw_bytes=None, expect_trailing_bytes=False):
+    def __init__(self, raw, expect_trailing_data=False, raw_bytes=None, expect_trailing_bytes=False, copy_input=True):
         if raw is None:
             self.raw = None
             self.raw_bytes = raw_bytes
@@ -653,6 +656,7 @@ class Transaction:
         self._segwit_ser = None  # None means "don't know"
         self.expect_trailing_data = expect_trailing_data
         self.expect_trailing_bytes = expect_trailing_bytes
+        self.copy_input = copy_input
 
     def update(self, raw):
         self.raw = raw
@@ -735,7 +739,7 @@ class Transaction:
         if self._inputs is not None:
             return
         if self.expect_trailing_data:
-            d, start_position = deserialize(self.raw, force_full_parse, expect_trailing_data=self.expect_trailing_data, raw_bytes=self.raw_bytes, expect_trailing_bytes=self.expect_trailing_bytes)
+            d, start_position = deserialize(self.raw, force_full_parse, expect_trailing_data=self.expect_trailing_data, raw_bytes=self.raw_bytes, expect_trailing_bytes=self.expect_trailing_bytes, copy_input=self.copy_input)
             if self.expect_trailing_bytes:
                 trailing_data = self.raw_bytes[start_position:]
             else:

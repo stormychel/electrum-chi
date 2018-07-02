@@ -69,6 +69,7 @@ def auxpow_active(base_header):
 def get_chain_id(base_header):
     return base_header['version'] >> 16
 
+# If expect_trailing_data, returns start position of trailing data
 def deserialize_auxpow_header(base_header, s, expect_trailing_data=False, start_position=0):
     if len(s) - start_position == 0 and not expect_trailing_data:
         return None
@@ -96,7 +97,7 @@ def deserialize_auxpow_header(base_header, s, expect_trailing_data=False, start_
     # Finally there's the parent header.  Deserialize it, along with any
     # trailing data if requested.
     if expect_trailing_data:
-        auxpow_header['parent_header'], trailing_data = electrum_nmc.blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data, start_position=start_position)
+        auxpow_header['parent_header'], start_position = electrum_nmc.blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data, start_position=start_position)
     else:
         auxpow_header['parent_header'] = electrum_nmc.blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data, start_position=start_position)
     # The parent block header doesn't have any block height,
@@ -104,7 +105,7 @@ def deserialize_auxpow_header(base_header, s, expect_trailing_data=False, start_
     del auxpow_header['parent_header']['block_height']
 
     if expect_trailing_data:
-        return auxpow_header, trailing_data
+        return auxpow_header, start_position
 
     return auxpow_header
 

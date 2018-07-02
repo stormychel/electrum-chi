@@ -46,7 +46,7 @@ def serialize_header(res):
         + int_to_hex(int(res.get('nonce')), 4)
     return s
 
-# If expect_trailing_data, returns trailing data slice
+# If expect_trailing_data, returns start position of trailing data
 def deserialize_header(s, height, expect_trailing_data=False, start_position=0):
     if not s:
         raise Exception('Invalid header: {}'.format(s))
@@ -64,17 +64,17 @@ def deserialize_header(s, height, expect_trailing_data=False, start_position=0):
 
     if auxpow.auxpow_active(h):
         if expect_trailing_data:
-            h['auxpow'], trailing_data = auxpow.deserialize_auxpow_header(h, s, expect_trailing_data=True, start_position=start_position+80)
+            h['auxpow'], start_position = auxpow.deserialize_auxpow_header(h, s, expect_trailing_data=True, start_position=start_position+80)
         else:
             h['auxpow'] = auxpow.deserialize_auxpow_header(h, s, start_position=start_position+80)
     else:
         if expect_trailing_data:
-            trailing_data = s[start_position+80:]
+            start_position = start_position+80
         elif len(s) - start_position != 80:
             raise Exception('Invalid header length: {}'.format(len(s) - start_position))
 
     if expect_trailing_data:
-        return h, trailing_data
+        return h, start_position
 
     return h
 
@@ -189,17 +189,17 @@ class Blockchain(util.PrintError):
 
     def verify_chunk(self, index, data):
         stripped = bytearray()
-        trailing_data = data
+        start_position = 0
         prev_hash = self.get_hash(index * 2016 - 1)
         target = self.get_target(index-1)
         i = 0
-        while len(trailing_data) > 0:
-            header, trailing_data = deserialize_header(trailing_data, index*2016 + i, expect_trailing_data=True)
+        while start_position < len(data):
+            # Strip auxpow header for disk
+            stripped.extend(data[start_position:start_position+80])
+
+            header, start_position = deserialize_header(data, index*2016 + i, expect_trailing_data=True, start_position=start_position)
             self.verify_header(header, prev_hash, target)
             prev_hash = hash_header(header)
-
-            # Strip auxpow header for disk
-            stripped.extend(bfh(serialize_header(header)))
 
             i = i + 1
 

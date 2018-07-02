@@ -78,6 +78,8 @@ def deserialize_auxpow_header(base_header, s, expect_trailing_data=False):
     # Chain ID is the top 16 bits of the 32-bit version.
     auxpow_header['chain_id'] = get_chain_id(base_header)
 
+    start_position = 0
+
     # The parent coinbase transaction is first.
     # Deserialize it and save the trailing data.
     parent_coinbase_tx = Transaction(None, expect_trailing_data=True, raw_bytes=s, expect_trailing_bytes=True)
@@ -86,12 +88,14 @@ def deserialize_auxpow_header(base_header, s, expect_trailing_data=False):
 
     # Next is the parent block hash.  According to the Bitcoin.it wiki,
     # this field is not actually consensus-critical.  So we don't save it.
-    s = s[32:]
+    start_position = start_position + 32
 
     # The coinbase and chain merkle branches/indices are next.
     # Deserialize them and save the trailing data.
-    auxpow_header['coinbase_merkle_branch'], auxpow_header['coinbase_merkle_index'], s = deserialize_merkle_branch(s)
-    auxpow_header['chain_merkle_branch'], auxpow_header['chain_merkle_index'], s = deserialize_merkle_branch(s)
+    auxpow_header['coinbase_merkle_branch'], auxpow_header['coinbase_merkle_index'], start_position = deserialize_merkle_branch(s, start_position=start_position)
+    auxpow_header['chain_merkle_branch'], auxpow_header['chain_merkle_index'], start_position = deserialize_merkle_branch(s, start_position=start_position)
+    s = s[start_position:]
+    start_position = 0
     
     # Finally there's the parent header.  Deserialize it, along with any
     # trailing data if requested.
@@ -109,17 +113,19 @@ def deserialize_auxpow_header(base_header, s, expect_trailing_data=False):
     return auxpow_header
 
 # Copied from merkle_branch_from_string in https://github.com/electrumalt/electrum-doge/blob/f74312822a14f59aa8d50186baff74cade449ccd/lib/blockchain.py#L622
+# Returns list of hashes, merkle index, and position of trailing data in s
 # TODO: Audit this function carefully.
-def deserialize_merkle_branch(s):
+def deserialize_merkle_branch(s, start_position=0):
     vds = BCDataStream()
     vds.write(s)
+    vds.read_cursor = start_position
     hashes = []
     n_hashes = vds.read_compact_size()
     for i in range(n_hashes):
         _hash = vds.read_bytes(32)
         hashes.append(hash_encode(_hash))
     index = vds.read_int32()
-    return hashes, index, s[vds.read_cursor:]
+    return hashes, index, vds.read_cursor
 
 # TODO: This is dead code that will probably be removed.
 def strip_auxpow_headers(index, chunk):

@@ -46,31 +46,32 @@ def serialize_header(res):
         + int_to_hex(int(res.get('nonce')), 4)
     return s
 
-def deserialize_header(s, height, expect_trailing_data=False):
+# If expect_trailing_data, returns trailing data slice
+def deserialize_header(s, height, expect_trailing_data=False, start_position=0):
     if not s:
         raise Exception('Invalid header: {}'.format(s))
-    if len(s) < 80:
-        raise Exception('Invalid header length: {}'.format(len(s)))
+    if len(s) - start_position < 80:
+        raise Exception('Invalid header length: {}'.format(len(s) - start_position))
     hex_to_int = lambda s: int('0x' + bh2u(s[::-1]), 16)
     h = {}
-    h['version'] = hex_to_int(s[0:4])
-    h['prev_block_hash'] = hash_encode(s[4:36])
-    h['merkle_root'] = hash_encode(s[36:68])
-    h['timestamp'] = hex_to_int(s[68:72])
-    h['bits'] = hex_to_int(s[72:76])
-    h['nonce'] = hex_to_int(s[76:80])
+    h['version'] = hex_to_int(s[start_position+0:start_position+4])
+    h['prev_block_hash'] = hash_encode(s[start_position+4:start_position+36])
+    h['merkle_root'] = hash_encode(s[start_position+36:start_position+68])
+    h['timestamp'] = hex_to_int(s[start_position+68:start_position+72])
+    h['bits'] = hex_to_int(s[start_position+72:start_position+76])
+    h['nonce'] = hex_to_int(s[start_position+76:start_position+80])
     h['block_height'] = height
 
     if auxpow.auxpow_active(h):
         if expect_trailing_data:
-            h['auxpow'], trailing_data = auxpow.deserialize_auxpow_header(h, s[80:], expect_trailing_data=True)
+            h['auxpow'], trailing_data = auxpow.deserialize_auxpow_header(h, s[start_position+80:], expect_trailing_data=True)
         else:
-            h['auxpow'] = auxpow.deserialize_auxpow_header(h, s[80:])
+            h['auxpow'] = auxpow.deserialize_auxpow_header(h, s[start_position+80:])
     else:
         if expect_trailing_data:
-            trailing_data = s[80:]
-        elif len(s) != 80:
-            raise Exception('Invalid header length: {}'.format(len(s)))
+            trailing_data = s[start_position+80:]
+        elif len(s) - start_position != 80:
+            raise Exception('Invalid header length: {}'.format(len(s) - start_position))
 
     if expect_trailing_data:
         return h, trailing_data

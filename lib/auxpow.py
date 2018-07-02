@@ -94,15 +94,13 @@ def deserialize_auxpow_header(base_header, s, expect_trailing_data=False):
     # Deserialize them and save the trailing data.
     auxpow_header['coinbase_merkle_branch'], auxpow_header['coinbase_merkle_index'], start_position = deserialize_merkle_branch(s, start_position=start_position)
     auxpow_header['chain_merkle_branch'], auxpow_header['chain_merkle_index'], start_position = deserialize_merkle_branch(s, start_position=start_position)
-    s = s[start_position:]
-    start_position = 0
     
     # Finally there's the parent header.  Deserialize it, along with any
     # trailing data if requested.
     if expect_trailing_data:
-        auxpow_header['parent_header'], trailing_data = electrum_nmc.blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data)
+        auxpow_header['parent_header'], trailing_data = electrum_nmc.blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data, start_position=start_position)
     else:
-        auxpow_header['parent_header'] = electrum_nmc.blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data)
+        auxpow_header['parent_header'] = electrum_nmc.blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data, start_position=start_position)
     # The parent block header doesn't have any block height,
     # so delete that field.  (We used 1 as a dummy value above.)
     del auxpow_header['parent_header']['block_height']

@@ -562,7 +562,7 @@ def parse_output(vds, i):
 
 # if expect_trailing_data, returns (deserialized transaction, start position of
 # trailing data)
-def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False, raw_bytes=None, expect_trailing_bytes=False, copy_input=True) -> dict:
+def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False, raw_bytes=None, expect_trailing_bytes=False, copy_input=True, start_position=0) -> dict:
     if raw_bytes is None:
         raw_bytes = bfh(raw)
     d = {}
@@ -581,6 +581,7 @@ def deserialize(raw: str, force_full_parse=False, expect_trailing_data=False, ra
         vds.write(raw_bytes)
     else:
         vds.input = raw_bytes
+    vds.read_cursor = start_position
     d['version'] = vds.read_int32()
     n_vin = vds.read_compact_size()
     is_segwit = (n_vin == 0)
@@ -634,7 +635,7 @@ class Transaction:
             self.raw = self.serialize()
         return self.raw
 
-    def __init__(self, raw, expect_trailing_data=False, raw_bytes=None, expect_trailing_bytes=False, copy_input=True):
+    def __init__(self, raw, expect_trailing_data=False, raw_bytes=None, expect_trailing_bytes=False, copy_input=True, start_position=0):
         if raw is None:
             self.raw = None
             self.raw_bytes = raw_bytes
@@ -657,6 +658,7 @@ class Transaction:
         self.expect_trailing_data = expect_trailing_data
         self.expect_trailing_bytes = expect_trailing_bytes
         self.copy_input = copy_input
+        self.start_position = start_position
 
     def update(self, raw):
         self.raw = raw
@@ -741,9 +743,9 @@ class Transaction:
         if self._inputs is not None:
             return
         if self.expect_trailing_data:
-            d, start_position = deserialize(self.raw, force_full_parse, expect_trailing_data=self.expect_trailing_data, raw_bytes=self.raw_bytes, expect_trailing_bytes=self.expect_trailing_bytes, copy_input=self.copy_input)
+            d, start_position = deserialize(self.raw, force_full_parse, expect_trailing_data=self.expect_trailing_data, raw_bytes=self.raw_bytes, expect_trailing_bytes=self.expect_trailing_bytes, copy_input=self.copy_input, start_position=self.start_position)
         else:
-            d = deserialize(self.raw, force_full_parse, raw_bytes=self.raw_bytes)
+            d = deserialize(self.raw, force_full_parse, raw_bytes=self.raw_bytes, start_position=self.start_position)
         self._inputs = d['inputs']
         self._outputs = [(x['type'], x['address'], x['value']) for x in d['outputs']]
         self.locktime = d['lockTime']
@@ -753,15 +755,16 @@ class Transaction:
         if self.expect_trailing_data:
             if self.expect_trailing_bytes:
                 if self.raw is not None:
-                    self.raw = self.raw[:(2*start_position)]
+                    self.raw = self.raw[(2*self.start_position):(2*start_position)]
                 if self.raw_bytes is not None:
-                    self.raw_bytes = self.raw_bytes[:start_position]
+                    self.raw_bytes = self.raw_bytes[self.start_position:start_position]
             else:
                 if self.raw is not None:
-                    self.raw = self.raw[:start_position]
+                    self.raw = self.raw[self.start_position:start_position]
                 if self.raw_bytes is not None:
-                    self.raw_bytes = self.raw_bytes[:(start_position//2)]
+                    self.raw_bytes = self.raw_bytes[(self.start_position//2):(start_position//2)]
             self.expect_trailing_data = False
+            self.start_position = 0
             return d, start_position
         else:
             return d

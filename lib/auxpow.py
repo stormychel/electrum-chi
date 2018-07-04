@@ -310,7 +310,7 @@ def fast_txid(tx):
 
 def fast_tx_deserialize(tx):
     def stub_get_address_from_output_script(_bytes, *, net=None):
-        return TYPE_SCRIPT, bh2u(b'')
+        return TYPE_SCRIPT, ''
 
     def stub_parse_output(vds, i):
         vds.read_int64() # d['value']

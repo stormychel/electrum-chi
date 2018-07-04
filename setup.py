@@ -86,9 +86,9 @@ setup(
     scripts=['electrum-nmc'],
     data_files=data_files,
     description="Lightweight Namecoin Wallet",
-    author="Namecoin Developers; Based on Electrum by Thomas Voegtlin",
+    author="The Namecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors",
     author_email="jeremy@namecoin.org",
-    license="MIT Licence",
-    url="https://www.namecoin.org",
+    license="GNU GPLv3+ for Electrum-DOGE components; MIT Licence for all other components",
+    url="https://www.namecoin.org/",
     long_description="""Lightweight Namecoin Wallet"""
 )

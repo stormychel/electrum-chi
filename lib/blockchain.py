@@ -28,6 +28,8 @@ from .bitcoin import Hash, hash_encode, int_to_hex, rev_hex
 from . import constants
 from .util import bfh, bh2u
 
+from . import auxpow
+
 MAX_TARGET = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
 
 
@@ -44,20 +46,36 @@ def serialize_header(res):
         + int_to_hex(int(res.get('nonce')), 4)
     return s
 
-def deserialize_header(s, height):
+# If expect_trailing_data, returns start position of trailing data
+def deserialize_header(s, height, expect_trailing_data=False, start_position=0):
     if not s:
         raise Exception('Invalid header: {}'.format(s))
-    if len(s) != 80:
-        raise Exception('Invalid header length: {}'.format(len(s)))
+    if len(s) - start_position < 80:
+        raise Exception('Invalid header length: {}'.format(len(s) - start_position))
     hex_to_int = lambda s: int('0x' + bh2u(s[::-1]), 16)
     h = {}
-    h['version'] = hex_to_int(s[0:4])
-    h['prev_block_hash'] = hash_encode(s[4:36])
-    h['merkle_root'] = hash_encode(s[36:68])
-    h['timestamp'] = hex_to_int(s[68:72])
-    h['bits'] = hex_to_int(s[72:76])
-    h['nonce'] = hex_to_int(s[76:80])
+    h['version'] = hex_to_int(s[start_position+0:start_position+4])
+    h['prev_block_hash'] = hash_encode(s[start_position+4:start_position+36])
+    h['merkle_root'] = hash_encode(s[start_position+36:start_position+68])
+    h['timestamp'] = hex_to_int(s[start_position+68:start_position+72])
+    h['bits'] = hex_to_int(s[start_position+72:start_position+76])
+    h['nonce'] = hex_to_int(s[start_position+76:start_position+80])
     h['block_height'] = height
+
+    if auxpow.auxpow_active(h):
+        if expect_trailing_data:
+            h['auxpow'], start_position = auxpow.deserialize_auxpow_header(h, s, expect_trailing_data=True, start_position=start_position+80)
+        else:
+            h['auxpow'] = auxpow.deserialize_auxpow_header(h, s, start_position=start_position+80)
+    else:
+        if expect_trailing_data:
+            start_position = start_position+80
+        elif len(s) - start_position != 80:
+            raise Exception('Invalid header length: {}'.format(len(s) - start_position))
+
+    if expect_trailing_data:
+        return h, start_position
+
     return h
 
 def hash_header(header):
@@ -158,7 +176,7 @@ class Blockchain(util.PrintError):
         self._size = os.path.getsize(p)//80 if os.path.exists(p) else 0
 
     def verify_header(self, header, prev_hash, target):
-        _hash = hash_header(header)
+        _hash = auxpow.hash_parent_header(header)
         if prev_hash != header.get('prev_block_hash'):
             raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if constants.net.TESTNET:
@@ -170,14 +188,22 @@ class Blockchain(util.PrintError):
             raise Exception("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
 
     def verify_chunk(self, index, data):
-        num = len(data) // 80
+        stripped = bytearray()
+        start_position = 0
         prev_hash = self.get_hash(index * 2016 - 1)
         target = self.get_target(index-1)
-        for i in range(num):
-            raw_header = data[i*80:(i+1) * 80]
-            header = deserialize_header(raw_header, index*2016 + i)
+        i = 0
+        while start_position < len(data):
+            # Strip auxpow header for disk
+            stripped.extend(data[start_position:start_position+80])
+
+            header, start_position = deserialize_header(data, index*2016 + i, expect_trailing_data=True, start_position=start_position)
             self.verify_header(header, prev_hash, target)
             prev_hash = hash_header(header)
+
+            i = i + 1
+
+        return bytes(stripped)
 
     def path(self):
         d = util.get_headers_dir(self.config)
@@ -363,7 +389,8 @@ class Blockchain(util.PrintError):
     def connect_chunk(self, idx, hexdata):
         try:
             data = bfh(hexdata)
-            self.verify_chunk(idx, data)
+            # verify_chunk also strips the AuxPoW headers
+            data = self.verify_chunk(idx, data)
             #self.print_error("validated chunk %d" % idx)
             self.save_chunk(idx, data)
             return True

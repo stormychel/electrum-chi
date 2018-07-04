@@ -318,12 +318,12 @@ def stub_parse_output(vds, i):
 def fast_tx_deserialize(tx):
     # Monkeypatch output address parsing with a stub, since we only care about
     # inputs.
-    real_parse_output = transaction.parse_output
-    transaction.parse_output = stub_parse_output
+    real_parse_output, transaction.parse_output = transaction.parse_output, stub_parse_output
 
-    result = tx.deserialize()
-
-    # Restore the real output address parser.
-    transaction.parse_output = real_parse_output
+    try:
+        result = tx.deserialize()
+    finally:
+        # Restore the real output address parser.
+        transaction.parse_output = real_parse_output
 
     return result

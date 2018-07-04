@@ -329,7 +329,11 @@ class Blockchain(util.PrintError):
             h, t = self.checkpoints[index]
             return t
         # new target
-        first = self.read_header(index * 2016)
+        if (index * 2016 + 2015 > 19200) and (index * 2016 + 2015 + 1 > 2016):
+            # Namecoin: Apply retargeting hardfork after AuxPoW start
+            first = self.read_header(index * 2016 - 1)
+        else:
+            first = self.read_header(index * 2016)
         last = self.read_header(index * 2016 + 2015)
         if not first or not last:
             raise MissingHeader()

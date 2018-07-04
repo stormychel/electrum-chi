@@ -113,3 +113,10 @@ Android
 -------
 
 See `gui/kivy/Readme.txt` file.
+
+
+
+AuxPoW Branch
+=============
+
+Electrum-NMC also maintains an ``auxpow`` branch.  This branch is identical to the upstream Bitcoin version of Electrum (e.g. it doesn't have any name support or Namecoin rebranding), except that it supports AuxPoW (merged mining).  It may be useful as a starting point for porting Electrum to other AuxPoW-based cryptocurrencies.

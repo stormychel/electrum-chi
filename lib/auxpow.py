@@ -308,26 +308,22 @@ def verify_auxpow(header):
 def fast_txid(tx):
     return bh2u(Hash(tx.raw_bytes)[::-1])
 
+# Used by fast_tx_deserialize
+def stub_parse_output(vds, i):
+    vds.read_int64() # d['value']
+    vds.read_bytes(vds.read_compact_size()) # scriptPubKey
+    return {'type': TYPE_SCRIPT, 'address': None, 'value': 0}
+
+# This is equivalent to tx.deserialize(), but doesn't parse outputs.
 def fast_tx_deserialize(tx):
-    def stub_get_address_from_output_script(_bytes, *, net=None):
-        return TYPE_SCRIPT, ''
-
-    def stub_parse_output(vds, i):
-        vds.read_int64() # d['value']
-        vds.read_bytes(vds.read_compact_size()) # scriptPubKey
-        return {'type': TYPE_SCRIPT, 'address': None, 'value': 0}
-
     # Monkeypatch output address parsing with a stub, since we only care about
     # inputs.
-    real_get_address_from_output_script = transaction.get_address_from_output_script
     real_parse_output = transaction.parse_output
-    transaction.get_address_from_output_script = stub_get_address_from_output_script
     transaction.parse_output = stub_parse_output
 
     result = tx.deserialize()
 
     # Restore the real output address parser.
-    transaction.get_address_from_output_script = real_get_address_from_output_script
     transaction.parse_output = real_parse_output
 
     return result

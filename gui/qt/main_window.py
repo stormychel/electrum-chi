@@ -562,9 +562,13 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
 
     def show_about(self):
         QMessageBox.about(self, "Electrum",
-            _("Version")+" %s" % (self.wallet.electrum_version) + "\n\n" +
-                _("Electrum's focus is speed, with low resource usage and simplifying Bitcoin. You do not need to perform regular backups, because your wallet can be recovered from a secret phrase that you can memorize or write on paper. Startup times are instant because it operates in conjunction with high-performance servers that handle the most complicated parts of the Bitcoin system."  + "\n\n" +
-                _("Uses icons from the Icons8 icon pack (icons8.com).")))
+                          (_("Version")+" %s" % self.wallet.electrum_version + "\n\n" +
+                           _("Electrum's focus is speed, with low resource usage and simplifying Bitcoin.") + " " +
+                           _("You do not need to perform regular backups, because your wallet can be "
+                              "recovered from a secret phrase that you can memorize or write on paper.") + " " +
+                           _("Startup times are instant because it operates in conjunction with high-performance "
+                              "servers that handle the most complicated parts of the Bitcoin system.") + "\n\n" +
+                           _("Uses icons from the Icons8 icon pack (icons8.com).")))
 
     def show_report_bug(self):
         msg = ' '.join([
@@ -1205,9 +1209,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.payto_e.textChanged.connect(self.update_fee)
         self.amount_e.textEdited.connect(self.update_fee)
 
-        def reset_max(t):
+        def reset_max(text):
             self.is_max = False
-            self.max_button.setEnabled(not bool(t))
+            enable = not bool(text) and not self.amount_e.isReadOnly()
+            self.max_button.setEnabled(enable)
         self.amount_e.textEdited.connect(reset_max)
         self.fiat_send_e.textEdited.connect(reset_max)
 
@@ -1652,8 +1657,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
     def prepare_for_payment_request(self):
         self.show_send_tab()
         self.payto_e.is_pr = True
-        for e in [self.payto_e, self.amount_e, self.message_e]:
+        for e in [self.payto_e, self.message_e]:
             e.setFrozen(True)
+        self.lock_amount(True)
         self.payto_e.setText(_("please wait..."))
         return True
 
@@ -2789,6 +2795,18 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         on_video_device = lambda x: self.config.set_key("video_device", qr_combo.itemData(x), True)
         qr_combo.currentIndexChanged.connect(on_video_device)
         gui_widgets.append((qr_label, qr_combo))
+
+        colortheme_combo = QComboBox()
+        colortheme_combo.addItem(_('Light'), 'default')
+        colortheme_combo.addItem(_('Dark'), 'dark')
+        index = colortheme_combo.findData(self.config.get('qt_gui_color_theme', 'default'))
+        colortheme_combo.setCurrentIndex(index)
+        colortheme_label = QLabel(_('Color theme') + ':')
+        def on_colortheme(x):
+            self.config.set_key('qt_gui_color_theme', colortheme_combo.itemData(x), True)
+            self.need_restart = True
+        colortheme_combo.currentIndexChanged.connect(on_colortheme)
+        gui_widgets.append((colortheme_label, colortheme_combo))
 
         usechange_cb = QCheckBox(_('Use change addresses'))
         usechange_cb.setChecked(self.wallet.use_change)

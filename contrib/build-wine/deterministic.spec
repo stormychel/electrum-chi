@@ -10,7 +10,7 @@ for i, x in enumerate(sys.argv):
 else:
     raise Exception('no name')
 
-PYTHON_VERSION = '3.5.4'
+PYTHON_VERSION = '3.6.6'
 PYHOME = 'c:/python' + PYTHON_VERSION
 
 home = 'C:\\electrum-nmc\\'
@@ -18,6 +18,7 @@ home = 'C:\\electrum-nmc\\'
 # see https://github.com/pyinstaller/pyinstaller/issues/2005
 hiddenimports = []
 hiddenimports += collect_submodules('trezorlib')
+hiddenimports += collect_submodules('safetlib')
 hiddenimports += collect_submodules('btchip')
 hiddenimports += collect_submodules('keepkeylib')
 hiddenimports += collect_submodules('websocket')
@@ -31,32 +32,34 @@ binaries += [b for b in collect_dynamic_libs('PyQt5') if 'qwindowsvista' in b[0]
 binaries += [('C:/tmp/libsecp256k1.dll', '.')]
 
 datas = [
-    (home+'lib/*.json', 'electrum_nmc'),
-    (home+'lib/wordlist/english.txt', 'electrum_nmc/wordlist'),
-    (home+'lib/locale', 'electrum_nmc/locale'),
-    (home+'plugins', 'electrum_nmc_plugins'),
+    (home+'electrum_nmc/*.json', 'electrum_nmc'),
+    (home+'electrum_nmc/wordlist/english.txt', 'electrum_nmc/wordlist'),
+    (home+'electrum_nmc/locale', 'electrum_nmc/locale'),
     ('C:\\Program Files (x86)\\ZBar\\bin\\', '.')
 ]
 datas += collect_data_files('trezorlib')
+datas += collect_data_files('safetlib')
 datas += collect_data_files('btchip')
 datas += collect_data_files('keepkeylib')
 
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
-a = Analysis([home+'electrum-nmc',
-              home+'gui/qt/main_window.py',
-              home+'gui/text.py',
-              home+'lib/util.py',
-              home+'lib/wallet.py',
-              home+'lib/simple_config.py',
-              home+'lib/bitcoin.py',
-              home+'lib/dnssec.py',
-              home+'lib/commands.py',
-              home+'plugins/cosigner_pool/qt.py',
-              home+'plugins/email_requests/qt.py',
-              home+'plugins/trezor/client.py',
-              home+'plugins/trezor/qt.py',
-              home+'plugins/keepkey/qt.py',
-              home+'plugins/ledger/qt.py',
+a = Analysis([home+'run_electrum_nmc',
+              home+'electrum_nmc/gui/qt/main_window.py',
+              home+'electrum_nmc/gui/text.py',
+              home+'electrum_nmc/util.py',
+              home+'electrum_nmc/wallet.py',
+              home+'electrum_nmc/simple_config.py',
+              home+'electrum_nmc/bitcoin.py',
+              home+'electrum_nmc/dnssec.py',
+              home+'electrum_nmc/commands.py',
+              home+'electrum_nmc/plugins/cosigner_pool/qt.py',
+              home+'electrum_nmc/plugins/email_requests/qt.py',
+              home+'electrum_nmc/plugins/trezor/client.py',
+              home+'electrum_nmc/plugins/trezor/qt.py',
+              home+'electrum_nmc/plugins/safe_t/client.py',
+              home+'electrum_nmc/plugins/safe_t/qt.py',
+              home+'electrum_nmc/plugins/keepkey/qt.py',
+              home+'electrum_nmc/plugins/ledger/qt.py',
               #home+'packages/requests/utils.py'
               ],
              binaries=binaries,
@@ -68,7 +71,7 @@ a = Analysis([home+'electrum-nmc',
 
 # http://stackoverflow.com/questions/19055089/pyinstaller-onefile-warning-pyconfig-h-when-importing-scipy-or-scipy-signal
 for d in a.datas:
-    if 'pyconfig' in d[0]: 
+    if 'pyconfig' in d[0]:
         a.datas.remove(d)
         break
 

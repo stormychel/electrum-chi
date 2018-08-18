@@ -1,7 +1,7 @@
 #!/bin/bash
 
 NAME_ROOT=electrum-nmc
-PYTHON_VERSION=3.5.4
+PYTHON_VERSION=3.6.6
 
 # These settings probably don't need any change
 export WINEPREFIX=/opt/wine64
@@ -19,29 +19,13 @@ set -e
 mkdir -p tmp
 cd tmp
 
-if [ -d ./electrum-nmc ]; then
-  rm ./electrum-nmc -rf
-fi
-
-git clone https://github.com/namecoin/electrum-nmc -b master
-
-pushd electrum-nmc
-if [ ! -z "$1" ]; then
-    # a commit/tag/branch was specified
-    if ! git cat-file -e "$1" 2> /dev/null
-    then  # can't find target
-        # try pull requests
-        git config --local --add remote.origin.fetch '+refs/pull/*/merge:refs/remotes/origin/pr/*'
-        git fetch --all
-    fi
-    git checkout $1
-fi
+pushd $WINEPREFIX/drive_c/electrum-nmc
 
 # Load electrum-icons and electrum-locale for this release
 git submodule init
 git submodule update
 
-VERSION=`git describe --tags --dirty`
+VERSION=`git describe --tags --dirty || printf 'custom'`
 echo "Last commit: $VERSION"
 
 pushd ./contrib/deterministic-build/electrum-locale
@@ -59,11 +43,9 @@ popd
 find -exec touch -d '2000-11-11T11:11:11+00:00' {} +
 popd
 
-rm -rf $WINEPREFIX/drive_c/electrum-nmc
-cp -r electrum-nmc $WINEPREFIX/drive_c/electrum-nmc
-cp electrum-nmc/LICENCE .
-cp -r ./electrum-nmc/contrib/deterministic-build/electrum-locale/locale $WINEPREFIX/drive_c/electrum-nmc/lib/
-cp ./electrum-nmc/contrib/deterministic-build/electrum-icons/icons_rc.py $WINEPREFIX/drive_c/electrum-nmc/gui/qt/
+cp $WINEPREFIX/drive_c/electrum-nmc/LICENCE .
+cp -r $WINEPREFIX/drive_c/electrum-nmc/contrib/deterministic-build/electrum-locale/locale $WINEPREFIX/drive_c/electrum-nmc/electrum_nmc/
+cp $WINEPREFIX/drive_c/electrum-nmc/contrib/deterministic-build/electrum-icons/icons_rc.py $WINEPREFIX/drive_c/electrum-nmc/electrum_nmc/gui/qt/
 
 # Install frozen dependencies
 $PYTHON -m pip install -r ../../deterministic-build/requirements.txt

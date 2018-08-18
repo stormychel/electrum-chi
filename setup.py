@@ -2,7 +2,7 @@
 
 # python setup.py sdist --format=zip,gztar
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 import sys
 import platform
@@ -15,7 +15,7 @@ with open('contrib/requirements/requirements.txt') as f:
 with open('contrib/requirements/requirements-hw.txt') as f:
     requirements_hw = f.read().splitlines()
 
-version = imp.load_source('version', 'lib/version.py')
+version = imp.load_source('version', 'electrum_nmc/version.py')
 
 if sys.version_info[:3] < (3, 4, 0):
     sys.exit("Error: Electrum requires Python version >= 3.4.0...")
@@ -43,7 +43,6 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
 extras_require = {
     'hardware': requirements_hw,
     'fast': ['pycryptodomex'],
-    ':python_version < "3.5"': ['typing>=3.0.0'],
 }
 extras_require['full'] = extras_require['hardware'] + extras_require['fast']
 
@@ -55,27 +54,12 @@ setup(
     extras_require=extras_require,
     packages=[
         'electrum_nmc',
-        'electrum_nmc_gui',
-        'electrum_nmc_gui.qt',
-        'electrum_nmc_plugins',
-        'electrum_nmc_plugins.audio_modem',
-        'electrum_nmc_plugins.cosigner_pool',
-        'electrum_nmc_plugins.email_requests',
-        'electrum_nmc_plugins.greenaddress_instant',
-        'electrum_nmc_plugins.hw_wallet',
-        'electrum_nmc_plugins.keepkey',
-        'electrum_nmc_plugins.labels',
-        'electrum_nmc_plugins.ledger',
-        'electrum_nmc_plugins.revealer',
-        'electrum_nmc_plugins.trezor',
-        'electrum_nmc_plugins.digitalbitbox',
-        'electrum_nmc_plugins.trustedcoin',
-        'electrum_nmc_plugins.virtualkeyboard',
-    ],
+        'electrum_nmc.gui',
+        'electrum_nmc.gui.qt',
+        'electrum_nmc.plugins',
+    ] + [('electrum_nmc.plugins.'+pkg) for pkg in find_packages('electrum_nmc/plugins')],
     package_dir={
-        'electrum_nmc': 'lib',
-        'electrum_nmc_gui': 'gui',
-        'electrum_nmc_plugins': 'plugins',
+        'electrum_nmc': 'electrum_nmc',
     },
     package_data={
         '': ['*.txt', '*.json', '*.ttf', '*.otf'],
@@ -84,7 +68,7 @@ setup(
             'locale/*/LC_MESSAGES/electrum.mo',
         ],
     },
-    scripts=['electrum-nmc'],
+    scripts=['electrum_nmc/electrum-nmc'],
     data_files=data_files,
     description="Lightweight Namecoin Wallet",
     author="The Namecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors",

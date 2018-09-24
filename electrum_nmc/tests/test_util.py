@@ -1,4 +1,3 @@
-import unittest
 from electrum_nmc.util import format_satoshis, parse_URI
 
 from . import SequentialTestCase

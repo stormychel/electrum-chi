@@ -1,5 +1,3 @@
-import unittest
-
 from electrum_nmc import transaction
 from electrum_nmc.bitcoin import TYPE_ADDRESS
 from electrum_nmc.keystore import xpubkey_to_address

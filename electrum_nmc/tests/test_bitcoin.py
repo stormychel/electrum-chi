@@ -1,5 +1,4 @@
 import base64
-import unittest
 import sys
 
 from electrum_nmc.bitcoin import (

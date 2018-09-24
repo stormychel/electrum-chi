@@ -5,7 +5,7 @@ Electrum - Lightweight Bitcoin client (AuxPoW fork)
 
   Licence: GNU GPLv3+ for Electrum-DOGE components; MIT Licence for all other components
   Author: The Namecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors
-  Language: Python
+  Language: Python (>= 3.6)
   Homepage: https://www.namecoin.org/ ; original Electrum Homepage at https://electrum.org/
 
 

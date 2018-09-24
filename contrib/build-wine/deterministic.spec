@@ -36,7 +36,8 @@ datas = [
     (home+'electrum_nmc/*.json', 'electrum_nmc'),
     (home+'electrum_nmc/wordlist/english.txt', 'electrum_nmc/wordlist'),
     (home+'electrum_nmc/locale', 'electrum_nmc/locale'),
-    ('C:\\Program Files (x86)\\ZBar\\bin\\', '.')
+    (home+'electrum_nmc/plugins', 'electrum_nmc/plugins'),
+    ('C:\\Program Files (x86)\\ZBar\\bin\\', '.'),
 ]
 datas += collect_data_files('trezorlib')
 datas += collect_data_files('safetlib')

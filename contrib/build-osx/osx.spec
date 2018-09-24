@@ -6,7 +6,7 @@ import sys
 import os
 
 PACKAGE='Electrum-NMC'
-PYPKG='electrum-nmc'
+PYPKG='electrum_nmc'
 MAIN_SCRIPT='run_electrum_nmc'
 ICONS_FILE='electrum.icns'
 
@@ -30,9 +30,10 @@ hiddenimports += collect_submodules('websocket')
 hiddenimports += collect_submodules('ckcc')
 
 datas = [
-    (electrum+'electrum_nmc/*.json', PYPKG),
-    (electrum+'electrum_nmc/wordlist/english.txt', PYPKG + '/wordlist'),
-    (electrum+'electrum_nmc/locale', PYPKG + '/locale')
+    (electrum + PYPKG + '/*.json', PYPKG),
+    (electrum + PYPKG + '/wordlist/english.txt', PYPKG + '/wordlist'),
+    (electrum + PYPKG + '/locale', PYPKG + '/locale'),
+    (electrum + PYPKG + '/plugins', PYPKG + '/plugins'),
 ]
 datas += collect_data_files('trezorlib')
 datas += collect_data_files('safetlib')

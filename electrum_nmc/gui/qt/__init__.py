@@ -42,12 +42,8 @@ from electrum_nmc.i18n import _, set_language
 from electrum_nmc.plugin import run_hook
 from electrum_nmc.storage import WalletStorage
 from electrum_nmc.base_wizard import GoBack
-# from electrum_nmc.synchronizer import Synchronizer
-# from electrum_nmc.verifier import SPV
-# from electrum_nmc.util import DebugMem
 from electrum_nmc.util import (UserCancelled, PrintError,
                            WalletFileException, BitcoinException)
-# from electrum_nmc.wallet import Abstract_Wallet
 
 from .installwizard import InstallWizard
 

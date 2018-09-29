@@ -1,12 +1,11 @@
+import os
+import qrcode
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import PyQt5.QtGui as QtGui
 from PyQt5.QtWidgets import (
     QApplication, QVBoxLayout, QTextEdit, QHBoxLayout, QPushButton, QWidget)
-
-import os
-import qrcode
 
 import electrum_nmc as electrum
 from electrum_nmc.i18n import _

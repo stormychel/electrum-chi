@@ -1,14 +1,17 @@
 from decimal import Decimal
-_ = lambda x:x
-#from i18n import _
+import getpass
+import datetime
+
 from electrum_nmc import WalletStorage, Wallet
 from electrum_nmc.util import format_satoshis, set_verbosity
 from electrum_nmc.bitcoin import is_address, COIN, TYPE_ADDRESS
 from electrum_nmc.transaction import TxOutput
-import getpass, datetime
+
+_ = lambda x:x  # i18n
 
 # minimal fdisk like gui for console usage
 # written by rofl0r, with some bits stolen from the text gui (ncurses)
+
 
 class ElectrumGui:
 
@@ -200,7 +203,8 @@ class ElectrumGui:
             self.wallet.labels[tx.txid()] = self.str_description
 
         print(_("Please wait..."))
-        status, msg = self.network.broadcast_transaction_from_non_network_thread(tx)
+        status, msg = self.network.run_from_another_thread(
+            self.network.broadcast_transaction(tx))
 
         if status:
             print(_('Payment sent.'))

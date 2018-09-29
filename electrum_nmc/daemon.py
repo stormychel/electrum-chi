@@ -28,16 +28,17 @@ import os
 import time
 import traceback
 import sys
+import threading
+from typing import Dict
 
-# from jsonrpc import JSONRPCResponseManager
 import jsonrpclib
-from .jsonrpc import VerifyingJSONRPCServer
 
+from .jsonrpc import VerifyingJSONRPCServer
 from .version import ELECTRUM_VERSION
 from .network import Network
 from .util import json_decode, DaemonThread
 from .util import print_error, to_string
-from .wallet import Wallet
+from .wallet import Wallet, Abstract_Wallet
 from .storage import WalletStorage
 from .commands import known_commands, Commands
 from .simple_config import SimpleConfig
@@ -129,9 +130,9 @@ class Daemon(DaemonThread):
             self.network = Network(config)
         self.fx = FxThread(config, self.network)
         if self.network:
-            self.network.start(self.fx.run())
+            self.network.start([self.fx.run])
         self.gui = None
-        self.wallets = {}
+        self.wallets = {}  # type: Dict[str, Abstract_Wallet]
         # Setup JSONRPC server
         self.init_server(config, fd)
 
@@ -163,6 +164,7 @@ class Daemon(DaemonThread):
         return True
 
     def run_daemon(self, config_options):
+        asyncio.set_event_loop(self.network.asyncio_loop)
         config = SimpleConfig(config_options)
         sub = config.get('subcommand')
         assert sub in [None, 'start', 'stop', 'status', 'load_wallet', 'close_wallet']
@@ -308,6 +310,7 @@ class Daemon(DaemonThread):
             gui_name = 'qt'
         gui = __import__('electrum_nmc.gui.' + gui_name, fromlist=['electrum_nmc'])
         self.gui = gui.ElectrumGui(config, self, plugins)
+        threading.current_thread().setName('GUI')
         try:
             self.gui.main()
         except BaseException as e:

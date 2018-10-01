@@ -3,7 +3,7 @@ Electrum-NMC - Lightweight Namecoin client
 
 ::
 
-  Licence: GNU GPLv3+ for Electrum-DOGE components; MIT Licence for all other components
+  Licence: GNU GPLv3+ for Electrum-DOGE components; CC BY 4.0 for Namecoin logo, MIT Licence for all other components
   Author: The Namecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors
   Language: Python (>= 3.6)
   Homepage: https://www.namecoin.org/ ; original Electrum Homepage at https://electrum.org/
@@ -68,7 +68,7 @@ Run install (this should install dependencies)::
 
 Render the SVG icons to PNGs (optional)::
 
-    for i in lock unlock confirmed status_lagging status_disconnected status_connected_proxy status_connected status_waiting preferences; do convert -background none icons/$i.svg icons/$i.png; done
+    for i in lock unlock confirmed status_lagging status_disconnected status_connected_proxy status_connected status_waiting preferences namecoin-logo; do convert -background none icons/$i.svg icons/$i.png; done
 
 Compile the icons file for Qt::
 

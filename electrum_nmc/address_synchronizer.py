@@ -795,7 +795,7 @@ class AddressSynchronizer(PrintError):
         return c, u, x
 
     @with_local_height_cached
-    def get_utxos(self, domain=None, excluded=None, mature=False, confirmed_only=False):
+    def get_utxos(self, domain=None, excluded=None, mature=False, confirmed_only=False, include_names=True):
         coins = []
         if domain is None:
             domain = self.get_addresses()
@@ -809,6 +809,12 @@ class AddressSynchronizer(PrintError):
                     continue
                 if mature and x['coinbase'] and x['height'] + COINBASE_MATURITY > self.get_local_height():
                     continue
+                if not include_names:
+                    txid = x['prevout_hash']
+                    vout = x['prevout_n']
+                    name_op = self.transactions[txid].outputs()[vout].name_op
+                    if name_op is not None:
+                        continue
                 coins.append(x)
                 continue
         return coins

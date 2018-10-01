@@ -58,6 +58,8 @@ from .paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
 from .paymentrequest import InvoiceStore
 from .contacts import Contacts
 
+from .names import get_default_name_tx_label
+
 TX_STATUS = [
     _('Unconfirmed'),
     _('Unconfirmed parent'),
@@ -482,6 +484,11 @@ class Abstract_Wallet(AddressSynchronizer):
         return label
 
     def get_default_label(self, tx_hash):
+        # TODO: what happens if a name would have a non-empty default non-name label?
+        name_label = get_default_name_tx_label(self, self.transactions.get(tx_hash))
+        if name_label is not None:
+            return name_label
+
         if self.txi.get(tx_hash) == {}:
             d = self.txo.get(tx_hash, {})
             labels = []
@@ -787,7 +794,7 @@ class Abstract_Wallet(AddressSynchronizer):
         info = {}
         xpubs = self.get_master_public_keys()
         for txout in tx.outputs():
-            _type, addr, amount = txout
+            _type, addr, amount, name_op = txout
             if self.is_mine(addr):
                 index = self.get_address_index(addr)
                 pubkeys = self.get_public_keys(addr)

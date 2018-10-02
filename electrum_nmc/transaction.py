@@ -46,6 +46,8 @@ from .keystore import xpubkey_to_address, xpubkey_to_pubkey
 NO_SIGNATURE = 'ff'
 PARTIAL_TXN_HEADER_MAGIC = b'EPTF\xff'
 
+NAMECOIN_VERSION = 0x7100
+
 
 class SerializationError(Exception):
     """ Thrown when there's a problem deserializing or serializing """
@@ -800,6 +802,9 @@ class Transaction:
         self = klass(None)
         self._inputs = inputs
         self._outputs = outputs
+        for o in outputs:
+            if o.name_op is not None:
+                self.version = NAMECOIN_VERSION
         self.locktime = locktime
         self.BIP69_sort()
         return self
@@ -1142,7 +1147,13 @@ class Transaction:
         return sum(x['value'] for x in self.inputs())
 
     def output_value(self):
-        return sum(val for tp, addr, val, name_op in self.outputs())
+        newly_locked_amount = 0
+        for o in self.outputs():
+            if o.name_op is None:
+                continue
+            if o.name_op['op'] == OP_NAME_NEW:
+                newly_locked_amount += COIN // 100
+        return newly_locked_amount + sum(val for tp, addr, val, name_op in self.outputs())
 
     def get_fee(self):
         return self.input_value() - self.output_value()
@@ -1304,5 +1315,5 @@ def tx_from_str(txt):
     return tx_dict["hex"]
 
 
-from .names import get_name_op_from_output_script, name_op_to_script, split_name_script
+from .names import get_name_op_from_output_script, name_op_to_script, OP_NAME_NEW, split_name_script
 

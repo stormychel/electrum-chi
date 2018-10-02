@@ -366,9 +366,9 @@ class Abstract_Wallet(AddressSynchronizer):
 
         return tx_hash, status, label, can_broadcast, can_bump, amount, fee, height, conf, timestamp, exp_n
 
-    def get_spendable_coins(self, domain, config):
+    def get_spendable_coins(self, domain, config, include_names=False):
         confirmed_only = config.get('confirmed_only', False)
-        return self.get_utxos(domain, excluded=self.frozen_addresses, mature=True, confirmed_only=confirmed_only)
+        return self.get_utxos(domain, excluded=self.frozen_addresses, mature=True, confirmed_only=confirmed_only, include_names=include_names)
 
     def dummy_address(self):
         return self.get_receiving_addresses()[0]

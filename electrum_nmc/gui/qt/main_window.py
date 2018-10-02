@@ -149,9 +149,11 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.utxo_tab = self.create_utxo_tab()
         self.console_tab = self.create_console_tab()
         self.contacts_tab = self.create_contacts_tab()
+        self.names_tab = self.create_names_tab()
         tabs.addTab(self.create_history_tab(), QIcon(":icons/tab_history.png"), _('History'))
         tabs.addTab(self.send_tab, QIcon(":icons/tab_send.png"), _('Send'))
         tabs.addTab(self.receive_tab, QIcon(":icons/tab_receive.png"), _('Receive'))
+        tabs.addTab(self.names_tab, QIcon(":icons/namecoin-logo.png"), _('Manage Names'))
 
         def add_optional_tab(tabs, tab, icon, description, name):
             tab.tab_icon = icon
@@ -788,6 +790,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.request_list.update()
         self.address_list.update()
         self.utxo_list.update()
+        self.names_uno_list.update()
         self.contact_list.update()
         self.invoice_list.update()
         self.update_completions()
@@ -1783,6 +1786,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.wallet.set_frozen_state(addrs, freeze)
         self.address_list.update()
         self.utxo_list.update()
+        self.names_uno_list.update()
         self.update_fee()
 
     def create_list_tab(self, l, toolbar=None):
@@ -3247,3 +3251,32 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                      "to see it, you need to broadcast it."))
             win.msg_box(QPixmap(":icons/offline_tx.png"), None, _('Success'), msg)
             return True
+
+    def create_names_tab(self):
+        self.names_vbox = vbox = QVBoxLayout()
+
+        self.names_your_names_label = QLabel(_('Your registered names (pending and unconfirmed names have blank expiration):'))
+        vbox.addWidget(self.names_your_names_label)
+
+        # List of names
+        from .uno_list import UNOList
+        self.names_uno_list = l = UNOList(self)
+        vbox.addWidget(self.create_list_tab(l))
+
+        self.names_actions_hbox = QHBoxLayout()
+
+        # Components of names_actions_hbox
+        self.names_configure_button = QPushButton(_('Configure Name...'))
+        self.names_renew_button = QPushButton(_('Renew Name'))
+
+        self.names_actions_hbox.addWidget(self.names_configure_button)
+        self.names_actions_hbox.addWidget(self.names_renew_button)
+
+        self.names_actions = QWidget()
+        self.names_actions.setLayout(self.names_actions_hbox)
+        # TODO: enable name actions
+        #vbox.addWidget(self.names_actions)
+
+        w = QWidget()
+        w.setLayout(vbox)
+        return w

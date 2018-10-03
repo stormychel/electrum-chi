@@ -366,9 +366,9 @@ class Abstract_Wallet(AddressSynchronizer):
 
         return tx_hash, status, label, can_broadcast, can_bump, amount, fee, height, conf, timestamp, exp_n
 
-    def get_spendable_coins(self, domain, config, include_names=False):
+    def get_spendable_coins(self, domain, config, include_names=False, only_uno_txids=None, only_uno_identifiers=None):
         confirmed_only = config.get('confirmed_only', False)
-        return self.get_utxos(domain, excluded=self.frozen_addresses, mature=True, confirmed_only=confirmed_only, include_names=include_names)
+        return self.get_utxos(domain, excluded=self.frozen_addresses, mature=True, confirmed_only=confirmed_only, include_names=include_names, only_uno_txids=only_uno_txids, only_uno_identifiers=only_uno_identifiers)
 
     def dummy_address(self):
         return self.get_receiving_addresses()[0]
@@ -546,7 +546,7 @@ class Abstract_Wallet(AddressSynchronizer):
         return dust_threshold(self.network)
 
     def make_unsigned_transaction(self, inputs, outputs, config, fixed_fee=None,
-                                  change_addr=None, is_sweep=False):
+                                  change_addr=None, is_sweep=False, name_inputs=[]):
         # check outputs
         i_max = None
         for i, o in enumerate(outputs):
@@ -566,6 +566,9 @@ class Abstract_Wallet(AddressSynchronizer):
             raise NoDynamicFeeEstimates()
 
         for item in inputs:
+            self.add_input_info(item)
+
+        for item in name_inputs:
             self.add_input_info(item)
 
         # change address
@@ -601,8 +604,9 @@ class Abstract_Wallet(AddressSynchronizer):
             max_change = self.max_change_outputs if self.multiple_change else 1
             coin_chooser = coinchooser.get_coin_chooser(config)
             tx = coin_chooser.make_tx(inputs, outputs, change_addrs[:max_change],
-                                      fee_estimator, self.dust_threshold())
+                                      fee_estimator, self.dust_threshold(), name_coins=name_inputs)
         else:
+            inputs = name_inputs + inputs
             # FIXME?? this might spend inputs with negative effective value...
             sendable = sum(map(lambda x:x['value'], inputs))
             outputs[i_max] = outputs[i_max]._replace(value=0)
@@ -752,6 +756,12 @@ class Abstract_Wallet(AddressSynchronizer):
                 tx_height, value, is_cb = item
                 txin['value'] = value
             self.add_input_sig_info(txin, address)
+        if 'name_op' not in txin:
+            if txin['prevout_hash'] in self.transactions:
+                prevouts = self.transactions[txin['prevout_hash']].outputs()
+                if txin['prevout_n'] < len(prevouts):
+                    prevout = prevouts[txin['prevout_n']]
+                    txin['name_op'] = prevout.name_op
 
     def add_input_info_to_all_inputs(self, tx):
         if tx.is_complete():

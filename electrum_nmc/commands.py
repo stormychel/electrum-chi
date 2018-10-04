@@ -55,6 +55,9 @@ class NameAlreadyExistsError(Exception):
 class NamePreRegistrationPendingError(Exception):
     pass
 
+class NameUpdatedTooRecentlyError(Exception):
+    pass
+
 def satoshis(amount):
     # satoshi conversion must not be performed by the parser
     return int(COIN*Decimal(amount)) if amount not in ['!', None] else amount
@@ -576,9 +579,11 @@ class Commands:
             # This check is in place to prevent an attack where an ElectrumX
             # server supplies an unconfirmed name_update transaction with a
             # malicious value and then tricks the wallet owner into signing a
-            # name renewal with that malicious value.
-            if list_results["expires_in"] > 36000 - 12:
-                raise Exception("Name was updated too recently to safely determine current value.  Either wait or specify an explicit value.")
+            # name renewal with that malicious value.  expires_in is None when
+            # the transaction has 0 confirmations.
+            expires_in = list_results["expires_in"]
+            if expires_in is None or expires_in > 36000 - 12:
+                raise NameUpdatedTooRecentlyError("Name was updated too recently to safely determine current value.  Either wait or specify an explicit value.")
 
             value = list_results["value"]
 

@@ -261,6 +261,13 @@ def get_wallet_name_delta(wallet, tx):
     return name_input_is_mine, name_output_is_mine
 
 
+def name_expires_in(name_height, chain_height):
+    if name_height <= 0:
+        return None
+
+    return name_height - chain_height + 36000
+
+
 import binascii
 import os
 import re

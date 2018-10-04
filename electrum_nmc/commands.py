@@ -38,7 +38,7 @@ from .util import bfh, bh2u, format_satoshis, json_decode, print_error, json_enc
 from . import bitcoin
 from .bitcoin import is_address,  hash_160, COIN, TYPE_ADDRESS
 from .i18n import _
-from .names import build_name_new, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE
+from .names import build_name_new, name_expires_in, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE
 from .transaction import Transaction, multisig_script, TxOutput
 from .paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
 from .plugin import run_hook
@@ -238,8 +238,8 @@ class Commands:
 
             address = i["address"]
             height = i["height"]
-            expires_in = height - chain_height + 36000
-            expired = expires_in <= 0
+            expires_in = name_expires_in(height, chain_height)
+            expired = expires_in <= 0 if expires_in is not None else None
 
             result_item = {
                 "name": name,
@@ -890,7 +890,7 @@ class Commands:
                         "vout": idx,
                         "address": o.address,
                         "height": height,
-                        "expires_in": height - chain_height + 36000,
+                        "expires_in": name_expires_in(height, chain_height),
                         "expired": False,
                         "ismine": self.wallet.is_mine(o.address),
                     }

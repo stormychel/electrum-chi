@@ -24,7 +24,7 @@
 # SOFTWARE.
 
 from electrum_nmc.i18n import _
-from electrum_nmc.names import format_name_identifier, format_name_value
+from electrum_nmc.names import format_name_identifier, format_name_value, name_expires_in
 
 from .util import *
 from .utxo_list import UTXOList
@@ -63,11 +63,12 @@ class UNOList(UTXOList):
 
             height = x.get('height')
             chain_height = self.network.blockchain().height()
-            expires_in = height - chain_height + 36000
+            expires_in = name_expires_in(height, chain_height)
+            formatted_expires_in = '%d'%expires_in if expires_in is not None else ''
 
-            status = ''
+            status = '' if expires_in is not None else 'Update Pending'
 
-            utxo_item = SortableTreeWidgetItem([name, value, '%d'%expires_in, status])
+            utxo_item = SortableTreeWidgetItem([name, value, formatted_expires_in, status])
             utxo_item.setFont(0, QFont(MONOSPACE_FONT))
             utxo_item.setFont(1, QFont(MONOSPACE_FONT))
             utxo_item.setData(0, Qt.UserRole, self.get_name(x))

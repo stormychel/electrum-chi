@@ -203,6 +203,57 @@ class Commands:
             i["value"] = str(Decimal(v)/COIN) if v is not None else None
         return l
 
+    @command('wn')
+    def name_list(self, identifier=None):
+        """List unspent name outputs. Returns the list of unspent name_anyupdate
+        outputs in your wallet."""
+        l = copy.deepcopy(self.wallet.get_utxos())
+
+        result = []
+
+        for i in l:
+            txid = i["prevout_hash"]
+            tx = self.wallet.transactions[txid]
+
+            vout = i["prevout_n"]
+            o = tx.outputs()[vout]
+
+            if o.name_op is None:
+                continue
+            name_op = o.name_op
+
+            if "name" not in name_op:
+                continue
+
+            # TODO: handle non-ASCII name/value encoding
+            name = name_op["name"].decode("ascii")
+            value = name_op["value"].decode("ascii")
+
+            # Skip this item if it doesn't match the requested identifier
+            if identifier is not None:
+                if identifier != name:
+                    continue
+
+            chain_height = self.network.blockchain().height()
+
+            address = i["address"]
+            height = i["height"]
+            expires_in = height - chain_height + 36000
+            expired = expires_in <= 0
+
+            result_item = {
+                "name": name,
+                "value": value,
+                "txid": txid,
+                "vout": vout,
+                "address": address,
+                "height": height,
+                "expires_in": expires_in,
+                "expired": expired,
+            }
+            result.append(result_item)
+        return result
+
     @command('n')
     def getaddressunspent(self, address):
         """Returns the UTXO list of any address. Note: This
@@ -895,6 +946,7 @@ command_options = {
     'amount':      (None, "Amount to be sent (in NMC). Type \'!\' to send the maximum available."),
     'allow_existing': (None, "Allow pre-registering a name that already is registered.  Your registration fee will be forfeited until you can register the name after it expires."),
     'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
+    'identifier':  (None, "The requested name identifier"),
 }
 
 

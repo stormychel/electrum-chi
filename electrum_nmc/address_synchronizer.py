@@ -795,7 +795,7 @@ class AddressSynchronizer(PrintError):
         return c, u, x
 
     @with_local_height_cached
-    def get_utxos(self, domain=None, excluded=None, mature=False, confirmed_only=False, include_names=True):
+    def get_utxos(self, domain=None, excluded=None, mature=False, confirmed_only=False, include_names=True, only_uno_txids=None, only_uno_identifiers=None):
         coins = []
         if domain is None:
             domain = self.get_addresses()
@@ -814,6 +814,30 @@ class AddressSynchronizer(PrintError):
                     vout = x['prevout_n']
                     name_op = self.transactions[txid].outputs()[vout].name_op
                     if name_op is not None:
+                        continue
+                # The only_uno_txids argument is used to search for name outputs
+                # from a specific list of txid's, and only return those utxo's.
+                # In the future it might make more sense to search by
+                # txid+vout, but for compatibility with Namecoin Core's
+                # name_firstupdate syntax (where only a txid is specified, not
+                # a txid+vout) we don't do that right now.
+                if only_uno_txids is not None:
+                    txid = x['prevout_hash']
+                    vout = x['prevout_n']
+                    name_op = self.transactions[txid].outputs()[vout].name_op
+                    if name_op is None:
+                        continue
+                    if txid not in only_uno_txids:
+                        continue
+                if only_uno_identifiers is not None:
+                    txid = x['prevout_hash']
+                    vout = x['prevout_n']
+                    name_op = self.transactions[txid].outputs()[vout].name_op
+                    if name_op is None:
+                        continue
+                    if "name" not in name_op:
+                        continue
+                    if name_op["name"] not in only_uno_identifiers:
                         continue
                 coins.append(x)
                 continue

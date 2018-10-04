@@ -38,13 +38,22 @@ from .util import bfh, bh2u, format_satoshis, json_decode, print_error, json_enc
 from . import bitcoin
 from .bitcoin import is_address,  hash_160, COIN, TYPE_ADDRESS
 from .i18n import _
-from .names import name_identifier_to_scripthash
+from .names import build_name_new, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE
 from .transaction import Transaction, multisig_script, TxOutput
 from .paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
 from .plugin import run_hook
 
 known_commands = {}
 
+
+class NameNotFoundError(Exception):
+    pass
+
+class NameAlreadyExistsError(Exception):
+    pass
+
+class NamePreRegistrationPendingError(Exception):
+    pass
 
 def satoshis(amount):
     # satoshi conversion must not be performed by the parser
@@ -408,18 +417,27 @@ class Commands:
         message = util.to_bytes(message)
         return ecc.verify_message_with_address(address, sig, message)
 
-    def _mktx(self, outputs, fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime=None):
+    def _mktx(self, outputs, fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime=None, name_input_txids=[], name_input_identifiers=[], name_outputs=[]):
         self.nocheck = nocheck
         change_addr = self._resolver(change_addr)
         domain = None if domain is None else map(self._resolver, domain)
         final_outputs = []
+        for address, amount, name_op in name_outputs:
+            if address is None:
+                # TODO: add a memo argument to addrequest
+                address = self.addrequest(None)['address']
+            address = self._resolver(address)
+            amount = satoshis(amount)
+            final_outputs.append(TxOutput(TYPE_ADDRESS, address, amount, name_op))
         for address, amount in outputs:
             address = self._resolver(address)
             amount = satoshis(amount)
             final_outputs.append(TxOutput(TYPE_ADDRESS, address, amount))
 
         coins = self.wallet.get_spendable_coins(domain, self.config)
-        tx = self.wallet.make_unsigned_transaction(coins, final_outputs, self.config, fee, change_addr)
+        name_coins = self.wallet.get_spendable_coins(domain, self.config, include_names=True, only_uno_txids=name_input_txids)
+        name_coins += self.wallet.get_spendable_coins(domain, self.config, include_names=True, only_uno_identifiers=name_input_identifiers)
+        tx = self.wallet.make_unsigned_transaction(coins, final_outputs, self.config, fee, change_addr, name_inputs=name_coins)
         if locktime != None: 
             tx.locktime = locktime
         if rbf is None:
@@ -444,6 +462,68 @@ class Commands:
         tx_fee = satoshis(fee)
         domain = from_addr.split(',') if from_addr else None
         tx = self._mktx(outputs, tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime)
+        return tx.as_dict()
+
+    @command('wp')
+    def name_new(self, identifier, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False):
+        """Create a name_new transaction. """
+        if not allow_existing:
+            name_exists = True
+            try:
+                show = self.name_show(identifier)
+            except NameNotFoundError:
+                name_exists = False
+            if name_exists:
+                raise NameAlreadyExistsError("The name is already registered")
+
+        tx_fee = satoshis(fee)
+        domain = from_addr.split(',') if from_addr else None
+
+        # TODO: support non-ASCII encodings
+        # TODO: enforce length limit on identifier
+        identifier_bytes = identifier.encode("ascii")
+        name_op, rand = build_name_new(identifier_bytes)
+
+        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_outputs=[(destination, amount, name_op)])
+        return {"tx": tx.as_dict(), "txid": tx.txid(), "rand": bh2u(rand)}
+
+    @command('wp')
+    def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False):
+        """Create a name_firstupdate transaction. """
+        if not allow_early:
+            conf = self.wallet.get_tx_height(name_new_txid).conf
+            if conf < 12:
+                remaining_conf = 12 - conf
+                raise NamePreRegistrationPendingError("The name pre-registration is still pending; wait " + str(remaining_conf) + "more blocks")
+
+        tx_fee = satoshis(fee)
+        domain = from_addr.split(',') if from_addr else None
+
+        # TODO: support non-ASCII encodings
+        # TODO: enforce length limits on identifier and value
+        # TODO: enforce exact length of rand
+        identifier_bytes = identifier.encode("ascii")
+        value_bytes = value.encode("ascii")
+        rand_bytes = bfh(rand)
+        name_op = {"op": OP_NAME_FIRSTUPDATE, "name": identifier_bytes, "rand": rand_bytes, "value": value_bytes}
+
+        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_txids=[name_new_txid], name_outputs=[(destination, amount, name_op)])
+        return tx.as_dict()
+
+    @command('wp')
+    def name_update(self, identifier, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None):
+        """Create a name_update transaction. """
+
+        tx_fee = satoshis(fee)
+        domain = from_addr.split(',') if from_addr else None
+
+        # TODO: support non-ASCII encodings
+        # TODO: enforce length limits on identifier and value
+        identifier_bytes = identifier.encode("ascii")
+        value_bytes = value.encode("ascii")
+        name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": value_bytes}
+
+        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_identifiers=[identifier_bytes], name_outputs=[(destination, amount, name_op)])
         return tx.as_dict()
 
     @command('w')
@@ -696,7 +776,7 @@ class Commands:
                 tx_best = tx_candidate
                 break
         if tx_best is None:
-            raise Exception("Invalid height")
+            raise NameNotFoundError("Name never existed, is expired, or is unconfirmed")
         txid = tx_best["tx_hash"]
         height = tx_best["height"]
 
@@ -810,7 +890,11 @@ command_options = {
     'show_fiat':   (None, "Show fiat value of transactions"),
     'year':        (None, "Show history for a given year"),
     'fee_method':  (None, "Fee estimation method to use"),
-    'fee_level':   (None, "Float between 0.0 and 1.0, representing fee slider position")
+    'fee_level':   (None, "Float between 0.0 and 1.0, representing fee slider position"),
+    'destination': (None, "Namecoin address, contact or alias"),
+    'amount':      (None, "Amount to be sent (in NMC). Type \'!\' to send the maximum available."),
+    'allow_existing': (None, "Allow pre-registering a name that already is registered.  Your registration fee will be forfeited until you can register the name after it expires."),
+    'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
 }
 
 

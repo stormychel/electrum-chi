@@ -186,7 +186,7 @@ class CoinChooserBase(PrintError):
         return change
 
     def make_tx(self, coins, outputs, change_addrs, fee_estimator,
-                dust_threshold):
+                dust_threshold, name_coins = []):
         """Select unspent coins to spend to pay outputs.  If the change is
         greater than dust_threshold (after adding the change output to
         the transaction) it is kept, otherwise none is sent and it is
@@ -196,7 +196,7 @@ class CoinChooserBase(PrintError):
         """
 
         # Deterministic randomness from coins
-        utxos = [c['prevout_hash'] + str(c['prevout_n']) for c in coins]
+        utxos = [c['prevout_hash'] + str(c['prevout_n']) for c in (name_coins + coins)]
         self.p = PRNG(''.join(sorted(utxos)))
 
         # Copy the outputs so when adding change we don't modify "outputs"
@@ -212,23 +212,34 @@ class CoinChooserBase(PrintError):
             return fee_estimator(Transaction.virtual_size_from_weight(weight))
 
         def get_tx_weight(buckets):
-            total_weight = base_weight + sum(bucket.weight for bucket in buckets)
+            # Copied from make_Bucket.  We're basically constructing the
+            # witness/weight vars as though the name_coins are their own
+            # bucket.
+            name_witness = any(Transaction.is_segwit_input(coin, guess_for_address=True) for coin in name_coins)
+            # note that we're guessing whether the tx uses segwit based
+            # on this single bucket
+            name_weight = sum(Transaction.estimated_input_weight(coin, name_witness)
+                         for coin in name_coins)
+
+            total_weight = base_weight + name_weight + sum(bucket.weight for bucket in buckets)
             is_segwit_tx = any(bucket.witness for bucket in buckets)
             if is_segwit_tx:
                 total_weight += 2  # marker and flag
                 # non-segwit inputs were previously assumed to have
                 # a witness of '' instead of '00' (hex)
                 # note that mixed legacy/segwit buckets are already ok
+                num_legacy_name_inputs = (not name_witness) * len(name_coins)
                 num_legacy_inputs = sum((not bucket.witness) * len(bucket.coins)
                                         for bucket in buckets)
-                total_weight += num_legacy_inputs
+                total_weight += num_legacy_name_inputs + num_legacy_inputs
 
             return total_weight
 
         def sufficient_funds(buckets):
             '''Given a list of buckets, return True if it has enough
             value to pay for the transaction'''
-            total_input = sum(bucket.value for bucket in buckets)
+            total_name_input = sum(i["value"] for i in name_coins)
+            total_input = total_name_input + sum(bucket.value for bucket in buckets)
             total_weight = get_tx_weight(buckets)
             return total_input >= spent_amount + fee_estimator_w(total_weight)
 
@@ -237,7 +248,7 @@ class CoinChooserBase(PrintError):
         buckets = self.choose_buckets(buckets, sufficient_funds,
                                       self.penalty_func(tx))
 
-        tx.add_inputs([coin for b in buckets for coin in b.coins])
+        tx.add_inputs(name_coins + [coin for b in buckets for coin in b.coins])
         tx_weight = get_tx_weight(buckets)
 
         # change is sent back to sending address unless specified

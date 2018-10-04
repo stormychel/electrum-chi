@@ -94,6 +94,14 @@ def name_op_to_script(name_op):
         raise BitcoinException('unknown name op: {}'.format(name_op))
     return script
 
+def build_name_new(identifier, rand = None):
+    if rand is None:
+        rand = os.urandom(20)
+
+    to_hash = rand + identifier
+    commitment = hash_160(to_hash)
+
+    return {"op": OP_NAME_NEW, "hash": commitment}, rand
 
 def name_identifier_to_scripthash(identifier_bytes):
     name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": bytes([])}
@@ -254,9 +262,11 @@ def get_wallet_name_delta(wallet, tx):
 
 
 import binascii
+import os
 import re
 
 from .bitcoin import push_script, script_to_scripthash
+from .crypto import hash_160
 from .transaction import MalformedBitcoinScript, match_decoded, opcodes, script_GetOp
 from .util import bh2u
 

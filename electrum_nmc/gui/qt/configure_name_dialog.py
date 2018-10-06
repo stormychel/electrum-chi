@@ -1,0 +1,128 @@
+#!/usr/bin/env python
+#
+# Electrum-NMC - lightweight Namecoin client
+# Copyright (C) 2012-2018 Namecoin Developers, Electrum Developers
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+
+from electrum_nmc.bitcoin import TYPE_ADDRESS
+from electrum_nmc.i18n import _
+from electrum_nmc.names import format_name_identifier
+
+from .paytoedit import PayToEdit
+
+dialogs = []  # Otherwise python randomly garbage collects the dialogs...
+
+
+def show_configure_name(identifier, value, parent):
+    d = ConfigureNameDialog(identifier, value, parent)
+
+    dialogs.append(d)
+    d.show()
+
+
+class ConfigureNameDialog(QDialog):
+    def __init__(self, identifier, value, parent):
+        # We want to be a top-level window
+        QDialog.__init__(self, parent=None)
+
+        self.main_window = parent
+
+        self.setMinimumWidth(545)
+        self.setMinimumHeight(245)
+        self.setWindowTitle(_("Configure Name"))
+
+        form_layout = QFormLayout()
+
+        self.identifier = identifier
+        formatted_name = format_name_identifier(identifier)
+        form_layout.addRow(QLabel(formatted_name))
+
+        self.dataEdit = QLineEdit()
+        # TODO: support non-ASCII encodings
+        self.dataEdit.setText(value.decode('ascii'))
+        form_layout.addRow(_("Data:"), self.dataEdit)
+
+        self.transferTo = PayToEdit(self.main_window)
+        form_layout.addRow(_("Transfer to:"), self.transferTo)
+
+        form = QWidget()
+        form.setLayout(form_layout)
+
+        self.buttons_box = QDialogButtonBox()
+        self.buttons_box.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+
+        buttons_hbox = QHBoxLayout()
+        buttons_hbox.addStretch()
+        buttons_hbox.addWidget(self.buttons_box)
+        buttons = QWidget()
+        buttons.setLayout(buttons_hbox)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(form)
+        vbox.addWidget(buttons)
+        self.setLayout(vbox)
+
+        self.buttons_box.accepted.connect(self.accept)
+        self.buttons_box.rejected.connect(self.reject)
+
+        # TODO: handle non-ASCII encodings
+        self.accepted.connect(lambda: self.update_and_broadcast(self.identifier, self.dataEdit.text().encode('ascii'), self.transferTo))
+
+    def update_and_broadcast(self, identifier, value, transfer_to):
+        if transfer_to.toPlainText() == "":
+            # User left the recipient blank, so this isn't a transfer.
+            recipient_address = None
+        else:
+            # The user entered something into the recipient text box.
+
+            recipient = transfer_to.get_recipient()
+
+            if recipient is None:
+                recipient_type, recipient_address = None, transfer_to.toPlainText()
+            else:
+                recipient_type, recipient_address = recipient
+
+            if recipient_type != TYPE_ADDRESS:
+                self.main_window.show_error(_("Invalid address ") + recipient_address)
+                return
+
+        name_update = self.main_window.console.namespace.get('name_update')
+        broadcast = self.main_window.console.namespace.get('broadcast')
+
+        # TODO: support non-ASCII encodings
+        tx = name_update(identifier.decode('ascii'), value.decode('ascii'), recipient_address)['hex']
+
+        status, msg = broadcast(tx)
+        if not status:
+            formatted_name = format_name_identifier(identifier)
+            self.main_window.show_error(_("Error broadcasting update for ") + formatted_name + ": " + str(msg))
+            return
+
+        # As far as I can tell, we don't need to explicitly add the transaction
+        # to the wallet, because we're only issuing a single transaction, so
+        # there's not much risk of accidental double-spends from subsequent
+        # transactions.
+

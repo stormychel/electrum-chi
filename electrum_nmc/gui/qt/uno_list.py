@@ -27,6 +27,7 @@ from electrum_nmc.commands import NameUpdatedTooRecentlyError
 from electrum_nmc.i18n import _
 from electrum_nmc.names import format_name_identifier, format_name_value, name_expires_in
 
+from .configure_name_dialog import show_configure_name
 from .util import *
 from .utxo_list import UTXOList
 
@@ -101,8 +102,7 @@ class UNOList(UTXOList):
             txid = selected[0].split(':')[0]
             tx = self.wallet.transactions.get(txid)
             if tx:
-                # TODO: implement Configure
-                #menu.addAction(_("Configure"), lambda: self.parent.show_transaction(tx))
+                menu.addAction(_("Configure"), lambda: self.configure_selected_item())
                 menu.addAction(_("Transaction Details"), lambda: self.parent.show_transaction(tx))
 
         menu.exec_(self.viewport().mapToGlobal(position))
@@ -144,4 +144,15 @@ class UNOList(UTXOList):
                 formatted_name = format_name_identifier(identifier)
                 self.parent.show_error(_("Error adding renewal for ") + formatted_name + _(" to wallet"))
                 continue
+
+    def configure_selected_item(self):
+        selected = [(x.data(0, Qt.UserRole + USER_ROLE_NAME), x.data(0, Qt.UserRole + USER_ROLE_VALUE)) for x in self.selectedItems()]
+        if not selected:
+            return
+        if len(selected) != 1:
+            return
+
+        identifier, initial_value = selected[0]
+
+        show_configure_name(identifier, initial_value, self.parent)
 

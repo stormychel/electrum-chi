@@ -38,7 +38,7 @@ from .util import bfh, bh2u, format_satoshis, json_decode, print_error, json_enc
 from . import bitcoin
 from .bitcoin import is_address,  hash_160, COIN, TYPE_ADDRESS
 from .i18n import _
-from .names import build_name_new, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE
+from .names import build_name_new, name_expires_in, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE
 from .transaction import Transaction, multisig_script, TxOutput
 from .paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
 from .plugin import run_hook
@@ -53,6 +53,9 @@ class NameAlreadyExistsError(Exception):
     pass
 
 class NamePreRegistrationPendingError(Exception):
+    pass
+
+class NameUpdatedTooRecentlyError(Exception):
     pass
 
 def satoshis(amount):
@@ -202,6 +205,57 @@ class Commands:
             v = i["value"]
             i["value"] = str(Decimal(v)/COIN) if v is not None else None
         return l
+
+    @command('wn')
+    def name_list(self, identifier=None):
+        """List unspent name outputs. Returns the list of unspent name_anyupdate
+        outputs in your wallet."""
+        l = copy.deepcopy(self.wallet.get_utxos())
+
+        result = []
+
+        for i in l:
+            txid = i["prevout_hash"]
+            tx = self.wallet.transactions[txid]
+
+            vout = i["prevout_n"]
+            o = tx.outputs()[vout]
+
+            if o.name_op is None:
+                continue
+            name_op = o.name_op
+
+            if "name" not in name_op:
+                continue
+
+            # TODO: handle non-ASCII name/value encoding
+            name = name_op["name"].decode("ascii")
+            value = name_op["value"].decode("ascii")
+
+            # Skip this item if it doesn't match the requested identifier
+            if identifier is not None:
+                if identifier != name:
+                    continue
+
+            chain_height = self.network.blockchain().height()
+
+            address = i["address"]
+            height = i["height"]
+            expires_in = name_expires_in(height, chain_height)
+            expired = expires_in <= 0 if expires_in is not None else None
+
+            result_item = {
+                "name": name,
+                "value": value,
+                "txid": txid,
+                "vout": vout,
+                "address": address,
+                "height": height,
+                "expires_in": expires_in,
+                "expired": expired,
+            }
+            result.append(result_item)
+        return result
 
     @command('n')
     def getaddressunspent(self, address):
@@ -510,12 +564,28 @@ class Commands:
         tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_txids=[name_new_txid], name_outputs=[(destination, amount, name_op)])
         return tx.as_dict()
 
-    @command('wp')
-    def name_update(self, identifier, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None):
+    @command('wpn')
+    def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None):
         """Create a name_update transaction. """
 
         tx_fee = satoshis(fee)
         domain = from_addr.split(',') if from_addr else None
+
+        # Allow renewing a name without any value changes by omitting the
+        # value.
+        if value is None:
+            list_results = self.name_list(identifier)[0]
+
+            # This check is in place to prevent an attack where an ElectrumX
+            # server supplies an unconfirmed name_update transaction with a
+            # malicious value and then tricks the wallet owner into signing a
+            # name renewal with that malicious value.  expires_in is None when
+            # the transaction has 0 confirmations.
+            expires_in = list_results["expires_in"]
+            if expires_in is None or expires_in > 36000 - 12:
+                raise NameUpdatedTooRecentlyError("Name was updated too recently to safely determine current value.  Either wait or specify an explicit value.")
+
+            value = list_results["value"]
 
         # TODO: support non-ASCII encodings
         # TODO: enforce length limits on identifier and value
@@ -825,7 +895,7 @@ class Commands:
                         "vout": idx,
                         "address": o.address,
                         "height": height,
-                        "expires_in": height - chain_height + 36000,
+                        "expires_in": name_expires_in(height, chain_height),
                         "expired": False,
                         "ismine": self.wallet.is_mine(o.address),
                     }
@@ -895,6 +965,8 @@ command_options = {
     'amount':      (None, "Amount to be sent (in NMC). Type \'!\' to send the maximum available."),
     'allow_existing': (None, "Allow pre-registering a name that already is registered.  Your registration fee will be forfeited until you can register the name after it expires."),
     'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
+    'identifier':  (None, "The requested name identifier"),
+    'value':       (None, "The value to assign to the name"),
 }
 
 

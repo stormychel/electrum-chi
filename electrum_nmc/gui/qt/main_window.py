@@ -3267,15 +3267,22 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
 
         # Components of names_actions_hbox
         self.names_configure_button = QPushButton(_('Configure Name...'))
+        self.names_configure_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.names_configure_button.setMinimumSize(150, 0)
+        self.names_configure_button.setToolTip(_('Change the value of the selected name or transfer ownership'))
+        self.names_configure_button.clicked.connect(l.configure_selected_item)
         self.names_renew_button = QPushButton(_('Renew Name'))
+        self.names_renew_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.names_renew_button.setMinimumSize(150, 0)
+        self.names_renew_button.setToolTip(_('Renew the selected name with its current value (nothing will happen if the name was updated in the last 12 blocks)'))
+        self.names_renew_button.clicked.connect(l.renew_selected_items)
 
         self.names_actions_hbox.addWidget(self.names_configure_button)
         self.names_actions_hbox.addWidget(self.names_renew_button)
 
         self.names_actions = QWidget()
         self.names_actions.setLayout(self.names_actions_hbox)
-        # TODO: enable name actions
-        #vbox.addWidget(self.names_actions)
+        vbox.addWidget(self.names_actions)
 
         w = QWidget()
         w.setLayout(vbox)

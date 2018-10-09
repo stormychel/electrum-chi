@@ -1966,7 +1966,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         sb.setFixedHeight(35)
         qtVersion = qVersion()
 
-        self.balance_label = QLabel("")
+        self.balance_label = QLabel("Loading wallet...")
         self.balance_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.balance_label.setStyleSheet("""QLabel { padding: 0 }""")
         sb.addWidget(self.balance_label)
@@ -2587,7 +2587,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             self.spend_max()
             self.payto_e.setFrozen(True)
             self.amount_e.setFrozen(True)
-        except BaseException as e:
+        except Exception as e:  # FIXME too broad...
             self.show_message(str(e))
             return
         self.warn_if_watching_only()

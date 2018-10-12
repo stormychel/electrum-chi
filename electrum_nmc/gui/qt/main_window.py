@@ -313,6 +313,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         elif event == 'blockchain_updated':
             # to update number of confirmations in history
             self.need_update.set()
+            # Also handle in GUI thread
+            self.network_signal.emit(event, args)
         elif event == 'new_transaction':
             wallet, tx = args
             if wallet == self.wallet:
@@ -343,6 +345,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                 self.do_update_fee()
             # todo: update only unconfirmed tx
             self.history_list.update()
+        elif event == 'blockchain_updated':
+            self.update_queued_transactions()
         else:
             self.print_error("unexpected network_qt signal:", event, args)
 
@@ -3287,3 +3291,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         w = QWidget()
         w.setLayout(vbox)
         return w
+
+    def update_queued_transactions(self):
+        updatequeuedtransactions = self.console.namespace.get('updatequeuedtransactions')
+        status, msg = updatequeuedtransactions()
+        if not status:
+            self.show_error(_("Error broadcasting the following queued transactions (you'll need to manually broadcast them): ") + str(msg))

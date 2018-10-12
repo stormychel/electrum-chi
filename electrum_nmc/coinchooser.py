@@ -244,8 +244,13 @@ class CoinChooserBase(PrintError):
             return total_input >= spent_amount + fee_estimator_w(total_weight)
 
         # Collect the coins into buckets, choose a subset of the buckets
-        buckets = self.bucketize_coins(coins)
-        buckets = self.choose_buckets(buckets, sufficient_funds,
+        # We check sufficient_funds against an empty list because in Namecoin
+        # we might have sufficient funds solely from the name inputs.
+        if sufficient_funds([]):
+            buckets = []
+        else:
+            buckets = self.bucketize_coins(coins)
+            buckets = self.choose_buckets(buckets, sufficient_funds,
                                       self.penalty_func(tx))
 
         tx.add_inputs(name_coins + [coin for b in buckets for coin in b.coins])

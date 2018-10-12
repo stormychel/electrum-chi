@@ -36,15 +36,15 @@ from .paytoedit import PayToEdit
 dialogs = []  # Otherwise python randomly garbage collects the dialogs...
 
 
-def show_configure_name(identifier, value, parent):
-    d = ConfigureNameDialog(identifier, value, parent)
+def show_configure_name(identifier, value, parent, is_new):
+    d = ConfigureNameDialog(identifier, value, parent, is_new)
 
     dialogs.append(d)
     d.show()
 
 
 class ConfigureNameDialog(QDialog):
-    def __init__(self, identifier, value, parent):
+    def __init__(self, identifier, value, parent, is_new):
         # We want to be a top-level window
         QDialog.__init__(self, parent=None)
 
@@ -52,7 +52,10 @@ class ConfigureNameDialog(QDialog):
 
         self.setMinimumWidth(545)
         self.setMinimumHeight(245)
-        self.setWindowTitle(_("Configure Name"))
+        if is_new:
+            self.setWindowTitle(_("Configure New Name"))
+        else:
+            self.setWindowTitle(_("Reconfigure Name"))
 
         form_layout = QFormLayout()
 
@@ -88,8 +91,39 @@ class ConfigureNameDialog(QDialog):
         self.buttons_box.accepted.connect(self.accept)
         self.buttons_box.rejected.connect(self.reject)
 
-        # TODO: handle non-ASCII encodings
-        self.accepted.connect(lambda: self.update_and_broadcast(self.identifier, self.dataEdit.text().encode('ascii'), self.transferTo))
+        if is_new:
+            self.accepted.connect(lambda: self.register_and_broadcast(self.identifier, self.dataEdit.text().encode('ascii'), self.transferTo))
+        else:
+            # TODO: handle non-ASCII encodings
+            self.accepted.connect(lambda: self.update_and_broadcast(self.identifier, self.dataEdit.text().encode('ascii'), self.transferTo))
+
+    def register_and_broadcast(self, identifier, value, transfer_to):
+        if transfer_to.toPlainText() == "":
+            # User left the recipient blank, so this isn't a transfer.
+            recipient_address = None
+        else:
+            # The user entered something into the recipient text box.
+
+            recipient = transfer_to.get_recipient()
+
+            if recipient is None:
+                recipient_type, recipient_address = None, transfer_to.toPlainText()
+            else:
+                recipient_type, recipient_address = recipient
+
+            if recipient_type != TYPE_ADDRESS:
+                self.main_window.show_error(_("Invalid address ") + recipient_address)
+                return
+
+        name_autoregister = self.main_window.console.namespace.get('name_autoregister')
+
+        try:
+            # TODO: support non-ASCII encodings
+            name_autoregister(identifier.decode('ascii'), value.decode('ascii'), recipient_address)
+        except Exception as e:
+            formatted_name = format_name_identifier(identifier)
+            self.main_window.show_error(_("Error registering ") + formatted_name + ": " + str(e))
+            return
 
     def update_and_broadcast(self, identifier, value, transfer_to):
         if transfer_to.toPlainText() == "":

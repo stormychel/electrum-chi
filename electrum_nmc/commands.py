@@ -765,6 +765,77 @@ class Commands:
         self.wallet.save_transactions()
         return tx.txid()
 
+    @command('w')
+    def queuetransaction(self, tx, trigger_depth, trigger_txid = None, trigger_name = None):
+        """ Queue a transaction for later broadcast """
+        if trigger_txid is None and trigger_name is None:
+            raise Exception("You must specify exactly one of trigger_txid or trigger_name.")
+        if trigger_txid is not None and trigger_name is not None:
+            raise Exception("You must specify exactly one of trigger_txid or trigger_name.")
+
+        txid = Transaction(tx).txid()
+        # TODO: handle non-ASCII trigger_name
+        send_when = {
+            "txid": trigger_txid,
+            "name": trigger_name,
+            "name_encoding": "ascii",
+            "confirmations": trigger_depth,
+        }
+        queue_item = {
+            "tx": tx,
+            "sendWhen": send_when
+        }
+        if not self.wallet.queue_transaction(txid, queue_item):
+            return False
+        self.wallet.save_transactions()
+        return txid
+
+    @command('wn')
+    def updatequeuedtransactions(self):
+        errors = {}
+
+        to_unqueue = []
+
+        for txid in self.wallet.queued_transactions:
+            queue_item = self.wallet.queued_transactions[txid]
+            send_when = queue_item["sendWhen"]
+
+            trigger_txid = send_when["txid"]
+            trigger_name = send_when["name"]
+            trigger_depth = send_when["confirmations"]
+
+            chain_height = self.network.blockchain().height()
+
+            current_depth = 0
+
+            if trigger_name is not None:
+                # TODO: handle non-ASCII trigger_name
+                try:
+                    current_height = self.name_show(trigger_name)["height"]
+                    current_depth = chain_height - current_height + 1
+                except NameNotFoundError:
+                    current_depth = 36000
+                except Exception:
+                    continue
+
+            if trigger_txid is not None:
+                current_depth = self.wallet.get_tx_height(trigger_txid).conf
+
+            if current_depth >= trigger_depth:
+                tx = queue_item["tx"]
+                status, msg = self.broadcast(tx)
+                if not status:
+                    errors[txid] = msg
+
+                to_unqueue.append(txid)
+
+        for txid in to_unqueue:
+            self.wallet.unqueue_transaction(txid)
+        self.wallet.save_transactions()
+
+        success = (errors == {})
+        return success, errors
+
     @command('wp')
     def signrequest(self, address, password=None):
         "Sign payment request with an OpenAlias"
@@ -967,6 +1038,8 @@ command_options = {
     'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
     'identifier':  (None, "The requested name identifier"),
     'value':       (None, "The value to assign to the name"),
+    'trigger_txid':(None, "Broadcast the transaction when this txid reaches the specified number of confirmations"),
+    'trigger_name':(None, "Broadcast the transaction when this name reaches the specified number of confirmations"),
 }
 
 

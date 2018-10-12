@@ -318,6 +318,17 @@ class AddressSynchronizer(PrintError):
             self.transactions[tx_hash] = tx
             return True
 
+    def queue_transaction(self, tx_hash, tx_queue_item):
+        with self.transaction_lock:
+            self.queued_transactions[tx_hash] = tx_queue_item
+        return True
+
+    def unqueue_transaction(self, tx_hash):
+        with self.transaction_lock:
+            if tx_hash in self.queued_transactions:
+                del self.queued_transactions[tx_hash]
+        return True
+
     def remove_transaction(self, tx_hash):
         def remove_from_spent_outpoints():
             # undo spends in spent_outpoints
@@ -414,6 +425,7 @@ class AddressSynchronizer(PrintError):
                 if spending_txid not in self.transactions:
                     continue  # only care about txns we have
                 self.spent_outpoints[prevout_hash][prevout_n] = spending_txid
+        self.queued_transactions = self.storage.get('queued_transactions', {})
 
     @profiler
     def load_local_history(self):
@@ -460,6 +472,7 @@ class AddressSynchronizer(PrintError):
             self.storage.put('tx_fees', self.tx_fees)
             self.storage.put('addr_history', self.history)
             self.storage.put('spent_outpoints', self.spent_outpoints)
+            self.storage.put('queued_transactions', self.queued_transactions)
             if write:
                 self.storage.write()
 

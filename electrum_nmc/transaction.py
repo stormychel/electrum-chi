@@ -73,7 +73,10 @@ TxOutput.__new__.__defaults__ = (None,)
 # upstream Electrum.  Based on https://stackoverflow.com/a/18348004 .
 
 
-TxOutputForUI = NamedTuple("TxOutputForUI", [('address', str), ('value', int)])
+TxOutputForUI = NamedTuple("TxOutputForUI", [('address', str), ('value', int), ("name_op", dict)])
+TxOutputForUI.__new__.__defaults__ = (None,)
+# Assume no name_op if one wasn't provided; this reduces merge conflicts from
+# upstream Electrum.  Based on https://stackoverflow.com/a/18348004 .
 
 
 TxOutputHwInfo = NamedTuple("TxOutputHwInfo", [('address_index', Tuple),
@@ -1308,7 +1311,7 @@ class Transaction:
                 addr = 'PUBKEY ' + o.address
             else:
                 addr = 'SCRIPT ' + o.address
-            outputs.append(TxOutputForUI(addr, o.value))      # consider using yield
+            outputs.append(TxOutputForUI(addr, o.value, o.name_op))      # consider using yield
         return outputs
 
     def has_address(self, addr: str) -> bool:

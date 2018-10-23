@@ -127,10 +127,11 @@ class UNOList(UTXOList):
                 # The name was recently updated, so skip it and don't renew.
                 continue
 
-            status, msg = broadcast(tx)
-            if not status:
+            try:
+                broadcast(tx)
+            except Exception as e:
                 formatted_name = format_name_identifier(identifier)
-                self.parent.show_error(_("Error broadcasting renewal for ") + formatted_name + ": " + str(msg))
+                self.parent.show_error(_("Error broadcasting renewal for ") + formatted_name + ": " + str(e))
                 continue
 
             # We add the transaction to the wallet explicitly because

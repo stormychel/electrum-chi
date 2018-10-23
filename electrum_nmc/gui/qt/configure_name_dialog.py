@@ -149,10 +149,11 @@ class ConfigureNameDialog(QDialog):
         # TODO: support non-ASCII encodings
         tx = name_update(identifier.decode('ascii'), value.decode('ascii'), recipient_address)['hex']
 
-        status, msg = broadcast(tx)
-        if not status:
+        try:
+            broadcast(tx)
+        except Exception as e:
             formatted_name = format_name_identifier(identifier)
-            self.main_window.show_error(_("Error broadcasting update for ") + formatted_name + ": " + str(msg))
+            self.main_window.show_error(_("Error broadcasting update for ") + formatted_name + ": " + str(e))
             return
 
         # As far as I can tell, we don't need to explicitly add the transaction

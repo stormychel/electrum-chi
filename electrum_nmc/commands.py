@@ -681,9 +681,10 @@ class Commands:
         new_rand = new_result["rand"]
         new_tx = new_result["tx"]["hex"]
 
-        status, msg = self.broadcast(new_tx)
-        if not status:
-            raise Exception("Error broadcasting name pre-registration: " + msg)
+        try:
+            self.broadcast(new_tx)
+        except Exception as e:
+            raise Exception("Error broadcasting name pre-registration: " + str(e))
 
         # We add the name_new transaction to the wallet explicitly because
         # otherwise, the wallet will only learn about the name_new once the
@@ -931,9 +932,10 @@ class Commands:
 
             if current_depth >= trigger_depth:
                 tx = queue_item["tx"]
-                status, msg = self.broadcast(tx)
-                if not status:
-                    errors[txid] = msg
+                try:
+                    self.broadcast(tx)
+                except Exception as e:
+                    errors[txid] = str(e)
 
                 to_unqueue.append(txid)
 

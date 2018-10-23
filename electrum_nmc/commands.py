@@ -39,7 +39,7 @@ from .util import bfh, bh2u, format_satoshis, json_decode, print_error, json_enc
 from . import bitcoin
 from .bitcoin import is_address,  hash_160, COIN, TYPE_ADDRESS
 from .i18n import _
-from .names import build_name_new, name_expires_in, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE
+from .names import build_name_new, name_expires_in, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE, validate_value_length
 from .transaction import Transaction, multisig_script, TxOutput
 from .paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
 from .synchronizer import Notifier
@@ -674,6 +674,11 @@ class Commands:
     @command('wpn')
     def name_autoregister(self, identifier, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, rbf=None, password=None, locktime=None, allow_existing=False):
         """Creates a name_new transaction, broadcasts it, creates a corresponding name_firstupdate transaction, and queues it. """
+
+        # Validate the value before we try to pre-register the name.  That way,
+        # if the value is invalid, we'll be able to cancel the registration
+        # without losing money in fees.
+        validate_value_length(value)
 
         # TODO: Don't hardcode the 0.005 name_firstupdate fee
         new_result = self.name_new(identifier, amount=amount+0.005, fee=fee, from_addr=from_addr, change_addr=change_addr, nocheck=nocheck, rbf=rbf, password=password, locktime=locktime, allow_existing=allow_existing)

@@ -28,12 +28,15 @@ from collections import defaultdict
 
 from . import bitcoin
 from .bitcoin import COINBASE_MATURITY, TYPE_ADDRESS, TYPE_PUBKEY
-from .util import PrintError, profiler, bfh, VerifiedTxInfo, TxMinedStatus, aiosafe, SilentTaskGroup
+from .util import PrintError, profiler, bfh, VerifiedTxInfo, TxMinedStatus
 from .transaction import Transaction, TxOutput
 from .synchronizer import Synchronizer
 from .verifier import SPV
 from .blockchain import hash_header
 from .i18n import _
+from .storage import WalletStorage
+from .network import Network
+
 
 TX_HEIGHT_LOCAL = -2
 TX_HEIGHT_UNCONF_PARENT = -1
@@ -53,14 +56,12 @@ class AddressSynchronizer(PrintError):
     inherited by wallet
     """
 
-    def __init__(self, storage):
+    def __init__(self, storage: WalletStorage):
         self.storage = storage
-        self.network = None
-        # verifier (SPV) and synchronizer are started in start_threads
-        self.synchronizer = None
-        self.verifier = None
-        self.sync_restart_lock = asyncio.Lock()
-        self.group = None
+        self.network = None  # type: Network
+        # verifier (SPV) and synchronizer are started in start_network
+        self.synchronizer = None  # type: Synchronizer
+        self.verifier = None  # type: SPV
         # locks: if you need to take multiple ones, acquire them in the order they are defined here!
         self.lock = threading.RLock()
         self.transaction_lock = threading.RLock()
@@ -143,45 +144,20 @@ class AddressSynchronizer(PrintError):
                 # add it in case it was previously unconfirmed
                 self.add_unverified_tx(tx_hash, tx_height)
 
-    @aiosafe
-    async def on_default_server_changed(self, event):
-        async with self.sync_restart_lock:
-            self.stop_threads(write_to_disk=False)
-            await self._start_threads()
-
     def start_network(self, network):
         self.network = network
         if self.network is not None:
-            self.network.register_callback(self.on_default_server_changed, ['default_server_changed'])
-            asyncio.run_coroutine_threadsafe(self._start_threads(), network.asyncio_loop)
-
-    async def _start_threads(self):
-        interface = self.network.interface
-        if interface is None:
-            return  # we should get called again soon
-
-        self.verifier = SPV(self.network, self)
-        self.synchronizer = synchronizer = Synchronizer(self)
-        assert self.group is None, 'group already exists'
-        self.group = SilentTaskGroup()
-
-        async def job():
-            async with self.group as group:
-                await group.spawn(self.verifier.main(group))
-                await group.spawn(self.synchronizer.send_subscriptions(group))
-                await group.spawn(self.synchronizer.handle_status(group))
-                await group.spawn(self.synchronizer.main())
-            # we are being cancelled now
-            interface.session.unsubscribe(synchronizer.status_queue)
-        await interface.group.spawn(job)
+            self.synchronizer = Synchronizer(self)
+            self.verifier = SPV(self.network, self)
 
     def stop_threads(self, write_to_disk=True):
         if self.network:
-            self.synchronizer = None
-            self.verifier = None
-            if self.group:
-                asyncio.run_coroutine_threadsafe(self.group.cancel_remaining(), self.network.asyncio_loop)
-                self.group = None
+            if self.synchronizer:
+                asyncio.run_coroutine_threadsafe(self.synchronizer.stop(), self.network.asyncio_loop)
+                self.synchronizer = None
+            if self.verifier:
+                asyncio.run_coroutine_threadsafe(self.verifier.stop(), self.network.asyncio_loop)
+                self.verifier = None
             self.storage.put('stored_height', self.get_local_height())
         if write_to_disk:
             self.save_transactions()
@@ -808,7 +784,7 @@ class AddressSynchronizer(PrintError):
         return c, u, x
 
     @with_local_height_cached
-    def get_utxos(self, domain=None, excluded=None, mature=False, confirmed_only=False, include_names=True, only_uno_txids=None, only_uno_identifiers=None):
+    def get_utxos(self, domain=None, excluded=None, mature=False, confirmed_only=False, nonlocal_only=False, include_names=True, only_uno_txids=None, only_uno_identifiers=None):
         coins = []
         if domain is None:
             domain = self.get_addresses()
@@ -819,6 +795,8 @@ class AddressSynchronizer(PrintError):
             utxos = self.get_addr_utxo(addr)
             for x in utxos.values():
                 if confirmed_only and x['height'] <= 0:
+                    continue
+                if nonlocal_only and x['height'] == TX_HEIGHT_LOCAL:
                     continue
                 if mature and x['coinbase'] and x['height'] + COINBASE_MATURITY > self.get_local_height():
                     continue
@@ -875,3 +853,6 @@ class AddressSynchronizer(PrintError):
     def is_empty(self, address):
         c, u, x = self.get_addr_balance(address)
         return c+u+x == 0
+
+    def synchronize(self):
+        pass

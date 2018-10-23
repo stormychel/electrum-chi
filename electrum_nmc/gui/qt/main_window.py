@@ -57,7 +57,11 @@ from electrum_nmc.util import (format_time, format_satoshis, format_fee_satoshis
                            UnknownBaseUnit, DECIMAL_POINT_DEFAULT)
 from electrum_nmc.transaction import Transaction, TxOutput
 from electrum_nmc.address_synchronizer import AddTransactionException
-from electrum_nmc.wallet import Multisig_Wallet, CannotBumpFee
+from electrum_nmc.wallet import Multisig_Wallet, CannotBumpFee, Abstract_Wallet
+from electrum_nmc.version import ELECTRUM_VERSION
+from electrum_nmc.network import Network
+from electrum_nmc.exchange_rate import FxThread
+from electrum_nmc.simple_config import SimpleConfig
 
 from .exception_window import Exception_Hook
 from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, FeerateEdit
@@ -103,17 +107,17 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
     computing_privkeys_signal = pyqtSignal()
     show_privkeys_signal = pyqtSignal()
 
-    def __init__(self, gui_object, wallet):
+    def __init__(self, gui_object, wallet: Abstract_Wallet):
         QMainWindow.__init__(self)
 
         self.gui_object = gui_object
-        self.config = config = gui_object.config
+        self.config = config = gui_object.config  # type: SimpleConfig
 
         self.setup_exception_hook()
 
-        self.network = gui_object.daemon.network
+        self.network = gui_object.daemon.network  # type: Network
         self.wallet = wallet
-        self.fx = gui_object.daemon.fx
+        self.fx = gui_object.daemon.fx  # type: FxThread
         self.invoices = wallet.invoices
         self.contacts = wallet.contacts
         self.tray = gui_object.tray
@@ -185,6 +189,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         QShortcut(QKeySequence("Ctrl+W"), self, self.close)
         QShortcut(QKeySequence("Ctrl+Q"), self, self.close)
         QShortcut(QKeySequence("Ctrl+R"), self, self.update_wallet)
+        QShortcut(QKeySequence("F5"), self, self.update_wallet)
         QShortcut(QKeySequence("Ctrl+PgUp"), self, lambda: wrtabs.setCurrentIndex((wrtabs.currentIndex() - 1)%wrtabs.count()))
         QShortcut(QKeySequence("Ctrl+PgDown"), self, lambda: wrtabs.setCurrentIndex((wrtabs.currentIndex() + 1)%wrtabs.count()))
 
@@ -408,7 +413,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
 
     def watching_only_changed(self):
         name = "Electrum-NMC Testnet" if constants.net.TESTNET else "Electrum-NMC"
-        title = '%s %s  -  %s' % (name, self.wallet.electrum_version,
+        title = '%s %s  -  %s' % (name, ELECTRUM_VERSION,
                                         self.wallet.basename())
         extra = [self.wallet.storage.get('wallet_type', '?')]
         if self.wallet.is_watching_only():
@@ -593,7 +598,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
 
     def show_about(self):
         QMessageBox.about(self, "Electrum-NMC",
-                          (_("Version")+" %s" % self.wallet.electrum_version + "\n\n" +
+                          (_("Version")+" %s" % ELECTRUM_VERSION + "\n\n" +
                            _("Electrum-NMC's focus is speed, with low resource usage and simplifying Namecoin.") + " " +
                            _("You do not need to perform regular backups, because your wallet can be "
                               "recovered from a secret phrase that you can memorize or write on paper.") + " " +
@@ -696,7 +701,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         return text
 
     def format_fee_rate(self, fee_rate):
-        return format_fee_satoshis(fee_rate/1000, self.num_zeros) + ' swartz/byte'
+        return format_fee_satoshis(fee_rate/1000, num_zeros=self.num_zeros) + ' swartz/byte'
 
     def get_decimal_point(self):
         return self.decimal_point
@@ -752,6 +757,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         elif self.network.is_connected():
             server_height = self.network.get_server_height()
             server_lag = self.network.get_local_height() - server_height
+            fork_str = "_fork" if len(self.network.get_blockchains())>1 else ""
             # Server height can be 0 after switching to a new server
             # until we get a headers subscription request response.
             # Display the synchronizing message in that case.
@@ -760,7 +766,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                 icon = QIcon(":icons/status_waiting.png")
             elif server_lag > 1:
                 text = _("Server is lagging ({} blocks)").format(server_lag)
-                icon = QIcon(":icons/status_lagging.png")
+                icon = QIcon(":icons/status_lagging%s.png"%fork_str)
             else:
                 c, u, x = self.wallet.get_balance()
                 text =  _("Balance" ) + ": %s "%(self.format_amount_and_units(c))
@@ -774,9 +780,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                     text += self.fx.get_fiat_status_text(c + u + x,
                         self.base_unit(), self.get_decimal_point()) or ''
                 if not self.network.proxy:
-                    icon = QIcon(":icons/status_connected.png")
+                    icon = QIcon(":icons/status_connected%s.png"%fork_str)
                 else:
-                    icon = QIcon(":icons/status_connected_proxy.png")
+                    icon = QIcon(":icons/status_connected_proxy%s.png"%fork_str)
         else:
             if self.network.proxy:
                 text = "{} ({})".format(_("Not connected"), _("proxy enabled"))
@@ -1553,8 +1559,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             tx = self.wallet.make_unsigned_transaction(
                 coins, outputs, self.config, fixed_fee=fee_estimator,
                 is_sweep=is_sweep)
-        except NotEnoughFunds:
-            self.show_message(_("Insufficient funds"))
+        except (NotEnoughFunds, NoDynamicFeeEstimates) as e:
+            self.show_message(str(e))
             return
         except BaseException as e:
             traceback.print_exc(file=sys.stdout)
@@ -1649,8 +1655,12 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             if pr and pr.has_expired():
                 self.payment_request = None
                 return False, _("Payment request has expired")
-            status, msg = self.network.run_from_another_thread(
-                self.network.broadcast_transaction(tx))
+            try:
+                self.network.run_from_another_thread(self.network.broadcast_transaction(tx))
+            except Exception as e:
+                status, msg = False, repr(e)
+            else:
+                status, msg = True, tx.txid()
             if pr and status is True:
                 self.invoices.set_paid(pr, tx.txid())
                 self.invoices.save()
@@ -2084,6 +2094,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         mpk_list = self.wallet.get_master_public_keys()
         vbox = QVBoxLayout()
         wallet_type = self.wallet.storage.get('wallet_type', '')
+        if self.wallet.is_watching_only():
+            wallet_type += ' [{}]'.format(_('watching-only'))
+        seed_available = _('True') if self.wallet.has_seed() else _('False')
+        keystore_types = [k.get_type_text() for k in self.wallet.get_keystores()]
         grid = QGridLayout()
         basename = os.path.basename(self.wallet.storage.path)
         grid.addWidget(QLabel(_("Wallet name")+ ':'), 0, 0)
@@ -2092,6 +2106,12 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         grid.addWidget(QLabel(wallet_type), 1, 1)
         grid.addWidget(QLabel(_("Script type")+ ':'), 2, 0)
         grid.addWidget(QLabel(self.wallet.txin_type), 2, 1)
+        grid.addWidget(QLabel(_("Seed available") + ':'), 3, 0)
+        grid.addWidget(QLabel(str(seed_available)), 3, 1)
+        if len(keystore_types) <= 1:
+            grid.addWidget(QLabel(_("Keystore type") + ':'), 4, 0)
+            ks_type = str(keystore_types[0]) if keystore_types else _('No keystore')
+            grid.addWidget(QLabel(ks_type), 4, 1)
         vbox.addLayout(grid)
         if self.wallet.is_deterministic():
             mpk_text = ShowQRTextEdit()
@@ -2103,7 +2123,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             if len(mpk_list) > 1:
                 def label(key):
                     if isinstance(self.wallet, Multisig_Wallet):
-                        return _("cosigner") + ' ' + str(key+1)
+                        return _("cosigner") + f' {key+1} ( keystore: {keystore_types[key]} )'
                     return ''
                 labels = [label(i) for i in range(len(mpk_list))]
                 on_click = lambda clayout: show_mpk(clayout.selected_index())

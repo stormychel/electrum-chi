@@ -23,7 +23,7 @@
 import binascii
 import os, sys, re, json
 from collections import defaultdict
-from typing import NamedTuple, Union
+from typing import NamedTuple, Union, TYPE_CHECKING
 from datetime import datetime
 import decimal
 from decimal import Decimal
@@ -45,6 +45,10 @@ from aiohttp_socks import SocksConnector, SocksVer
 from aiorpcx import TaskGroup
 
 from .i18n import _
+
+if TYPE_CHECKING:
+    from .network import Network
+    from .interface import Interface
 
 
 def inv_dict(d):
@@ -77,7 +81,9 @@ def base_unit_name_to_decimal_point(unit_name: str) -> int:
         raise UnknownBaseUnit(unit_name) from None
 
 
-class NotEnoughFunds(Exception): pass
+class NotEnoughFunds(Exception):
+    def __str__(self):
+        return _("Insufficient funds")
 
 
 class NoDynamicFeeEstimates(Exception):
@@ -512,7 +518,7 @@ def format_satoshis(x, num_zeros=0, decimal_point=8, precision=None, is_diff=Fal
     if precision is None:
         precision = decimal_point
     # format string
-    decimal_format = ".0" + str(precision) if precision > 0 else ""
+    decimal_format = "." + str(precision) if precision > 0 else ""
     if is_diff:
         decimal_format = '+' + decimal_format
     # initial result
@@ -538,8 +544,11 @@ FEERATE_PRECISION = 1  # num fractional decimal places for sat/byte fee rates
 _feerate_quanta = Decimal(10) ** (-FEERATE_PRECISION)
 
 
-def format_fee_satoshis(fee, num_zeros=0):
-    return format_satoshis(fee, num_zeros, 0, precision=FEERATE_PRECISION)
+def format_fee_satoshis(fee, *, num_zeros=0, precision=None):
+    if precision is None:
+        precision = FEERATE_PRECISION
+    num_zeros = min(num_zeros, FEERATE_PRECISION)  # no more zeroes than available prec
+    return format_satoshis(fee, num_zeros=num_zeros, decimal_point=0, precision=precision)
 
 
 def quantize_feerate(fee):
@@ -822,29 +831,36 @@ def make_dir(path, allow_symlink=True):
         os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
 
 
-class AIOSafeSilentException(Exception): pass
-
-
-def aiosafe(f):
-    # save exception in object.
-    # f must be a method of a PrintError instance.
-    # aiosafe calls should not be nested
-    async def f2(*args, **kwargs):
-        self = args[0]
+def log_exceptions(func):
+    """Decorator to log AND re-raise exceptions."""
+    assert asyncio.iscoroutinefunction(func), 'func needs to be a coroutine'
+    async def wrapper(*args, **kwargs):
+        self = args[0] if len(args) > 0 else None
         try:
-            return await f(*args, **kwargs)
-        except AIOSafeSilentException as e:
-            self.exception = e
+            return await func(*args, **kwargs)
         except asyncio.CancelledError as e:
-            self.exception = e
+            raise
         except BaseException as e:
-            self.exception = e
-            self.print_error("Exception in", f.__name__, ":", e.__class__.__name__, str(e))
+            print_ = self.print_error if hasattr(self, 'print_error') else print_error
+            print_("Exception in", func.__name__, ":", e.__class__.__name__, repr(e))
             try:
                 traceback.print_exc(file=sys.stderr)
             except BaseException as e2:
-                self.print_error("aiosafe:traceback.print_exc raised: {}... original exc: {}".format(e2, e))
-    return f2
+                print_error("traceback.print_exc raised: {}...".format(e2))
+            raise
+    return wrapper
+
+
+def ignore_exceptions(func):
+    """Decorator to silently swallow all exceptions."""
+    assert asyncio.iscoroutinefunction(func), 'func needs to be a coroutine'
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except BaseException as e:
+            pass
+    return wrapper
+
 
 TxMinedStatus = NamedTuple("TxMinedStatus", [("height", int),
                                              ("conf", int),
@@ -855,7 +871,12 @@ VerifiedTxInfo = NamedTuple("VerifiedTxInfo", [("height", int),
                                                ("txpos", int),
                                                ("header_hash", str)])
 
-def make_aiohttp_session(proxy):
+
+def make_aiohttp_session(proxy: dict, headers=None, timeout=None):
+    if headers is None:
+        headers = {'User-Agent': 'Electrum'}
+    if timeout is None:
+        timeout = aiohttp.ClientTimeout(total=10)
     if proxy:
         connector = SocksConnector(
             socks_ver=SocksVer.SOCKS5 if proxy['mode'] == 'socks5' else SocksVer.SOCKS4,
@@ -865,9 +886,9 @@ def make_aiohttp_session(proxy):
             password=proxy.get('password', None),
             rdns=True
         )
-        return aiohttp.ClientSession(headers={'User-Agent' : 'Electrum'}, timeout=aiohttp.ClientTimeout(total=10), connector=connector)
+        return aiohttp.ClientSession(headers=headers, timeout=timeout, connector=connector)
     else:
-        return aiohttp.ClientSession(headers={'User-Agent' : 'Electrum'}, timeout=aiohttp.ClientTimeout(total=10))
+        return aiohttp.ClientSession(headers=headers, timeout=timeout)
 
 
 class SilentTaskGroup(TaskGroup):
@@ -877,3 +898,54 @@ class SilentTaskGroup(TaskGroup):
         if self._closed:
             raise asyncio.CancelledError()
         return super().spawn(*args, **kwargs)
+
+
+class NetworkJobOnDefaultServer(PrintError):
+    """An abstract base class for a job that runs on the main network
+    interface. Every time the main interface changes, the job is
+    restarted, and some of its internals are reset.
+    """
+    def __init__(self, network: 'Network'):
+        asyncio.set_event_loop(network.asyncio_loop)
+        self.network = network
+        self.interface = None  # type: Interface
+        self._restart_lock = asyncio.Lock()
+        self._reset()
+        asyncio.run_coroutine_threadsafe(self._restart(), network.asyncio_loop)
+        network.register_callback(self._restart, ['default_server_changed'])
+
+    def _reset(self):
+        """Initialise fields. Called every time the underlying
+        server connection changes.
+        """
+        self.group = SilentTaskGroup()
+
+    async def _start(self, interface: 'Interface'):
+        self.interface = interface
+        await interface.group.spawn(self._start_tasks)
+
+    async def _start_tasks(self):
+        """Start tasks in self.group. Called every time the underlying
+        server connection changes.
+        """
+        raise NotImplementedError()  # implemented by subclasses
+
+    async def stop(self):
+        await self.group.cancel_remaining()
+
+    @log_exceptions
+    async def _restart(self, *args):
+        interface = self.network.interface
+        if interface is None:
+            return  # we should get called again soon
+
+        async with self._restart_lock:
+            await self.stop()
+            self._reset()
+            await self._start(interface)
+
+    @property
+    def session(self):
+        s = self.interface.session
+        assert s is not None
+        return s

@@ -560,7 +560,7 @@ class Abstract_Wallet(AddressSynchronizer):
                 i_max = i
 
         # Avoid index-out-of-range with inputs[0] below
-        if not inputs:
+        if not inputs and not name_inputs:
             raise NotEnoughFunds()
 
         if fixed_fee is None and config.fee_per_kb() is None:

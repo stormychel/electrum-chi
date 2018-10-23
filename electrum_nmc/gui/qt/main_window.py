@@ -47,6 +47,7 @@ from electrum_nmc import (keystore, simple_config, ecc, constants, util, bitcoin
 from electrum_nmc.bitcoin import COIN, is_address, TYPE_ADDRESS
 from electrum_nmc.plugin import run_hook
 from electrum_nmc.i18n import _
+from electrum_nmc.names import format_name_identifier
 from electrum_nmc.util import (format_time, format_satoshis, format_fee_satoshis,
                            format_satoshis_plain, NotEnoughFunds, PrintError,
                            UserCancelled, NoDynamicFeeEstimates, profiler,
@@ -60,6 +61,7 @@ from electrum_nmc.wallet import Multisig_Wallet, CannotBumpFee
 
 from .exception_window import Exception_Hook
 from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, FeerateEdit
+from .configure_name_dialog import show_configure_name
 from .qrcodewidget import QRCodeWidget, QRDialog
 from .qrtextedit import ShowQRTextEdit, ScanQRTextEdit
 from .transaction_dialog import show_transaction
@@ -149,10 +151,12 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.utxo_tab = self.create_utxo_tab()
         self.console_tab = self.create_console_tab()
         self.contacts_tab = self.create_contacts_tab()
+        self.buy_names_tab = self.create_buy_names_tab()
         self.names_tab = self.create_names_tab()
         tabs.addTab(self.create_history_tab(), QIcon(":icons/tab_history.png"), _('History'))
         tabs.addTab(self.send_tab, QIcon(":icons/tab_send.png"), _('Send'))
         tabs.addTab(self.receive_tab, QIcon(":icons/tab_receive.png"), _('Receive'))
+        tabs.addTab(self.buy_names_tab, QIcon(":icons/namecoin-logo.png"), _('Buy Names'))
         tabs.addTab(self.names_tab, QIcon(":icons/namecoin-logo.png"), _('Manage Names'))
 
         def add_optional_tab(tabs, tab, icon, description, name):
@@ -313,6 +317,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         elif event == 'blockchain_updated':
             # to update number of confirmations in history
             self.need_update.set()
+            # Also handle in GUI thread
+            self.network_signal.emit(event, args)
         elif event == 'new_transaction':
             wallet, tx = args
             if wallet == self.wallet:
@@ -343,6 +349,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                 self.do_update_fee()
             # todo: update only unconfirmed tx
             self.history_list.update()
+        elif event == 'blockchain_updated':
+            self.update_queued_transactions()
         else:
             self.print_error("unexpected network_qt signal:", event, args)
 
@@ -3252,6 +3260,107 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             win.msg_box(QPixmap(":icons/offline_tx.png"), None, _('Success'), msg)
             return True
 
+    def create_buy_names_tab(self):
+        self.buy_names_vbox = vbox = QVBoxLayout()
+
+        self.buy_names_new_name_label = QLabel(_("New name:"))
+        vbox.addWidget(self.buy_names_new_name_label)
+
+        # TODO: allow hex names
+        self.buy_names_new_name_lineedit = QLineEdit()
+        self.buy_names_new_name_lineedit.setToolTip(_("Enter a name to be registered via Namecoin."))
+        self.buy_names_new_name_lineedit.textChanged.connect(self.update_buy_names_preview)
+        vbox.addWidget(self.buy_names_new_name_lineedit)
+
+        self.buy_names_format_explain_label = QLabel(_("<html><head/><body><p>Use <span style='font-weight:600;'>d/</span> prefix for domain names.  E.g. <span style='font-weight:600;'>d/mysite</span> will register <span style='font-weight:600;'>mysite.bit</span></p><p>See the <a href='https://github.com/namecoin/proposals/blob/master/ifa-0001.md'><span style='text-decoration:underline; color:#0000ff;'>Namecoin Domain Names specification</span></a> for reference.  Other prefixes can be used for miscellaneous purposes (not domain names).</p></body></html>"))
+        self.buy_names_format_explain_label.setTextFormat(Qt.RichText)
+        self.buy_names_format_explain_label.setWordWrap(True)
+        self.buy_names_format_explain_label.setOpenExternalLinks(True)
+        vbox.addWidget(self.buy_names_format_explain_label)
+
+        self.buy_names_preview_label = QLabel(_("Name to register: "))
+        vbox.addWidget(self.buy_names_preview_label)
+
+        self.buy_names_check_name_availability_button = QPushButton(_("Check name availability..."))
+        self.buy_names_check_name_availability_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.buy_names_check_name_availability_button.setMinimumSize(150, 0)
+        self.buy_names_check_name_availability_button.clicked.connect(self.check_name_availability)
+        vbox.addWidget(self.buy_names_check_name_availability_button)
+
+        self.buy_names_already_exists_vbox = QVBoxLayout()
+        
+        self.buy_names_already_exists_label = QLabel("")
+        self.buy_names_already_exists_vbox.addWidget(self.buy_names_already_exists_label)
+
+        self.buy_names_already_exists_widget = QWidget()
+        self.buy_names_already_exists_widget.setLayout(self.buy_names_already_exists_vbox)
+        self.buy_names_already_exists_widget.hide()
+
+        self.buy_names_available_vbox = QVBoxLayout()
+
+        self.buy_names_available_label = QLabel("")
+        self.buy_names_available_vbox.addWidget(self.buy_names_available_label)
+
+        self.buy_names_available_register_button = QPushButton(_("Register name..."))
+        self.buy_names_available_register_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.buy_names_available_register_button.setMinimumSize(150, 0)
+        self.buy_names_available_register_button.clicked.connect(self.register_new_name)
+        self.buy_names_available_vbox.addWidget(self.buy_names_available_register_button)
+
+        self.buy_names_available_widget = QWidget()
+        self.buy_names_available_widget.setLayout(self.buy_names_available_vbox)
+        self.buy_names_available_widget.hide()
+
+        vbox.addWidget(self.buy_names_already_exists_widget)
+        vbox.addWidget(self.buy_names_available_widget)
+        vbox.addStretch()
+
+        w = QWidget()
+        w.setLayout(vbox)
+        return w
+
+    def update_buy_names_preview(self):
+        # TODO: handle non-ASCII encodings
+        identifier = self.buy_names_new_name_lineedit.text().encode('ascii')
+        identifier_formatted = format_name_identifier(identifier)
+        self.buy_names_preview_label.setText(_("Name to register: ") + identifier_formatted)
+
+        self.buy_names_already_exists_widget.hide()
+        self.buy_names_available_widget.hide()
+
+    def check_name_availability(self):
+        # TODO: handle non-ASCII encodings
+        identifier_ascii = self.buy_names_new_name_lineedit.text()
+        identifier = identifier_ascii.encode('ascii')
+
+        identifier_formatted = format_name_identifier(identifier)
+
+        name_show = self.console.namespace.get('name_show')
+
+        name_exists = True
+        try:
+            name_show(identifier_ascii)
+        except commands.NameNotFoundError:
+            name_exists = False
+
+        if name_exists:
+            self.buy_names_available_widget.hide()
+            self.buy_names_already_exists_label.setText(identifier_formatted + _(" is already registered, sorry!"))
+            self.buy_names_already_exists_widget.show()
+        else:
+            self.buy_names_already_exists_widget.hide()
+            self.buy_names_available_label.setText(identifier_formatted + _(" is available to register!"))
+            self.buy_names_available_widget.show()
+
+    def register_new_name(self):
+        # TODO: handle non-ASCII encodings
+        identifier_ascii = self.buy_names_new_name_lineedit.text()
+        identifier = identifier_ascii.encode('ascii')
+
+        initial_value = b''
+
+        show_configure_name(identifier, initial_value, self, True)
+
     def create_names_tab(self):
         self.names_vbox = vbox = QVBoxLayout()
 
@@ -3287,3 +3396,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         w = QWidget()
         w.setLayout(vbox)
         return w
+
+    def update_queued_transactions(self):
+        updatequeuedtransactions = self.console.namespace.get('updatequeuedtransactions')
+        status, msg = updatequeuedtransactions()
+        if not status:
+            self.show_error(_("Error broadcasting the following queued transactions (you'll need to manually broadcast them): ") + str(msg))

@@ -474,7 +474,17 @@ class Commands:
     def _mktx(self, outputs, fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime=None, name_input_txids=[], name_input_identifiers=[], name_outputs=[]):
         self.nocheck = nocheck
         change_addr = self._resolver(change_addr)
+
+        # The domain map will (for unknown reasons) delete its contents when
+        # read.  Since we want to use it multiple times for Namecoin, the most
+        # obvious workaround is to simply make copies of it before we cast it
+        # into a map.
+        name_txid_domain = copy.deepcopy(domain)
+        name_identifier_domain = copy.deepcopy(domain)
+
         domain = None if domain is None else map(self._resolver, domain)
+        name_txid_domain = None if name_txid_domain is None else map(self._resolver, name_txid_domain)
+        name_identifier_domain = None if name_identifier_domain is None else map(self._resolver, name_identifier_domain)
         final_outputs = []
         for address, amount, name_op in name_outputs:
             if address is None:
@@ -489,8 +499,8 @@ class Commands:
             final_outputs.append(TxOutput(TYPE_ADDRESS, address, amount))
 
         coins = self.wallet.get_spendable_coins(domain, self.config)
-        name_coins = self.wallet.get_spendable_coins(domain, self.config, include_names=True, only_uno_txids=name_input_txids)
-        name_coins += self.wallet.get_spendable_coins(domain, self.config, include_names=True, only_uno_identifiers=name_input_identifiers)
+        name_coins = self.wallet.get_spendable_coins(name_txid_domain, self.config, include_names=True, only_uno_txids=name_input_txids)
+        name_coins += self.wallet.get_spendable_coins(name_identifier_domain, self.config, include_names=True, only_uno_identifiers=name_input_identifiers)
         tx = self.wallet.make_unsigned_transaction(coins, final_outputs, self.config, fee, change_addr, name_inputs=name_coins)
         if locktime != None: 
             tx.locktime = locktime
@@ -595,6 +605,39 @@ class Commands:
 
         tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_identifiers=[identifier_bytes], name_outputs=[(destination, amount, name_op)])
         return tx.as_dict()
+
+    @command('wpn')
+    def name_autoregister(self, identifier, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, rbf=None, password=None, locktime=None, allow_existing=False):
+        """Creates a name_new transaction, broadcasts it, creates a corresponding name_firstupdate transaction, and queues it. """
+
+        # TODO: Don't hardcode the 0.005 name_firstupdate fee
+        new_result = self.name_new(identifier, amount=amount+0.005, fee=fee, from_addr=from_addr, change_addr=change_addr, nocheck=nocheck, rbf=rbf, password=password, locktime=locktime, allow_existing=allow_existing)
+        new_txid = new_result["txid"]
+        new_rand = new_result["rand"]
+        new_tx = new_result["tx"]["hex"]
+
+        status, msg = self.broadcast(new_tx)
+        if not status:
+            raise Exception("Error broadcasting name pre-registration: " + msg)
+
+        # We add the name_new transaction to the wallet explicitly because
+        # otherwise, the wallet will only learn about the name_new once the
+        # ElectrumX server sends us a copy of the transaction, which is several
+        # seconds later, which will cause the wallet to fail to spend the
+        # name_new when we immediately create the name_firstupdate.
+        status = self.addtransaction(new_tx)
+        if not status:
+            raise Exception("Error adding name pre-registration to wallet")
+
+        for o in Transaction(new_tx).outputs():
+            if o.name_op is not None:
+                new_addr = o.address
+                break
+
+        firstupdate_result = self.name_firstupdate(identifier, new_rand, new_txid, value, destination=destination, amount=amount, fee=fee, from_addr=new_addr, change_addr=change_addr, nocheck=nocheck, rbf=rbf, password=password, locktime=locktime, allow_early=True)
+        firstupdate_tx = firstupdate_result["hex"]
+
+        self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid)
 
     @command('w')
     def history(self, year=None, show_addresses=False, show_fiat=False):
@@ -764,6 +807,77 @@ class Commands:
             return False
         self.wallet.save_transactions()
         return tx.txid()
+
+    @command('w')
+    def queuetransaction(self, tx, trigger_depth, trigger_txid = None, trigger_name = None):
+        """ Queue a transaction for later broadcast """
+        if trigger_txid is None and trigger_name is None:
+            raise Exception("You must specify exactly one of trigger_txid or trigger_name.")
+        if trigger_txid is not None and trigger_name is not None:
+            raise Exception("You must specify exactly one of trigger_txid or trigger_name.")
+
+        txid = Transaction(tx).txid()
+        # TODO: handle non-ASCII trigger_name
+        send_when = {
+            "txid": trigger_txid,
+            "name": trigger_name,
+            "name_encoding": "ascii",
+            "confirmations": trigger_depth,
+        }
+        queue_item = {
+            "tx": tx,
+            "sendWhen": send_when
+        }
+        if not self.wallet.queue_transaction(txid, queue_item):
+            return False
+        self.wallet.save_transactions()
+        return txid
+
+    @command('wn')
+    def updatequeuedtransactions(self):
+        errors = {}
+
+        to_unqueue = []
+
+        for txid in self.wallet.queued_transactions:
+            queue_item = self.wallet.queued_transactions[txid]
+            send_when = queue_item["sendWhen"]
+
+            trigger_txid = send_when["txid"]
+            trigger_name = send_when["name"]
+            trigger_depth = send_when["confirmations"]
+
+            chain_height = self.network.blockchain().height()
+
+            current_depth = 0
+
+            if trigger_name is not None:
+                # TODO: handle non-ASCII trigger_name
+                try:
+                    current_height = self.name_show(trigger_name)["height"]
+                    current_depth = chain_height - current_height + 1
+                except NameNotFoundError:
+                    current_depth = 36000
+                except Exception:
+                    continue
+
+            if trigger_txid is not None:
+                current_depth = self.wallet.get_tx_height(trigger_txid).conf
+
+            if current_depth >= trigger_depth:
+                tx = queue_item["tx"]
+                status, msg = self.broadcast(tx)
+                if not status:
+                    errors[txid] = msg
+
+                to_unqueue.append(txid)
+
+        for txid in to_unqueue:
+            self.wallet.unqueue_transaction(txid)
+        self.wallet.save_transactions()
+
+        success = (errors == {})
+        return success, errors
 
     @command('wp')
     def signrequest(self, address, password=None):
@@ -967,6 +1081,8 @@ command_options = {
     'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
     'identifier':  (None, "The requested name identifier"),
     'value':       (None, "The value to assign to the name"),
+    'trigger_txid':(None, "Broadcast the transaction when this txid reaches the specified number of confirmations"),
+    'trigger_name':(None, "Broadcast the transaction when this name reaches the specified number of confirmations"),
 }
 
 

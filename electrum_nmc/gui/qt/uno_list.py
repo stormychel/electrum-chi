@@ -154,5 +154,5 @@ class UNOList(UTXOList):
 
         identifier, initial_value = selected[0]
 
-        show_configure_name(identifier, initial_value, self.parent)
+        show_configure_name(identifier, initial_value, self.parent, False)
 

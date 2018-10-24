@@ -62,10 +62,12 @@ def name_op_to_script(name_op):
     if name_op is None:
         script = ''
     elif name_op["op"] == OP_NAME_NEW:
+        validate_new_length(name_op)
         script = '51'                                 # OP_NAME_NEW
         script += push_script(bh2u(name_op["hash"]))
         script += '6d'                                # OP_2DROP
     elif name_op["op"] == OP_NAME_FIRSTUPDATE:
+        validate_firstupdate_length(name_op)
         script = '52'                                 # OP_NAME_FIRSTUPDATE
         script += push_script(bh2u(name_op["name"]))
         script += push_script(bh2u(name_op["rand"]))
@@ -73,6 +75,7 @@ def name_op_to_script(name_op):
         script += '6d'                                # OP_2DROP
         script += '6d'                                # OP_2DROP
     elif name_op["op"] == OP_NAME_UPDATE:
+        validate_update_length(name_op)
         script = '53'                                 # OP_NAME_UPDATE
         script += push_script(bh2u(name_op["name"]))
         script += push_script(bh2u(name_op["value"]))
@@ -82,7 +85,51 @@ def name_op_to_script(name_op):
         raise BitcoinException('unknown name op: {}'.format(name_op))
     return script
 
+def validate_new_length(name_op):
+    validate_hash_length(name_op["hash"])
+
+def validate_firstupdate_length(name_op):
+    validate_rand_length(name_op["rand"])
+    validate_anyupdate_length(name_op)
+
+def validate_update_length(name_op):
+    validate_anyupdate_length(name_op)
+
+def validate_anyupdate_length(name_op):
+    validate_identifier_length(name_op["name"])
+    validate_value_length(name_op["value"])
+
+def validate_hash_length(commitment):
+    hash_length_requirement = 20
+
+    hash_length = len(commitment)
+    if hash_length != hash_length_requirement:
+        raise BitcoinException('hash length {} is not equal to requirement of {}'.format(hash_length, hash_length_requirement))
+
+def validate_rand_length(rand):
+    rand_length_requirement = 20
+
+    rand_length = len(rand)
+    if rand_length != rand_length_requirement:
+        raise BitcoinException('rand length {} is not equal to requirement of {}'.format(rand_length, rand_length_requirement))
+
+def validate_identifier_length(identifier):
+    identifier_length_limit = 255
+
+    identifier_length = len(identifier)
+    if identifier_length > identifier_length_limit:
+        raise BitcoinException('identifier length {} exceeds limit of {}'.format(identifier_length, identifier_length_limit))
+
+def validate_value_length(value):
+    value_length_limit = 520
+
+    value_length = len(value)
+    if value_length > value_length_limit:
+        raise BitcoinException('value length {} exceeds limit of {}'.format(value_length, value_length_limit))
+
 def build_name_new(identifier, rand = None):
+    validate_identifier_length(identifier)
+
     if rand is None:
         rand = os.urandom(20)
 
@@ -264,7 +311,7 @@ import re
 from .bitcoin import push_script, script_to_scripthash
 from .crypto import hash_160
 from .transaction import MalformedBitcoinScript, match_decoded, opcodes, OPPushDataGeneric, script_GetOp
-from .util import bh2u
+from .util import bh2u, BitcoinException
 
 OP_NAME_NEW = opcodes.OP_1
 OP_NAME_FIRSTUPDATE = opcodes.OP_2

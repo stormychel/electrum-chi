@@ -3358,12 +3358,20 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         name_show = self.console.namespace.get('name_show')
 
         name_exists = True
+        name_valid = True
         try:
             name_show(identifier_ascii)
         except commands.NameNotFoundError:
             name_exists = False
+        except util.BitcoinException:
+            # This happens if the name identifier exceeded the 255-byte limit.
+            name_valid = False
 
-        if name_exists:
+        if not name_valid:
+            self.buy_names_available_widget.hide()
+            self.buy_names_already_exists_label.setText(_("That name is invalid (probably exceeded the 255-byte limit) and therefore cannot be registered."))
+            self.buy_names_already_exists_widget.show()
+        elif name_exists:
             self.buy_names_available_widget.hide()
             self.buy_names_already_exists_label.setText(identifier_formatted + _(" is already registered, sorry!"))
             self.buy_names_already_exists_widget.show()

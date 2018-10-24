@@ -146,8 +146,13 @@ class ConfigureNameDialog(QDialog):
         name_update = self.main_window.console.namespace.get('name_update')
         broadcast = self.main_window.console.namespace.get('broadcast')
 
-        # TODO: support non-ASCII encodings
-        tx = name_update(identifier.decode('ascii'), value.decode('ascii'), recipient_address)['hex']
+        try:
+            # TODO: support non-ASCII encodings
+            tx = name_update(identifier.decode('ascii'), value.decode('ascii'), recipient_address)['hex']
+        except Exception as e:
+            formatted_name = format_name_identifier(identifier)
+            self.main_window.show_error(_("Error creating update for ") + formatted_name + ": " + str(e))
+            return
 
         try:
             broadcast(tx)

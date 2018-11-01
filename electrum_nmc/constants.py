@@ -41,7 +41,12 @@ class AbstractNet:
 
     @classmethod
     def max_checkpoint(cls) -> int:
-        return max(0, len(cls.CHECKPOINTS) * 2016 - 1)
+        # Namecoin: We can't actually fully use the last checkpoint, because
+        # verifying the chunk following the last checkpoint requires having the
+        # chunk for the last checkpoint, because of the timewarp hardfork.  So
+        # we artificially return one fewer checkpoint than is available.
+        #return max(0, len(cls.CHECKPOINTS) * 2016 - 1)
+        return max(0, (len(cls.CHECKPOINTS)-1) * 2016 - 1)
 
 
 class BitcoinMainnet(AbstractNet):

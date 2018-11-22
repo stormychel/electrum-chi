@@ -23,7 +23,7 @@
 import binascii
 import os, sys, re, json
 from collections import defaultdict
-from typing import NamedTuple, Union, TYPE_CHECKING
+from typing import NamedTuple, Union, TYPE_CHECKING, Tuple, Optional, Callable
 from datetime import datetime
 import decimal
 from decimal import Decimal
@@ -49,6 +49,7 @@ from .i18n import _
 if TYPE_CHECKING:
     from .network import Network
     from .interface import Interface
+    from .simple_config import SimpleConfig
 
 
 def inv_dict(d):
@@ -112,20 +113,14 @@ class FileExportFailed(Exception):
         return _("Failed to export to file.") + "\n" + self.message
 
 
-class TimeoutException(Exception):
-    def __init__(self, message=''):
-        self.message = str(message)
-
-    def __str__(self):
-        if not self.message:
-            return _("Operation timed out.")
-        return self.message
-
-
 class WalletFileException(Exception): pass
 
 
 class BitcoinException(Exception): pass
+
+
+class UserFacingException(Exception):
+    """Exception that contains information intended to be shown to the user."""
 
 
 # Throw this exception to unwind the stack like when an error occurs.
@@ -161,7 +156,7 @@ class Fiat(object):
         return 'Fiat(%s)'% self.__str__()
 
     def __str__(self):
-        if self.value.is_nan():
+        if self.value is None or self.value.is_nan():
             return _('No Data')
         else:
             return "{:.2f}".format(self.value) + ' ' + self.ccy
@@ -188,17 +183,23 @@ class PrintError(object):
     verbosity_filter = ''
 
     def diagnostic_name(self):
-        return self.__class__.__name__
+        return ''
+
+    def log_name(self):
+        msg = self.verbosity_filter or self.__class__.__name__
+        d = self.diagnostic_name()
+        if d: msg += "][" + d
+        return "[%s]" % msg
 
     def print_error(self, *msg):
         if self.verbosity_filter in verbosity or verbosity == '*':
-            print_error("[%s]" % self.diagnostic_name(), *msg)
+            print_error(self.log_name(), *msg)
 
     def print_stderr(self, *msg):
-        print_stderr("[%s]" % self.diagnostic_name(), *msg)
+        print_stderr(self.log_name(), *msg)
 
     def print_msg(self, *msg):
-        print_msg("[%s]" % self.diagnostic_name(), *msg)
+        print_msg(self.log_name(), *msg)
 
 class ThreadJob(PrintError):
     """A job that is run periodically from a thread's main loop.  run() is
@@ -287,7 +288,7 @@ class DaemonThread(threading.Thread, PrintError):
         self.print_error("stopped")
 
 
-verbosity = '*'
+verbosity = ''
 def set_verbosity(filters: Union[str, bool]):
     global verbosity
     if type(filters) is bool:  # backwards compat
@@ -443,8 +444,7 @@ def assert_str(*args):
         assert isinstance(x, str)
 
 
-
-def to_string(x, enc):
+def to_string(x, enc) -> str:
     if isinstance(x, (bytes, bytearray)):
         return x.decode(enc)
     if isinstance(x, str):
@@ -452,7 +452,8 @@ def to_string(x, enc):
     else:
         raise TypeError("Not a string or bytes like object")
 
-def to_bytes(something, encoding='utf8'):
+
+def to_bytes(something, encoding='utf8') -> bytes:
     """
     cast string to bytes() like object, but for python2 support it's bytearray copy
     """
@@ -470,16 +471,13 @@ bfh = bytes.fromhex
 hfu = binascii.hexlify
 
 
-def bh2u(x):
+def bh2u(x: bytes) -> str:
     """
     str with hex representation of a bytes-like object
 
     >>> x = bytes((1, 2, 10))
     >>> bh2u(x)
     '01020A'
-
-    :param x: bytes
-    :rtype: str
     """
     return hfu(x).decode('ascii')
 
@@ -622,6 +620,8 @@ def time_difference(distance_in_time, include_seconds):
         return "over %d years" % (round(distance_in_minutes / 525600))
 
 mainnet_block_explorers = {
+    'Bitupper Explorer': ('https://bitupper.com/en/explorer/bitcoin/',
+                        {'tx': 'transactions/', 'addr': 'addresses/'}),
     'Biteasy.com': ('https://www.biteasy.com/blockchain/',
                         {'tx': 'transactions/', 'addr': 'addresses/'}),
     'Bitflyer.jp': ('https://chainflyer.bitflyer.jp/',
@@ -632,6 +632,8 @@ mainnet_block_explorers = {
                         {'tx': 'tx/', 'addr': 'address/'}),
     'Blockr.io': ('https://btc.blockr.io/',
                         {'tx': 'tx/info/', 'addr': 'address/info/'}),
+    'Blockstream.info': ('https://blockstream.info/',
+                        {'tx': 'tx/', 'addr': 'address/'}),
     'Blocktrail.com': ('https://www.blocktrail.com/BTC/',
                         {'tx': 'tx/', 'addr': 'address/'}),
     'BTC.com': ('https://chain.btc.com/',
@@ -650,6 +652,8 @@ mainnet_block_explorers = {
                         {'tx': 'api/tx?txid=', 'addr': '#/search?q='}),
     'OXT.me': ('https://oxt.me/',
                         {'tx': 'transaction/', 'addr': 'address/'}),
+    'smartbit.com.au': ('https://www.smartbit.com.au/',
+                        {'tx': 'tx/', 'addr': 'address/'}),
     'system default': ('blockchain:/',
                         {'tx': 'tx/', 'addr': 'address/'}),
 }
@@ -657,35 +661,50 @@ mainnet_block_explorers = {
 testnet_block_explorers = {
     'Blocktrail.com': ('https://www.blocktrail.com/tBTC/',
                        {'tx': 'tx/', 'addr': 'address/'}),
+    'BlockCypher.com': ('https://live.blockcypher.com/btc-testnet/',
+                       {'tx': 'tx/', 'addr': 'address/'}),
+    'Blockchain.info': ('https://testnet.blockchain.info/',
+                       {'tx': 'tx/', 'addr': 'address/'}),
+    'Blockstream.info': ('https://blockstream.info/testnet/',
+                        {'tx': 'tx/', 'addr': 'address/'}),
+    'BTC.com': ('https://tchain.btc.com/',
+                       {'tx': '', 'addr': ''}),
+    'smartbit.com.au': ('https://testnet.smartbit.com.au/',
+                       {'tx': 'tx/', 'addr': 'address/'}),
     'system default': ('blockchain://000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943/',
                        {'tx': 'tx/', 'addr': 'address/'}),
 }
 
 def block_explorer_info():
     from . import constants
-    return testnet_block_explorers if constants.net.TESTNET else mainnet_block_explorers
+    return mainnet_block_explorers if not constants.net.TESTNET else testnet_block_explorers
 
-def block_explorer(config):
-    return config.get('block_explorer', 'Blocktrail.com')
+def block_explorer(config: 'SimpleConfig') -> str:
+    from . import constants
+    default_ = 'Blockstream.info'
+    be_key = config.get('block_explorer', default_)
+    be = block_explorer_info().get(be_key)
+    return be_key if be is not None else default_
 
-def block_explorer_tuple(config):
+def block_explorer_tuple(config: 'SimpleConfig') -> Optional[Tuple[str, dict]]:
     return block_explorer_info().get(block_explorer(config))
 
-def block_explorer_URL(config, kind, item):
+def block_explorer_URL(config: 'SimpleConfig', kind: str, item: str) -> Optional[str]:
     be_tuple = block_explorer_tuple(config)
     if not be_tuple:
         return
-    kind_str = be_tuple[1].get(kind)
-    if not kind_str:
+    explorer_url, explorer_dict = be_tuple
+    kind_str = explorer_dict.get(kind)
+    if kind_str is None:
         return
-    url_parts = [be_tuple[0], kind_str, item]
+    url_parts = [explorer_url, kind_str, item]
     return ''.join(url_parts)
 
 # URL decode
 #_ud = re.compile('%([0-9a-hA-H]{2})', re.MULTILINE)
 #urldecode = lambda x: _ud.sub(lambda m: chr(int(m.group(1), 16)), x)
 
-def parse_URI(uri, on_pr=None):
+def parse_URI(uri: str, on_pr: Callable=None) -> dict:
     from . import bitcoin
     from .bitcoin import COIN
 
@@ -738,18 +757,17 @@ def parse_URI(uri, on_pr=None):
     sig = out.get('sig')
     name = out.get('name')
     if on_pr and (r or (name and sig)):
-        def get_payment_request_thread():
+        async def get_payment_request():
             from . import paymentrequest as pr
             if name and sig:
                 s = pr.serialize_request(out).SerializeToString()
                 request = pr.PaymentRequest(s)
             else:
-                request = pr.get_payment_request(r)
+                request = await pr.get_payment_request(r)
             if on_pr:
                 on_pr(request)
-        t = threading.Thread(target=get_payment_request_thread)
-        t.setDaemon(True)
-        t.start()
+        loop = asyncio.get_event_loop()
+        asyncio.run_coroutine_threadsafe(get_payment_request(), loop)
 
     return out
 
@@ -864,7 +882,7 @@ def log_exceptions(func):
             raise
         except BaseException as e:
             print_ = self.print_error if hasattr(self, 'print_error') else print_error
-            print_("Exception in", func.__name__, ":", e.__class__.__name__, repr(e))
+            print_("Exception in", func.__name__, ":", repr(e))
             try:
                 traceback.print_exc(file=sys.stderr)
             except BaseException as e2:
@@ -884,14 +902,18 @@ def ignore_exceptions(func):
     return wrapper
 
 
-TxMinedStatus = NamedTuple("TxMinedStatus", [("height", int),
-                                             ("conf", int),
-                                             ("timestamp", int),
-                                             ("header_hash", str)])
-VerifiedTxInfo = NamedTuple("VerifiedTxInfo", [("height", int),
-                                               ("timestamp", int),
-                                               ("txpos", int),
-                                               ("header_hash", str)])
+class TxMinedStatus(NamedTuple):
+    height: int
+    conf: int
+    timestamp: int
+    header_hash: str
+
+
+class VerifiedTxInfo(NamedTuple):
+    height: int
+    timestamp: int
+    txpos: int
+    header_hash: str
 
 
 def make_aiohttp_session(proxy: dict, headers=None, timeout=None):
@@ -971,3 +993,26 @@ class NetworkJobOnDefaultServer(PrintError):
         s = self.interface.session
         assert s is not None
         return s
+
+
+def create_and_start_event_loop() -> Tuple[asyncio.AbstractEventLoop,
+                                           asyncio.Future,
+                                           threading.Thread]:
+    def on_exception(loop, context):
+        """Suppress spurious messages it appears we cannot control."""
+        SUPPRESS_MESSAGE_REGEX = re.compile('SSL handshake|Fatal read error on|'
+                                            'SSL error in data received')
+        message = context.get('message')
+        if message and SUPPRESS_MESSAGE_REGEX.match(message):
+            return
+        loop.default_exception_handler(context)
+
+    loop = asyncio.get_event_loop()
+    loop.set_exception_handler(on_exception)
+    # loop.set_debug(1)
+    stopping_fut = asyncio.Future()
+    loop_thread = threading.Thread(target=loop.run_until_complete,
+                                         args=(stopping_fut,),
+                                         name='EventLoop')
+    loop_thread.start()
+    return loop, stopping_fut, loop_thread

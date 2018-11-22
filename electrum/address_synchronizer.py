@@ -25,6 +25,7 @@ import threading
 import asyncio
 import itertools
 from collections import defaultdict
+from typing import TYPE_CHECKING, Dict, Optional
 
 from . import bitcoin
 from .bitcoin import COINBASE_MATURITY, TYPE_ADDRESS, TYPE_PUBKEY
@@ -34,8 +35,10 @@ from .synchronizer import Synchronizer
 from .verifier import SPV
 from .blockchain import hash_header
 from .i18n import _
-from .storage import WalletStorage
-from .network import Network
+
+if TYPE_CHECKING:
+    from .storage import WalletStorage
+    from .network import Network
 
 
 TX_HEIGHT_LOCAL = -2
@@ -56,7 +59,7 @@ class AddressSynchronizer(PrintError):
     inherited by wallet
     """
 
-    def __init__(self, storage: WalletStorage):
+    def __init__(self, storage: 'WalletStorage'):
         self.storage = storage
         self.network = None  # type: Network
         # verifier (SPV) and synchronizer are started in start_network
@@ -454,7 +457,7 @@ class AddressSynchronizer(PrintError):
                 self.spent_outpoints = defaultdict(dict)
                 self.history = {}
                 self.verified_tx = {}
-                self.transactions = {}
+                self.transactions = {}  # type: Dict[str, Transaction]
                 self.save_transactions()
 
     def get_txpos(self, tx_hash):
@@ -708,6 +711,19 @@ class AddressSynchronizer(PrintError):
         if not is_mine:
             fee = None
         return is_relevant, is_mine, v, fee
+
+    def get_tx_fee(self, tx: Transaction) -> Optional[int]:
+        if not tx:
+            return None
+        if hasattr(tx, '_cached_fee'):
+            return tx._cached_fee
+        is_relevant, is_mine, v, fee = self.get_wallet_delta(tx)
+        if fee is None:
+            txid = tx.txid()
+            fee = self.tx_fees.get(txid)
+        if fee is not None:
+            tx._cached_fee = fee
+        return fee
 
     def get_addr_io(self, address):
         with self.lock, self.transaction_lock:

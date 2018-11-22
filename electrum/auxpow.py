@@ -49,7 +49,7 @@ import binascii
 # absolute prior to Python 3.5.
 import electrum.blockchain
 from .bitcoin import hash_encode, hash_decode
-from .crypto import Hash
+from .crypto import sha256d
 from . import transaction
 from .transaction import BCDataStream, Transaction, TYPE_SCRIPT
 from .util import bfh, bh2u
@@ -158,7 +158,7 @@ def calculate_merkle_root(leaf, merkle_branch, index):
             data_to_hash = target + hash_decode(merkle_step)
         else:
             data_to_hash = hash_decode(merkle_step) + target
-        target = Hash(data_to_hash)
+        target = sha256d(data_to_hash)
         mask = mask >> 1
 
     return hash_encode(target)
@@ -306,7 +306,7 @@ def verify_auxpow(header):
 # This is calculated the same as the Transaction.txid() method, but doesn't
 # reserialize it.
 def fast_txid(tx):
-    return bh2u(Hash(tx.raw_bytes)[::-1])
+    return bh2u(sha256d(tx.raw_bytes)[::-1])
 
 # Used by fast_tx_deserialize
 def stub_parse_output(vds, i):

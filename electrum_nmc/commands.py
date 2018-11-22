@@ -32,7 +32,7 @@ import ast
 import base64
 from functools import wraps
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from .import util, ecc
 from .util import bfh, bh2u, format_satoshis, json_decode, print_error, json_encode
@@ -47,8 +47,10 @@ from .storage import WalletStorage
 from . import keystore
 from .wallet import Wallet, Imported_Wallet, Abstract_Wallet
 from .mnemonic import Mnemonic
-from .network import Network
-from .simple_config import SimpleConfig
+
+if TYPE_CHECKING:
+    from .network import Network
+    from .simple_config import SimpleConfig
 
 
 known_commands = {}
@@ -177,14 +179,20 @@ class Commands:
         text = text.strip()
         if keystore.is_address_list(text):
             wallet = Imported_Wallet(storage)
-            for x in text.split():
-                wallet.import_address(x)
+            addresses = text.split()
+            good_inputs, bad_inputs = wallet.import_addresses(addresses)
+            # FIXME tell user about bad_inputs
+            if not good_inputs:
+                raise Exception("None of the given addresses can be imported")
         elif keystore.is_private_key_list(text, allow_spaces_inside_key=False):
             k = keystore.Imported_KeyStore({})
             storage.put('keystore', k.dump())
             wallet = Imported_Wallet(storage)
-            for x in text.split():
-                wallet.import_private_key(x, password)
+            keys = keystore.get_private_keys(text)
+            good_inputs, bad_inputs = wallet.import_private_keys(keys, password)
+            # FIXME tell user about bad_inputs
+            if not good_inputs:
+                raise Exception("None of the given privkeys can be imported")
         else:
             if keystore.is_seed(text):
                 k = keystore.from_seed(text, passphrase)
@@ -497,7 +505,7 @@ class Commands:
         try:
             addr = self.wallet.import_private_key(privkey, password)
             out = "Keypair imported: " + addr
-        except BaseException as e:
+        except Exception as e:
             out = "Error: " + str(e)
         return out
 

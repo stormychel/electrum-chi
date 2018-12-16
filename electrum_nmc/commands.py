@@ -47,6 +47,7 @@ from .storage import WalletStorage
 from . import keystore
 from .wallet import Wallet, Imported_Wallet, Abstract_Wallet
 from .mnemonic import Mnemonic
+from . import constants
 
 if TYPE_CHECKING:
     from .network import Network
@@ -1035,6 +1036,12 @@ class Commands:
         height = tx_best["height"]
 
         # The height is now verified to be safe.
+
+        # (from verifier._request_proofs) if it's in the checkpoint region, we still might not have the header
+        header = self.network.blockchain().read_header(height)
+        if header is None:
+            if height < constants.net.max_checkpoint():
+                self.network.run_from_another_thread(self.network.request_chunk(height, None))
 
         # TODO: This will write data to the wallet, which may be a privacy
         # leak.  We should allow a null wallet to be used.

@@ -459,7 +459,14 @@ class Blockchain(util.PrintError):
     def get_checkpoints(self):
         # for each chunk, store the hash of the last block and the target after the chunk
         cp = []
-        n = self.height() // 2016
+
+        # Namecoin: don't generate checkpoints for unexpired names, because
+        # otherwise we'll need to fetch chunks on demand during name lookups,
+        # which will add some latency.  TODO: Allow user-configurable pre-
+        # fetching of checkpointed unexpired chunks.
+        #n = self.height() // 2016
+        n = (self.height() - 36000) // 2016
+
         for index in range(n):
             h = self.get_hash((index+1) * 2016 -1)
             target = self.get_target(index)

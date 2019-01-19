@@ -167,7 +167,7 @@ class Commands:
         if keystore.is_address_list(text):
             wallet = Imported_Wallet(storage)
             addresses = text.split()
-            good_inputs, bad_inputs = wallet.import_addresses(addresses)
+            good_inputs, bad_inputs = wallet.import_addresses(addresses, write_to_disk=False)
             # FIXME tell user about bad_inputs
             if not good_inputs:
                 raise Exception("None of the given addresses can be imported")
@@ -176,7 +176,7 @@ class Commands:
             storage.put('keystore', k.dump())
             wallet = Imported_Wallet(storage)
             keys = keystore.get_private_keys(text)
-            good_inputs, bad_inputs = wallet.import_private_keys(keys, password)
+            good_inputs, bad_inputs = wallet.import_private_keys(keys, None, write_to_disk=False)
             # FIXME tell user about bad_inputs
             if not good_inputs:
                 raise Exception("None of the given privkeys can be imported")
@@ -191,6 +191,7 @@ class Commands:
             storage.put('wallet_type', 'standard')
             wallet = Wallet(storage)
 
+        assert not storage.file_exists(), "file was created too soon! plaintext keys might have been written to disk"
         wallet.update_password(old_pw=None, new_pw=password, encrypt_storage=encrypt_file)
         wallet.synchronize()
 
@@ -322,7 +323,7 @@ class Commands:
     def deserialize(self, tx):
         """Deserialize a serialized transaction"""
         tx = Transaction(tx)
-        return tx.deserialize()
+        return tx.deserialize(force_full_parse=True)
 
     @command('n')
     def broadcast(self, tx):
@@ -519,9 +520,12 @@ class Commands:
         return tx.as_dict()
 
     @command('w')
-    def history(self, year=None, show_addresses=False, show_fiat=False):
+    def history(self, year=None, show_addresses=False, show_fiat=False, show_fees=False):
         """Wallet history. Returns the transaction history of your wallet."""
-        kwargs = {'show_addresses': show_addresses}
+        kwargs = {
+            'show_addresses': show_addresses,
+            'show_fees': show_fees,
+        }
         if year:
             import time
             start_date = datetime.datetime(year, 1, 1)
@@ -807,6 +811,7 @@ command_options = {
     'paid':        (None, "Show only paid requests."),
     'show_addresses': (None, "Show input and output addresses"),
     'show_fiat':   (None, "Show fiat value of transactions"),
+    'show_fees':   (None, "Show miner fees paid by transactions"),
     'year':        (None, "Show history for a given year"),
     'fee_method':  (None, "Fee estimation method to use"),
     'fee_level':   (None, "Float between 0.0 and 1.0, representing fee slider position")

@@ -60,7 +60,7 @@ def int_to_hex(i: int, length: int=1) -> str:
     if not isinstance(i, int):
         raise TypeError('{} instead of int'.format(i))
     range_size = pow(256, length)
-    if i < -range_size/2 or i >= range_size:
+    if i < -(range_size//2) or i >= range_size:
         raise OverflowError('cannot convert int {} to hex ({} bytes)'.format(i, length))
     if i < 0:
         # two's complement
@@ -207,11 +207,17 @@ def seed_type(x: str) -> str:
         return 'segwit'
     elif is_new_seed(x, version.SEED_PREFIX_2FA):
         return '2fa'
+    elif is_new_seed(x, version.SEED_PREFIX_2FA_SW):
+        return '2fa_segwit'
     return ''
 
 
 def is_seed(x: str) -> bool:
     return bool(seed_type(x))
+
+
+def is_any_2fa_seed_type(seed_type):
+    return seed_type in ['2fa', '2fa_segwit']
 
 
 ############ functions from pywallet #####################

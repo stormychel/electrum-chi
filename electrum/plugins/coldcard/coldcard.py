@@ -17,6 +17,7 @@ from electrum.util import print_error, bfh, bh2u, versiontuple, UserFacingExcept
 from electrum.base_wizard import ScriptTypeNotSupported
 
 from ..hw_wallet import HW_PluginBase
+from ..hw_wallet.plugin import LibraryFoundButUnusable
 
 try:
     import hid
@@ -118,6 +119,8 @@ class CKCCClient:
                 or (self.dev.master_fingerprint != expected_xfp)
                 or (self.dev.master_xpub != expected_xpub)):
             # probably indicating programing error, not hacking
+            print_error("[coldcard]", f"xpubs. reported by device: {self.dev.master_xpub}. "
+                                      f"stored in file: {expected_xpub}")
             raise RuntimeError("Expecting 0x%08x but that's not whats connected?!" %
                                     expected_xfp)
 
@@ -454,9 +457,12 @@ class Coldcard_KeyStore(Hardware_KeyStore):
 
         # inputs section
         for txin in inputs:
-            utxo = txin['prev_tx'].outputs()[txin['prevout_n']]
-            spendable = txin['prev_tx'].serialize_output(utxo)
-            write_kv(PSBT_IN_WITNESS_UTXO, spendable)
+            if Transaction.is_segwit_input(txin):
+                utxo = txin['prev_tx'].outputs()[txin['prevout_n']]
+                spendable = txin['prev_tx'].serialize_output(utxo)
+                write_kv(PSBT_IN_WITNESS_UTXO, spendable)
+            else:
+                write_kv(PSBT_IN_NON_WITNESS_UTXO, str(txin['prev_tx']))
 
             pubkeys, x_pubkeys = tx.get_sorted_pubkeys(txin)
 
@@ -605,7 +611,7 @@ class ColdcardPlugin(HW_PluginBase):
     def __init__(self, parent, config, name):
         HW_PluginBase.__init__(self, parent, config, name)
 
-        self.libraries_available = self.check_libraries_available() and requirements_ok
+        self.libraries_available = self.check_libraries_available()
         if not self.libraries_available:
             return
 
@@ -615,9 +621,13 @@ class ColdcardPlugin(HW_PluginBase):
     def get_library_version(self):
         import ckcc
         try:
-            return ckcc.__version__
+            version = ckcc.__version__
         except AttributeError:
-            return 'unknown'
+            version = 'unknown'
+        if requirements_ok:
+            return version
+        else:
+            raise LibraryFoundButUnusable(library_version=version)
 
     def detect_simulator(self):
         # if there is a simulator running on this machine,

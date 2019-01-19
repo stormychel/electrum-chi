@@ -28,11 +28,12 @@ import ssl
 import sys
 import traceback
 import asyncio
-from typing import Tuple, Union, List, TYPE_CHECKING
+from typing import Tuple, Union, List, TYPE_CHECKING, Optional
 from collections import defaultdict
 
 import aiorpcx
 from aiorpcx import RPCSession, Notification
+import certifi
 
 from .util import PrintError, ignore_exceptions, log_exceptions, bfh, SilentTaskGroup
 from . import util
@@ -46,6 +47,9 @@ from .i18n import _
 
 if TYPE_CHECKING:
     from .network import Network
+
+
+ca_path = certifi.where()
 
 
 class NotificationSession(RPCSession):
@@ -140,14 +144,14 @@ def serialize_server(host: str, port: Union[str, int], protocol: str) -> str:
 class Interface(PrintError):
     verbosity_filter = 'i'
 
-    def __init__(self, network: 'Network', server: str, config_path, proxy: dict):
+    def __init__(self, network: 'Network', server: str, proxy: Optional[dict]):
         self.ready = asyncio.Future()
         self.got_disconnected = asyncio.Future()
         self.server = server
         self.host, self.port, self.protocol = deserialize_server(self.server)
         self.port = int(self.port)
-        self.config_path = config_path
-        self.cert_path = os.path.join(self.config_path, 'certs', self.host)
+        assert network.config.path
+        self.cert_path = os.path.join(network.config.path, 'certs', self.host)
         self.blockchain = None
         self._requested_chunks = set()
         self.network = network
@@ -232,7 +236,7 @@ class Interface(PrintError):
             return None
 
         # see if we already have cert for this server; or get it for the first time
-        ca_sslc = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+        ca_sslc = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=ca_path)
         if not self._is_saved_ssl_cert_available():
             await self._try_saving_ssl_cert_for_first_time(ca_sslc)
         # now we have a file saved in our certificate store
@@ -247,13 +251,13 @@ class Interface(PrintError):
         return sslc
 
     def handle_disconnect(func):
-        async def wrapper_func(self, *args, **kwargs):
+        async def wrapper_func(self: 'Interface', *args, **kwargs):
             try:
                 return await func(self, *args, **kwargs)
             except GracefulDisconnect as e:
                 self.print_error("disconnecting gracefully. {}".format(e))
             finally:
-                await self.network.connection_down(self.server)
+                await self.network.connection_down(self)
                 self.got_disconnected.set_result(1)
         return wrapper_func
 
@@ -281,7 +285,7 @@ class Interface(PrintError):
         assert self.tip_header
         chain = blockchain.check_header(self.tip_header)
         if not chain:
-            self.blockchain = blockchain.blockchains[0]
+            self.blockchain = blockchain.get_best_chain()
         else:
             self.blockchain = chain
         assert self.blockchain is not None
@@ -380,7 +384,9 @@ class Interface(PrintError):
             await self.session.send_request('server.ping')
 
     async def close(self):
-        await self.group.cancel_remaining()
+        if self.session:
+            await self.session.close()
+        # monitor_connection will cancel tasks
 
     async def run_fetch_blocks(self):
         header_queue = asyncio.Queue()
@@ -436,14 +442,17 @@ class Interface(PrintError):
         return last, height
 
     async def step(self, height, header=None):
-        assert height != 0
-        assert height <= self.tip, (height, self.tip)
+        assert 0 <= height <= self.tip, (height, self.tip)
         if header is None:
             header = await self.get_block_header(height, 'catchup')
 
         chain = blockchain.check_header(header) if 'mock' not in header else header['mock']['check'](header)
         if chain:
             self.blockchain = chain if isinstance(chain, Blockchain) else self.blockchain
+            # note: there is an edge case here that is not handled.
+            # we might know the blockhash (enough for check_header) but
+            # not have the header itself. e.g. regtest chain with only genesis.
+            # this situation resolves itself on the next block
             return 'catchup', height+1
 
         can_connect = blockchain.can_connect(header) if 'mock' not in header else header['mock']['connect'](height)
@@ -502,7 +511,7 @@ class Interface(PrintError):
         # bad_header connects to good_header; bad_header itself is NOT in self.blockchain.
 
         bh = self.blockchain.height()
-        assert bh >= good
+        assert bh >= good, (bh, good)
         if bh == good:
             height = good + 1
             self.print_error("catching up from {}".format(height))
@@ -510,53 +519,12 @@ class Interface(PrintError):
 
         # this is a new fork we don't yet have
         height = bad + 1
-        branch = blockchain.blockchains.get(bad)
-        if branch is not None:
-            # Conflict!! As our fork handling is not completely general,
-            # we need to delete another fork to save this one.
-            # Note: This could be a potential DOS vector against Electrum.
-            # However, mining blocks that satisfy the difficulty requirements
-            # is assumed to be expensive; especially as forks below the max
-            # checkpoint are ignored.
-            self.print_error("new fork at bad height {}. conflict!!".format(bad))
-            assert self.blockchain != branch
-            ismocking = type(branch) is dict
-            if ismocking:
-                self.print_error("TODO replace blockchain")
-                return 'fork_conflict', height
-            self.print_error('forkpoint conflicts with existing fork', branch.path())
-            self._raise_if_fork_conflicts_with_default_server(branch)
-            await self._disconnect_from_interfaces_on_conflicting_blockchain(branch)
-            branch.write(b'', 0)
-            branch.save_header(bad_header)
-            self.blockchain = branch
-            return 'fork_conflict', height
-        else:
-            # No conflict. Just save the new fork.
-            self.print_error("new fork at bad height {}. NO conflict.".format(bad))
-            forkfun = self.blockchain.fork if 'mock' not in bad_header else bad_header['mock']['fork']
-            b = forkfun(bad_header)
-            with blockchain.blockchains_lock:
-                assert bad not in blockchain.blockchains, (bad, list(blockchain.blockchains))
-                blockchain.blockchains[bad] = b
-            self.blockchain = b
-            assert b.forkpoint == bad
-            return 'fork_noconflict', height
-
-    def _raise_if_fork_conflicts_with_default_server(self, chain_to_delete: Blockchain) -> None:
-        main_interface = self.network.interface
-        if not main_interface: return
-        if main_interface == self: return
-        chain_of_default_server = main_interface.blockchain
-        if not chain_of_default_server: return
-        if chain_to_delete == chain_of_default_server:
-            raise GracefulDisconnect('refusing to overwrite blockchain of default server')
-
-    async def _disconnect_from_interfaces_on_conflicting_blockchain(self, chain: Blockchain) -> None:
-        ifaces = await self.network.disconnect_from_interfaces_on_given_blockchain(chain)
-        if not ifaces: return
-        servers = [interface.server for interface in ifaces]
-        self.print_error("forcing disconnect of other interfaces: {}".format(servers))
+        self.print_error(f"new fork at bad height {bad}")
+        forkfun = self.blockchain.fork if 'mock' not in bad_header else bad_header['mock']['fork']
+        b = forkfun(bad_header)  # type: Blockchain
+        self.blockchain = b
+        assert b.forkpoint == bad
+        return 'fork', height
 
     async def _search_headers_backwards(self, height, header):
         async def iterate():

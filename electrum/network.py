@@ -38,12 +38,16 @@ import traceback
 import dns
 import dns.resolver
 from aiorpcx import TaskGroup
+from aiohttp import ClientResponse
 
 from . import util
-from .util import PrintError, print_error, log_exceptions, ignore_exceptions, bfh, SilentTaskGroup
+from .util import (PrintError, print_error, log_exceptions, ignore_exceptions,
+                   bfh, SilentTaskGroup, make_aiohttp_session)
+
 from .bitcoin import COIN
 from . import constants
 from . import blockchain
+from . import bitcoin
 from .blockchain import Blockchain, HEADER_SIZE
 from .interface import Interface, serialize_server, deserialize_server, RequestTimedOut
 from .version import PROTOCOL_VERSION
@@ -177,10 +181,10 @@ class Network(PrintError):
         if config is None:
             config = {}  # Do not use mutables as default values!
         self.config = SimpleConfig(config) if isinstance(config, dict) else config  # type: SimpleConfig
-        blockchain.blockchains = blockchain.read_blockchains(self.config)
-        self.print_error("blockchains", list(blockchain.blockchains))
+        blockchain.read_blockchains(self.config)
+        self.print_error("blockchains", list(map(lambda b: b.forkpoint, blockchain.blockchains.values())))
         self._blockchain_preferred_block = self.config.get('blockchain_preferred_block', None)  # type: Optional[Dict]
-        self._blockchain_index = 0
+        self._blockchain = blockchain.get_best_chain()
         # Server for addresses and transactions
         self.default_server = self.config.get('server', None)
         # Sanitize default server
@@ -193,7 +197,7 @@ class Network(PrintError):
         if not self.default_server:
             self.default_server = pick_random_server()
 
-        self.main_taskgroup = None
+        self.main_taskgroup = None  # type: TaskGroup
 
         # locks
         self.restart_lock = asyncio.Lock()
@@ -321,7 +325,11 @@ class Network(PrintError):
             self.banner = await session.send_request('server.banner')
             self.notify('banner')
         async def get_donation_address():
-            self.donation_address = await session.send_request('server.donation_address')
+            addr = await session.send_request('server.donation_address')
+            if not bitcoin.is_address(addr):
+                self.print_error(f"invalid donation address from server: {addr}")
+                addr = ''
+            self.donation_address = addr
         async def get_server_peers():
             self.server_peers = parse_servers(await session.send_request('server.peers.subscribe'))
             self.notify('servers')
@@ -559,17 +567,24 @@ class Network(PrintError):
             filtered = list(filter(lambda iface: iface.blockchain.check_hash(pref_height, pref_hash),
                                    interfaces))
             if filtered:
+                self.print_error("switching to preferred fork")
                 chosen_iface = random.choice(filtered)
                 await self.switch_to_interface(chosen_iface.server)
                 return
-        # try to switch to longest chain
-        if self.blockchain().parent_id is None:
-            return  # already on longest chain
-        filtered = list(filter(lambda iface: iface.blockchain.parent_id is None,
+            else:
+                self.print_error("tried to switch to preferred fork but no interfaces are on it")
+        # try to switch to best chain
+        if self.blockchain().parent is None:
+            return  # already on best chain
+        filtered = list(filter(lambda iface: iface.blockchain.parent is None,
                                interfaces))
         if filtered:
+            self.print_error("switching to best chain")
             chosen_iface = random.choice(filtered)
             await self.switch_to_interface(chosen_iface.server)
+        else:
+            # FIXME switch to best available?
+            self.print_error("tried to switch to best chain but no interfaces are on it")
 
     async def switch_to_interface(self, server: str):
         """Switch to server as our main interface. If no connection exists,
@@ -623,21 +638,21 @@ class Network(PrintError):
         self.recent_servers = self.recent_servers[0:20]
         self._save_recent_servers()
 
-    async def connection_down(self, server):
+    async def connection_down(self, interface: Interface):
         '''A connection to server either went down, or was never made.
         We distinguish by whether it is in self.interfaces.'''
+        if not interface: return
+        server = interface.server
         self.disconnected_servers.add(server)
         if server == self.default_server:
             self._set_status('disconnected')
-        interface = self.interfaces.get(server, None)
-        if interface:
-            await self._close_interface(interface)
-            self.trigger_callback('network_updated')
+        await self._close_interface(interface)
+        self.trigger_callback('network_updated')
 
     @ignore_exceptions  # do not kill main_taskgroup
     @log_exceptions
     async def _run_new_interface(self, server):
-        interface = Interface(self, server, self.config.path, self.proxy)
+        interface = Interface(self, server, self.proxy)
         timeout = 10 if not self.proxy else 20
         try:
             await asyncio.wait_for(interface.ready, timeout)
@@ -661,7 +676,7 @@ class Network(PrintError):
         self.trigger_callback('network_updated')
 
     async def _init_headers_file(self):
-        b = blockchain.blockchains[0]
+        b = blockchain.get_best_chain()
         filename = b.path()
         length = HEADER_SIZE * len(constants.net.CHECKPOINTS) * 2016
         if not os.path.exists(filename) or os.path.getsize(filename) < length:
@@ -739,8 +754,8 @@ class Network(PrintError):
     def blockchain(self) -> Blockchain:
         interface = self.interface
         if interface and interface.blockchain is not None:
-            self._blockchain_index = interface.blockchain.forkpoint
-        return blockchain.blockchains[self._blockchain_index]
+            self._blockchain = interface.blockchain
+        return self._blockchain
 
     def get_blockchains(self):
         out = {}  # blockchain_id -> list(interfaces)
@@ -752,13 +767,6 @@ class Network(PrintError):
                 out[chain_id] = r
         return out
 
-    async def disconnect_from_interfaces_on_given_blockchain(self, chain: Blockchain) -> Sequence[Interface]:
-        chain_id = chain.forkpoint
-        ifaces = self.get_blockchains().get(chain_id) or []
-        for interface in ifaces:
-            await self.connection_down(interface.server)
-        return ifaces
-
     def _set_preferred_chain(self, chain: Blockchain):
         height = chain.get_max_forkpoint()
         header_hash = chain.get_hash(height)
@@ -768,7 +776,7 @@ class Network(PrintError):
         }
         self.config.set_key('blockchain_preferred_block', self._blockchain_preferred_block)
 
-    async def follow_chain_given_id(self, chain_id: int) -> None:
+    async def follow_chain_given_id(self, chain_id: str) -> None:
         bc = blockchain.blockchains.get(chain_id)
         if not bc:
             raise Exception('blockchain {} not found'.format(chain_id))
@@ -809,7 +817,7 @@ class Network(PrintError):
 
     async def _start(self):
         assert not self.main_taskgroup
-        self.main_taskgroup = SilentTaskGroup()
+        self.main_taskgroup = main_taskgroup = SilentTaskGroup()
         assert not self.interface and not self.interfaces
         assert not self.connecting and not self.server_queue
         self.print_error('starting network')
@@ -823,7 +831,9 @@ class Network(PrintError):
         async def main():
             try:
                 await self._init_headers_file()
-                async with self.main_taskgroup as group:
+                # note: if a task finishes with CancelledError, that
+                # will NOT raise, and the group will keep the other tasks running
+                async with main_taskgroup as group:
                     await group.spawn(self._maintain_sessions())
                     [await group.spawn(job) for job in self._jobs]
             except Exception as e:
@@ -844,7 +854,7 @@ class Network(PrintError):
             await asyncio.wait_for(self.main_taskgroup.cancel_remaining(), timeout=2)
         except (asyncio.TimeoutError, asyncio.CancelledError) as e:
             self.print_error(f"exc during main_taskgroup cancellation: {repr(e)}")
-        self.main_taskgroup = None
+        self.main_taskgroup = None  # type: TaskGroup
         self.interface = None  # type: Interface
         self.interfaces = {}  # type: Dict[str, Interface]
         self.connecting.clear()
@@ -876,13 +886,11 @@ class Network(PrintError):
                 await self.switch_to_interface(self.default_server)
 
     async def _maintain_sessions(self):
-        while True:
-            # launch already queued up new interfaces
+        async def launch_already_queued_up_new_interfaces():
             while self.server_queue.qsize() > 0:
                 server = self.server_queue.get()
                 await self.main_taskgroup.spawn(self._run_new_interface(server))
-
-            # maybe queue new interfaces to be launched later
+        async def maybe_queue_new_interfaces_to_be_launched_later():
             now = time.time()
             for i in range(self.num_server - len(self.interfaces) - len(self.connecting)):
                 self._start_random_interface()
@@ -890,11 +898,51 @@ class Network(PrintError):
                 self.print_error('network: retrying connections')
                 self.disconnected_servers = set([])
                 self.nodes_retry_time = now
-
-            # main interface
+        async def maintain_main_interface():
             await self._ensure_there_is_a_main_interface()
             if self.is_connected():
                 if self.config.is_fee_estimates_update_required():
                     await self.interface.group.spawn(self._request_fee_estimates, self.interface)
 
+        while True:
+            try:
+                await launch_already_queued_up_new_interfaces()
+                await maybe_queue_new_interfaces_to_be_launched_later()
+                await maintain_main_interface()
+            except asyncio.CancelledError:
+                # suppress spurious cancellations
+                group = self.main_taskgroup
+                if not group or group._closed:
+                    raise
             await asyncio.sleep(0.1)
+
+
+    async def _send_http_on_proxy(self, method: str, url: str, params: str = None, body: bytes = None, json: dict = None, headers=None, on_finish=None):
+        async def default_on_finish(resp: ClientResponse):
+            resp.raise_for_status()
+            return await resp.text()
+        if headers is None:
+            headers = {}
+        if on_finish is None:
+            on_finish = default_on_finish
+        async with make_aiohttp_session(self.proxy) as session:
+            if method == 'get':
+                async with session.get(url, params=params, headers=headers) as resp:
+                    return await on_finish(resp)
+            elif method == 'post':
+                assert body is not None or json is not None, 'body or json must be supplied if method is post'
+                if body is not None:
+                    async with session.post(url, data=body, headers=headers) as resp:
+                        return await on_finish(resp)
+                elif json is not None:
+                    async with session.post(url, json=json, headers=headers) as resp:
+                        return await on_finish(resp)
+            else:
+                assert False
+
+    @staticmethod
+    def send_http_on_proxy(method, url, **kwargs):
+        network = Network.get_instance()
+        assert network._loop_thread is not threading.currentThread()
+        coro = asyncio.run_coroutine_threadsafe(network._send_http_on_proxy(method, url, **kwargs), network.asyncio_loop)
+        return coro.result(5)

@@ -246,10 +246,9 @@ class BTCParalelo(ExchangeBase):
 class Coinbase(ExchangeBase):
 
     async def get_rates(self, ccy):
-        json = await self.get_json('coinbase.com',
-                             '/api/v1/currencies/exchange_rates')
-        return dict([(r[7:].upper(), Decimal(json[r]))
-                     for r in json if r.startswith('btc_to_')])
+        json = await self.get_json('api.coinbase.com',
+                             '/v2/exchange-rates?currency=BTC')
+        return {ccy: Decimal(rate) for (ccy, rate) in json["data"]["rates"].items()}
 
 
 class CoinDesk(ExchangeBase):
@@ -464,9 +463,13 @@ class FxThread(ThreadJob):
         d = get_exchanges_by_ccy(history)
         return d.get(ccy, [])
 
+    @staticmethod
+    def remove_thousands_separator(text):
+        return text.replace(',', '') # FIXME use THOUSAND_SEPARATOR in util
+
     def ccy_amount_str(self, amount, commas):
         prec = CCY_PRECISIONS.get(self.ccy, 2)
-        fmt_str = "{:%s.%df}" % ("," if commas else "", max(0, prec))
+        fmt_str = "{:%s.%df}" % ("," if commas else "", max(0, prec)) # FIXME use util.THOUSAND_SEPARATOR and util.DECIMAL_POINT
         try:
             rounded_amount = round(amount, prec)
         except decimal.InvalidOperation:

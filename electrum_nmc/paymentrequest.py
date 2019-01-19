@@ -28,7 +28,7 @@ import time
 import traceback
 import json
 
-import requests
+import certifi
 import urllib.parse
 import aiohttp
 
@@ -49,7 +49,7 @@ from .network import Network
 REQUEST_HEADERS = {'Accept': 'application/namecoin-paymentrequest', 'User-Agent': 'Electrum-NMC'}
 ACK_HEADERS = {'Content-Type':'application/namecoin-payment','Accept':'application/namecoin-paymentack','User-Agent':'Electrum-NMC'}
 
-ca_path = requests.certs.where()  # FIXME do we need to depend on requests here?
+ca_path = certifi.where()
 ca_list = None
 ca_keyID = None
 

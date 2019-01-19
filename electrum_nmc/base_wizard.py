@@ -194,13 +194,13 @@ class BaseWizard(object):
         if keystore.is_address_list(text):
             w = Imported_Wallet(self.storage)
             addresses = text.split()
-            good_inputs, bad_inputs = w.import_addresses(addresses)
+            good_inputs, bad_inputs = w.import_addresses(addresses, write_to_disk=False)
         elif keystore.is_private_key_list(text):
             k = keystore.Imported_KeyStore({})
             self.storage.put('keystore', k.dump())
             w = Imported_Wallet(self.storage)
             keys = keystore.get_private_keys(text)
-            good_inputs, bad_inputs = w.import_private_keys(keys, None)
+            good_inputs, bad_inputs = w.import_private_keys(keys, None, write_to_disk=False)
             self.keystores.append(w.keystore)
         else:
             return self.terminate()
@@ -283,7 +283,9 @@ class BaseWizard(object):
         for name, info in devices:
             state = _("initialized") if info.initialized else _("wiped")
             label = info.label or _("An unnamed {}").format(name)
-            descr = f"{label} [{name}, {state}, {info.device.transport_ui_string}]"
+            try: transport_str = info.device.transport_ui_string[:20]
+            except: transport_str = 'unknown transport'
+            descr = f"{label} [{name}, {state}, {transport_str}]"
             choices.append(((name, info), descr))
         msg = _('Select a device') + ':'
         self.choice_dialog(title=title, message=msg, choices=choices, run_next= lambda *args: self.on_device(*args, purpose=purpose))
@@ -415,7 +417,7 @@ class BaseWizard(object):
             self.passphrase_dialog(run_next=f, is_restoring=True) if is_ext else f('')
         elif self.seed_type == 'old':
             self.run('create_keystore', seed, '')
-        elif self.seed_type == '2fa':
+        elif bitcoin.is_any_2fa_seed_type(self.seed_type):
             self.load_2fa()
             self.run('on_restore_seed', seed, is_ext)
         else:
@@ -508,6 +510,7 @@ class BaseWizard(object):
 
     def on_password(self, password, *, encrypt_storage,
                     storage_enc_version=STO_EV_USER_PW, encrypt_keystore):
+        assert not self.storage.file_exists(), "file was created too soon! plaintext keys might have been written to disk"
         self.storage.set_keystore_encryption(bool(password) and encrypt_keystore)
         if encrypt_storage:
             self.storage.set_password(password, enc_version=storage_enc_version)
@@ -537,18 +540,20 @@ class BaseWizard(object):
     def show_xpub_and_add_cosigners(self, xpub):
         self.show_xpub_dialog(xpub=xpub, run_next=lambda x: self.run('choose_keystore'))
 
-    def choose_seed_type(self):
+    def choose_seed_type(self, message=None, choices=None):
         title = _('Choose Seed type')
-        message = ' '.join([
-            _("The type of addresses used by your wallet will depend on your seed."),
-            _("Segwit wallets use bech32 addresses, defined in BIP173."),
-            _("Please note that websites and other wallets may not support these addresses yet."),
-            _("Thus, you might want to keep using a non-segwit wallet in order to be able to receive namecoins during the transition period.")
-        ])
-        choices = [
-            ('create_segwit_seed', _('Segwit')),
-            ('create_standard_seed', _('Legacy')),
-        ]
+        if message is None:
+            message = ' '.join([
+                _("The type of addresses used by your wallet will depend on your seed."),
+                _("Segwit wallets use bech32 addresses, defined in BIP173."),
+                _("Please note that websites and other wallets may not support these addresses yet."),
+                _("Thus, you might want to keep using a non-segwit wallet in order to be able to receive namecoins during the transition period.")
+            ])
+        if choices is None:
+            choices = [
+                ('create_segwit_seed', _('Segwit')),
+                ('create_standard_seed', _('Legacy')),
+            ]
         self.choice_dialog(title=title, message=message, choices=choices, run_next=self.run)
 
     def create_segwit_seed(self): self.create_seed('segwit')

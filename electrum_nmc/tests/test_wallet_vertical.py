@@ -4,7 +4,7 @@ import tempfile
 from typing import Sequence
 import asyncio
 
-from electrum_nmc import storage, bitcoin, keystore
+from electrum_nmc import storage, bitcoin, keystore, bip32
 from electrum_nmc import Transaction
 from electrum_nmc import SimpleConfig
 from electrum_nmc.address_synchronizer import TX_HEIGHT_UNCONFIRMED, TX_HEIGHT_UNCONF_PARENT
@@ -173,7 +173,7 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
-    def test_electrum_seed_2fa(self, mock_write):
+    def test_electrum_seed_2fa_legacy(self, mock_write):
         seed_words = 'kiss live scene rude gate step hip quarter bunker oxygen motor glove'
         self.assertEqual(bitcoin.seed_type(seed_words), '2fa')
 
@@ -194,7 +194,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         long_user_id, short_id = trustedcoin.get_user_id(
             {'x1/': {'xpub': xpub1},
              'x2/': {'xpub': xpub2}})
-        xpub3 = trustedcoin.make_xpub(trustedcoin.get_signing_xpub(), long_user_id)
+        xtype = bip32.xpub_type(xpub1)
+        xpub3 = trustedcoin.make_xpub(trustedcoin.get_signing_xpub(xtype), long_user_id)
         ks3 = keystore.from_xpub(xpub3)
         WalletIntegrityHelper.check_xpub_keystore_sanity(self, ks3)
         self.assertTrue(isinstance(ks3, keystore.BIP32_KeyStore))
@@ -208,6 +209,41 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         #self.assertEqual(w.get_change_addresses()[0], '3PeZEcumRqHSPNN43hd4yskGEBdzXgY8Cy')
         # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
         self.assertEqual(w.get_change_addresses()[0], '6cMP7VJ57GzSvqUkF4HcrsvZGDhYCp18AE')
+
+    @needs_test_with_all_ecc_implementations
+    @mock.patch.object(storage.WalletStorage, '_write')
+    def test_electrum_seed_2fa_segwit(self, mock_write):
+        seed_words = 'universe topic remind silver february ranch shine worth innocent cattle enhance wise'
+        self.assertEqual(bitcoin.seed_type(seed_words), '2fa_segwit')
+
+        xprv1, xpub1, xprv2, xpub2 = trustedcoin.TrustedCoinPlugin.xkeys_from_seed(seed_words, '')
+
+        ks1 = keystore.from_xprv(xprv1)
+        self.assertTrue(isinstance(ks1, keystore.BIP32_KeyStore))
+        self.assertEqual(ks1.xprv, 'ZprvAm1R3RZMrkSLYKZer8QECGoc8oA1RQuKfsztHkBTmi2yF8RhmN1JRb7Ag69mMrL88sP67WiaegaSSDnKndorWEpFr7a5B2QgrD7TkERSYX6')
+        self.assertEqual(ks1.xpub, 'Zpub6yzmSw6Fh7zdkoe7x9wEZQkLgpzVpsdB36vV68b5L3Zx7vkrJuKYyPReXMSjBegmtUjFBxP2uZEdL87cYvtTtGaVuwtRRCTSFUsoAdKZMge')
+        self.assertEqual(ks1.xpub, xpub1)
+
+        ks2 = keystore.from_xprv(xprv2)
+        self.assertTrue(isinstance(ks2, keystore.BIP32_KeyStore))
+        self.assertEqual(ks2.xprv, 'ZprvAm1R3RZMrkSLab4jVKTwuroBgKEfnsmK9CQa1ErkuRzpsPauYuv9z2UzhDNn9YgbLHcmXpmxbNq4MdDRAUM5B2N9Wr3Uq9yp2c4AtTJDFdi')
+        self.assertEqual(ks2.xpub, 'Zpub6yzmSw6Fh7zdo59CbLzxGzjvEM5ACLVAWRLAodGNTmXokBv46TEQXpoUYUaoxPCeynysxg7APfScikCQ2jhCfM3NcNEk46BCVfSSrdrSkbR')
+        self.assertEqual(ks2.xpub, xpub2)
+
+        long_user_id, short_id = trustedcoin.get_user_id(
+            {'x1/': {'xpub': xpub1},
+             'x2/': {'xpub': xpub2}})
+        xtype = bip32.xpub_type(xpub1)
+        xpub3 = trustedcoin.make_xpub(trustedcoin.get_signing_xpub(xtype), long_user_id)
+        ks3 = keystore.from_xpub(xpub3)
+        WalletIntegrityHelper.check_xpub_keystore_sanity(self, ks3)
+        self.assertTrue(isinstance(ks3, keystore.BIP32_KeyStore))
+
+        w = WalletIntegrityHelper.create_multisig_wallet([ks1, ks2, ks3], '2of3')
+        self.assertEqual(w.txin_type, 'p2wsh')
+
+        self.assertEqual(w.get_receiving_addresses()[0], 'bc1qpmufh0zjp5prfsrk2yskcy82sa26srqkd97j0457andc6m0gh5asw7kqd2')
+        self.assertEqual(w.get_change_addresses()[0], 'bc1qd4q50nft7kxm9yglfnpup9ed2ukj3tkxp793y0zya8dc9m39jcwq308dxz')
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -1117,6 +1153,47 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
     def tearDownClass(cls):
         super().tearDownClass()
         shutil.rmtree(cls.electrum_path)
+
+    @needs_test_with_all_ecc_implementations
+    @mock.patch.object(storage.WalletStorage, '_write')
+    def test_sending_offline_old_electrum_seed_online_mpk(self, mock_write):
+        wallet_offline = WalletIntegrityHelper.create_standard_wallet(
+            keystore.from_seed('alone body father children lead goodbye phone twist exist grass kick join', '', False),
+            gap_limit=4
+        )
+        wallet_online = WalletIntegrityHelper.create_standard_wallet(
+            keystore.from_master_key('cd805ed20aec61c7a8b409c121c6ba60a9221f46d20edbc2be83ebd91460e97937cd7d782e77c1cb08364c6bc1c98bc040fdad53f22f29f7d3a85c8e51f9c875'),
+            gap_limit=4
+        )
+
+        # bootstrap wallet_online
+        funding_tx = Transaction('01000000000101161115f8d8110001aa0883989487f9c7a2faf4451038e4305c7594c5236cbb490100000000fdffffff0338117a0000000000160014c1d7b2ded7017cbde837aab36c1e7b2a3952a57800127a00000000001600143e2ab71fc9738ce16fbe6b3b1c210a68c12db84180969800000000001976a91424b64d981d621c227716b51479faf33019371f4688ac0247304402207a5efc6d970f6a5fdcd1933f68b353b4bf2904743f9f1dc3e9177d8754074baf02202eed707e661493bc450357f12cd7a8b8c610c7cb32ded10516c2933a2ba4346a01210287dce03f594fd889726b13a12970237992a0094a5c9f4eebcca6d50d454b39e9ff121600')
+        funding_txid = funding_tx.txid()
+        self.assertEqual('3b9e0581602f4656cb04633dac13662bc62d9f5191caa15cc901dcc76e430856', funding_txid)
+        wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
+
+        # create unsigned tx
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1qyw3c0rvn6kk2c688y3dygvckn57525y8qnxt3a', 2500000)]
+        tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
+        tx.set_rbf(True)
+        tx.locktime = 1446655
+
+        self.assertFalse(tx.is_complete())
+        self.assertFalse(tx.is_segwit())
+        self.assertEqual(1, len(tx.inputs()))
+        tx_copy = Transaction(tx.serialize())
+        self.assertTrue(wallet_online.is_mine(wallet_online.get_txin_address(tx_copy.inputs()[0])))
+
+        self.assertEqual(tx.txid(), tx_copy.txid())
+
+        # sign tx
+        tx = wallet_offline.sign_transaction(tx_copy, password=None)
+        self.assertTrue(tx.is_complete())
+        self.assertFalse(tx.is_segwit())
+        self.assertEqual('01000000015608436ec7dc01c95ca1ca91519f2dc62b6613ac3d6304cb56462f6081059e3b020000008b483045022100e3489a26b47412c617a77024db8f51c68ed13950d147425bdbc7d64d95477ce2022009d09a6f011a47f827ae6655a828c79b1cf43f7c89ab4f8bb36f175ba8298d8a014104e79eb77f2f3f989f5e9d090bc0af50afeb0d5bd6ec916f2022c5629ed022e84a87584ef647d69f073ea314a0f0c110ebe24ad64bc1922a10819ea264fc3f35f5fdffffff02a02526000000000016001423a3878d93d5acac68e7245a4433169d3d455087585d7200000000001976a914b6a6bbbc4cf9da58786a8acc58291e218d52130688acff121600',
+                         str(tx))
+        self.assertEqual('5a88637fe51fc1780f61383d7d8cb44e6209dbc99e102a0efcfcbe877d203d7d', tx.txid())
+        self.assertEqual('5a88637fe51fc1780f61383d7d8cb44e6209dbc99e102a0efcfcbe877d203d7d', tx.wtxid())
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')

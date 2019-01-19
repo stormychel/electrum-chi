@@ -22,7 +22,7 @@
 # SOFTWARE.
 import binascii
 import os, sys, re, json
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from typing import NamedTuple, Union, TYPE_CHECKING, Tuple, Optional, Callable
 from datetime import datetime
 import decimal
@@ -39,10 +39,13 @@ import urllib.request, urllib.parse, urllib.error
 import builtins
 import json
 import time
+from typing import NamedTuple, Optional
+import ssl
 
 import aiohttp
 from aiohttp_socks import SocksConnector, SocksVer
 from aiorpcx import TaskGroup
+import certifi
 
 from .i18n import _
 
@@ -54,6 +57,9 @@ if TYPE_CHECKING:
 
 def inv_dict(d):
     return {v: k for k, v in d.items()}
+
+
+ca_path = certifi.where()
 
 
 base_units = {'NMC':8, 'mNMC':5, 'uNMC':2, 'swartz':0}
@@ -129,6 +135,8 @@ class UserCancelled(Exception):
     '''An exception that is suppressed from the user'''
     pass
 
+
+# note: this is not a NamedTuple as then its json encoding cannot be customized
 class Satoshis(object):
     __slots__ = ('value',)
 
@@ -143,6 +151,14 @@ class Satoshis(object):
     def __str__(self):
         return format_satoshis(self.value) + " BTC"
 
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+# note: this is not a NamedTuple as then its json encoding cannot be customized
 class Fiat(object):
     __slots__ = ('value', 'ccy')
 
@@ -161,8 +177,16 @@ class Fiat(object):
         else:
             return "{:.2f}".format(self.value) + ' ' + self.ccy
 
+    def __eq__(self, other):
+        return self.ccy == other.ccy and self.value == other.value
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
+        # note: this does not get called for namedtuples :(  https://bugs.python.org/issue30343
         from .transaction import Transaction
         if isinstance(obj, Transaction):
             return obj.as_dict()
@@ -354,40 +378,10 @@ def profiler(func):
     return lambda *args, **kw_args: do_profile(args, kw_args)
 
 
-def android_ext_dir():
-    import jnius
-    env = jnius.autoclass('android.os.Environment')
-    return env.getExternalStorageDirectory().getPath()
-
 def android_data_dir():
     import jnius
     PythonActivity = jnius.autoclass('org.kivy.android.PythonActivity')
     return PythonActivity.mActivity.getFilesDir().getPath() + '/data'
-
-def android_headers_dir():
-    d = android_ext_dir() + '/org.namecoin.electrum-nmc'
-    if not os.path.exists(d):
-        try:
-            os.mkdir(d)
-        except FileExistsError:
-            pass  # in case of race
-    return d
-
-def android_check_data_dir():
-    """ if needed, move old directory to sandbox """
-    ext_dir = android_ext_dir()
-    data_dir = android_data_dir()
-    old_electrum_dir = ext_dir + '/electrum-nmc'
-    if not os.path.exists(data_dir) and os.path.exists(old_electrum_dir):
-        import shutil
-        new_headers_path = android_headers_dir() + '/blockchain_headers'
-        old_headers_path = old_electrum_dir + '/blockchain_headers'
-        if not os.path.exists(new_headers_path) and os.path.exists(old_headers_path):
-            print_error("Moving headers file to", new_headers_path)
-            shutil.move(old_headers_path, new_headers_path)
-        print_error("Moving data to", data_dir)
-        shutil.move(old_electrum_dir, data_dir)
-    return data_dir
 
 
 def ensure_sparse_file(filename):
@@ -401,7 +395,7 @@ def ensure_sparse_file(filename):
 
 
 def get_headers_dir(config):
-    return android_headers_dir() if 'ANDROID_DATA' in os.environ else config.path
+    return config.path
 
 
 def assert_datadir_available(config_path):
@@ -422,6 +416,17 @@ def assert_file_in_datadir_available(path, config_path):
         raise FileNotFoundError(
             'Cannot find file but datadir is there.' + '\n' +
             'Should be at {}'.format(path))
+
+
+def get_new_wallet_name(wallet_folder: str) -> str:
+    i = 1
+    while True:
+        filename = "wallet_%d" % i
+        if filename in os.listdir(wallet_folder):
+            i += 1
+        else:
+            break
+    return filename
 
 
 def assert_bytes(*args):
@@ -484,7 +489,7 @@ def bh2u(x: bytes) -> str:
 
 def user_dir():
     if 'ANDROID_DATA' in os.environ:
-        return android_check_data_dir()
+        return android_data_dir()
     elif os.name == 'posix':
         return os.path.join(os.environ["HOME"], ".electrum-nmc")
     elif "APPDATA" in os.environ:
@@ -797,6 +802,10 @@ def setup_thread_excepthook():
     threading.Thread.__init__ = init
 
 
+def send_exception_to_crash_reporter(e: BaseException):
+    sys.excepthook(type(e), e, e.__traceback__)
+
+
 def versiontuple(v):
     return tuple(map(int, (v.split("."))))
 
@@ -864,18 +873,12 @@ def ignore_exceptions(func):
     return wrapper
 
 
-class TxMinedStatus(NamedTuple):
-    height: int
-    conf: int
-    timestamp: int
-    header_hash: str
-
-
-class VerifiedTxInfo(NamedTuple):
-    height: int
-    timestamp: int
-    txpos: int
-    header_hash: str
+class TxMinedInfo(NamedTuple):
+    height: int                        # height of block that mined tx
+    conf: Optional[int] = None         # number of confirmations (None means unknown)
+    timestamp: Optional[int] = None    # timestamp of block that mined tx
+    txpos: Optional[int] = None        # position of tx in serialized block
+    header_hash: Optional[str] = None  # hash of block that mined tx
 
 
 def make_aiohttp_session(proxy: dict, headers=None, timeout=None):
@@ -883,6 +886,8 @@ def make_aiohttp_session(proxy: dict, headers=None, timeout=None):
         headers = {'User-Agent': 'Electrum'}
     if timeout is None:
         timeout = aiohttp.ClientTimeout(total=10)
+    ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=ca_path)
+
     if proxy:
         connector = SocksConnector(
             socks_ver=SocksVer.SOCKS5 if proxy['mode'] == 'socks5' else SocksVer.SOCKS4,
@@ -890,11 +895,13 @@ def make_aiohttp_session(proxy: dict, headers=None, timeout=None):
             port=int(proxy['port']),
             username=proxy.get('user', None),
             password=proxy.get('password', None),
-            rdns=True
+            rdns=True,
+            ssl_context=ssl_context,
         )
-        return aiohttp.ClientSession(headers=headers, timeout=timeout, connector=connector)
     else:
-        return aiohttp.ClientSession(headers=headers, timeout=timeout)
+        connector = aiohttp.TCPConnector(ssl_context=ssl_context)
+
+    return aiohttp.ClientSession(headers=headers, timeout=timeout, connector=connector)
 
 
 class SilentTaskGroup(TaskGroup):
@@ -978,3 +985,65 @@ def create_and_start_event_loop() -> Tuple[asyncio.AbstractEventLoop,
                                          name='EventLoop')
     loop_thread.start()
     return loop, stopping_fut, loop_thread
+
+
+class OrderedDictWithIndex(OrderedDict):
+    """An OrderedDict that keeps track of the positions of keys.
+
+    Note: very inefficient to modify contents, except to add new items.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self._key_to_pos = {}
+        self._pos_to_key = {}
+
+    def _recalc_index(self):
+        self._key_to_pos = {key: pos for (pos, key) in enumerate(self.keys())}
+        self._pos_to_key = {pos: key for (pos, key) in enumerate(self.keys())}
+
+    def pos_from_key(self, key):
+        return self._key_to_pos[key]
+
+    def value_from_pos(self, pos):
+        key = self._pos_to_key[pos]
+        return self[key]
+
+    def popitem(self, *args, **kwargs):
+        ret = super().popitem(*args, **kwargs)
+        self._recalc_index()
+        return ret
+
+    def move_to_end(self, *args, **kwargs):
+        ret = super().move_to_end(*args, **kwargs)
+        self._recalc_index()
+        return ret
+
+    def clear(self):
+        ret = super().clear()
+        self._recalc_index()
+        return ret
+
+    def pop(self, *args, **kwargs):
+        ret = super().pop(*args, **kwargs)
+        self._recalc_index()
+        return ret
+
+    def update(self, *args, **kwargs):
+        ret = super().update(*args, **kwargs)
+        self._recalc_index()
+        return ret
+
+    def __delitem__(self, *args, **kwargs):
+        ret = super().__delitem__(*args, **kwargs)
+        self._recalc_index()
+        return ret
+
+    def __setitem__(self, key, *args, **kwargs):
+        is_new_key = key not in self
+        ret = super().__setitem__(key, *args, **kwargs)
+        if is_new_key:
+            pos = len(self) - 1
+            self._key_to_pos[key] = pos
+            self._pos_to_key[pos] = key
+        return ret

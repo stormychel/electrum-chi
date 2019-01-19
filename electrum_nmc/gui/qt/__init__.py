@@ -44,7 +44,7 @@ from electrum_nmc.plugin import run_hook
 from electrum_nmc.storage import WalletStorage
 from electrum_nmc.base_wizard import GoBack
 from electrum_nmc.util import (UserCancelled, PrintError, profiler,
-                           WalletFileException, BitcoinException)
+                           WalletFileException, BitcoinException, get_new_wallet_name)
 
 from .installwizard import InstallWizard
 
@@ -87,7 +87,7 @@ class ElectrumGui(PrintError):
 
     @profiler
     def __init__(self, config, daemon, plugins):
-        set_language(config.get('language'))
+        set_language(config.get('language', get_default_language()))
         # Uncomment this call to verify objects are being properly
         # GC-ed when windows are closed
         #network.add_jobs([DebugMem([Abstract_Wallet, SPV, Synchronizer,
@@ -97,6 +97,7 @@ class ElectrumGui(PrintError):
             QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
         if hasattr(QGuiApplication, 'setDesktopFileName'):
             QGuiApplication.setDesktopFileName('electrum-nmc.desktop')
+        self.gui_thread = threading.current_thread()
         self.config = config
         self.daemon = daemon
         self.plugins = plugins
@@ -104,7 +105,11 @@ class ElectrumGui(PrintError):
         self.efilter = OpenFileEventFilter(self.windows)
         self.app = QElectrumApplication(sys.argv)
         self.app.installEventFilter(self.efilter)
-        self.timer = Timer()
+        # timer
+        self.timer = QTimer(self.app)
+        self.timer.setSingleShot(False)
+        self.timer.setInterval(500)  # msec
+
         self.nd = None
         self.network_updated_signal_obj = QNetworkUpdatedSignalObject()
         self._num_wizards_in_progress = 0
@@ -191,13 +196,13 @@ class ElectrumGui(PrintError):
                                 self.network_updated_signal_obj)
         self.nd.show()
 
-    @profiler
     def create_window_for_wallet(self, wallet):
         w = ElectrumWindow(self, wallet)
         self.windows.append(w)
         self.build_tray_menu()
         # FIXME: Remove in favour of the load_wallet hook
         run_hook('on_new_window', w)
+        w.warn_if_watching_only()
         return w
 
     def count_wizards_in_progress(func):
@@ -262,6 +267,10 @@ class ElectrumGui(PrintError):
             d = QMessageBox(QMessageBox.Warning, _('Error'),
                             _('Cannot create window for wallet') + ':\n' + str(e))
             d.exec_()
+            if app_is_starting:
+                wallet_dir = os.path.dirname(path)
+                path = os.path.join(wallet_dir, get_new_wallet_name(wallet_dir))
+                self.start_new_window(path, uri)
             return
         if uri:
             w.pay_to_URI(uri)

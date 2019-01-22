@@ -52,6 +52,17 @@ if TYPE_CHECKING:
 ca_path = certifi.where()
 
 
+class NetworkTimeout:
+    # seconds
+    class Generic:
+        NORMAL = 30
+        RELAXED = 45
+        MOST_RELAXED = 180
+    class Urgent(Generic):
+        NORMAL = 10
+        RELAXED = 20
+        MOST_RELAXED = 60
+
 class NotificationSession(RPCSession):
 
     def __init__(self, *args, **kwargs):
@@ -65,6 +76,7 @@ class NotificationSession(RPCSession):
         # height 418744 (5 MB fails after height 155232); we set a limit of
         # 20 MB so that we have extra wiggle room.
         self.framer.max_size = 20000000
+        self.default_timeout = NetworkTimeout.Generic.NORMAL
 
     async def handle_request(self, request):
         # note: if server sends malformed request and we raise, the superclass
@@ -82,7 +94,7 @@ class NotificationSession(RPCSession):
     async def send_request(self, *args, timeout=None, **kwargs):
         # note: the timeout starts after the request touches the wire!
         if timeout is None:
-            timeout = 30
+            timeout = self.default_timeout
         # note: the semaphore implementation guarantees no starvation
         async with self.in_flight_requests_semaphore:
             try:
@@ -333,9 +345,9 @@ class Interface(PrintError):
             return None
 
     async def get_block_header(self, height, assert_mode):
-        # use lower timeout as we usually have network.bhi_lock here
         self.print_error('requesting block header {} in mode {}'.format(height, assert_mode))
-        timeout = 5 if not self.proxy else 10
+        # use lower timeout as we usually have network.bhi_lock here
+        timeout = self.network.get_network_timeout_seconds(NetworkTimeout.Urgent)
         res = await self.session.send_request('blockchain.block.header', [height], timeout=timeout)
         return blockchain.deserialize_header(bytes.fromhex(res), height)
 
@@ -364,6 +376,7 @@ class Interface(PrintError):
                                      host=self.host, port=self.port,
                                      ssl=sslc, proxy=self.proxy) as session:
             self.session = session  # type: NotificationSession
+            self.session.default_timeout = self.network.get_network_timeout_seconds(NetworkTimeout.Generic)
             try:
                 ver = await session.send_request('server.version', [ELECTRUM_VERSION, PROTOCOL_VERSION])
             except aiorpcx.jsonrpc.RPCError as e:

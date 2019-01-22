@@ -29,6 +29,7 @@ from datetime import date
 from typing import TYPE_CHECKING, Tuple, Dict
 import threading
 from enum import IntEnum
+from decimal import Decimal
 
 from electrum.address_synchronizer import TX_HEIGHT_LOCAL
 from electrum.i18n import _
@@ -77,9 +78,14 @@ class HistorySortModel(QSortFilterProxyModel):
         item2 = self.sourceModel().data(source_right, Qt.UserRole)
         if item1 is None or item2 is None:
             raise Exception(f'UserRole not set for column {source_left.column()}')
-        if item1.value() is None or item2.value() is None:
+        v1 = item1.value()
+        v2 = item2.value()
+        if v1 is None or isinstance(v1, Decimal) and v1.is_nan(): v1 = -float("inf")
+        if v2 is None or isinstance(v2, Decimal) and v2.is_nan(): v2 = -float("inf")
+        try:
+            return v1 < v2
+        except:
             return False
-        return item1.value() < item2.value()
 
 class HistoryModel(QAbstractItemModel, PrintError):
 
@@ -89,6 +95,7 @@ class HistoryModel(QAbstractItemModel, PrintError):
         self.view = None  # type: HistoryList
         self.transactions = OrderedDictWithIndex()
         self.tx_status_cache = {}  # type: Dict[str, Tuple[int, str]]
+        self.summary = None
 
     def set_view(self, history_list: 'HistoryList'):
         # FIXME HistoryModel and HistoryList mutually depend on each other.

@@ -26,7 +26,7 @@
 
 import threading
 
-from PyQt5.Qt import QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QVBoxLayout, QLabel
 
 from electrum_nmc.gui.qt.password_dialog import PasswordLayout, PW_PASSPHRASE
 from electrum_nmc.gui.qt.util import *

@@ -63,7 +63,7 @@ from electrum_nmc.address_synchronizer import AddTransactionException
 from electrum_nmc.wallet import (Multisig_Wallet, CannotBumpFee, Abstract_Wallet,
                              sweep_preparations, InternalAddressCorruption)
 from electrum_nmc.version import ELECTRUM_VERSION
-from electrum_nmc.network import Network
+from electrum_nmc.network import Network, TxBroadcastError, BestEffortRequestFailed
 from electrum_nmc.exchange_rate import FxThread
 from electrum_nmc.simple_config import SimpleConfig
 
@@ -88,6 +88,7 @@ class StatusBarButton(QPushButton):
         self.clicked.connect(self.onPress)
         self.func = func
         self.setIconSize(QSize(25,25))
+        self.setCursor(QCursor(Qt.PointingHandCursor))
 
     def onPress(self, checked=False):
         '''Drops the unwanted PyQt5 "checked" argument'''
@@ -260,7 +261,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
     def toggle_tab(self, tab):
         show = not self.config.get('show_{}_tab'.format(tab.tab_name), False)
         self.config.set_key('show_{}_tab'.format(tab.tab_name), show)
-        item_text = (_("Hide") if show else _("Show")) + " " + tab.tab_description
+        item_text = (_("Hide {}") if show else _("Show {}")).format(tab.tab_description)
         tab.menu_action.setText(item_text)
         if show:
             # Find out where to place the tab
@@ -1670,10 +1671,13 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             if pr and pr.has_expired():
                 self.payment_request = None
                 return False, _("Payment request has expired")
+            status = False
             try:
                 self.network.run_from_another_thread(self.network.broadcast_transaction(tx))
-            except Exception as e:
-                status, msg = False, repr(e)
+            except TxBroadcastError as e:
+                msg = e.get_message_for_gui()
+            except BestEffortRequestFailed as e:
+                msg = repr(e)
             else:
                 status, msg = True, tx.txid()
             if pr and status is True:
@@ -1701,10 +1705,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                     self.invoice_list.update()
                     self.do_clear()
                 else:
-                    display_msg = _('The server returned an error when broadcasting the transaction.')
-                    if msg:
-                        display_msg += '\n' + msg
-                    parent.show_error(display_msg)
+                    msg = msg or ''
+                    parent.show_error(msg)
 
         WaitingDialog(self, _('Broadcasting transaction...'),
                       broadcast_thread, broadcast_done, self.on_error)
@@ -2420,7 +2422,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         try:
             data = bh2u(bitcoin.base_decode(data, length=None, base=43))
         except BaseException as e:
-            self.show_error((_('Could not decode QR code')+':\n{}').format(e))
+            self.show_error((_('Could not decode QR code')+':\n{}').format(repr(e)))
             return
         tx = self.tx_from_text(data)
         if not tx:

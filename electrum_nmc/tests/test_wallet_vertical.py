@@ -1121,7 +1121,6 @@ class TestWalletSending(TestCaseForTestnet):
 
         class NetworkMock:
             relay_fee = 1000
-            def get_local_height(self): return 1325785
             def run_from_another_thread(self, coro):
                 loop = asyncio.get_event_loop()
                 return loop.run_until_complete(coro)
@@ -1136,7 +1135,7 @@ class TestWalletSending(TestCaseForTestnet):
         #dest_addr = 'tb1q3ws2p0qjk5vrravv065xqlnkckvzcpclk79eu2'
         # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
         dest_addr = 'tn1q3ws2p0qjk5vrravv065xqlnkckvzcpclvpetvj'
-        tx = sweep(privkeys, network, config=None, recipient=dest_addr, fee=5000)
+        tx = sweep(privkeys, network, config=None, recipient=dest_addr, fee=5000, locktime=1325785)
 
         tx_copy = Transaction(tx.serialize())
         self.assertEqual('010000000129349e5641d79915e9d0282fdbaee8c3df0b6731bab9d70bf626e8588bde24ac010000004847304402206bf0d0a93abae0d5873a62ebf277a5dd2f33837821e8b93e74d04e19d71b578002201a6d729bc159941ef5c4c9e5fe13ece9fc544351ba531b00f68ba549c8b38a9a01fdffffff01b82e0f00000000001600148ba0a0bc12b51831f58c7ea8607e76c5982c071fd93a1400',

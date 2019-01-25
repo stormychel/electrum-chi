@@ -348,7 +348,12 @@ class Interface(PrintError):
         self.print_error('requesting block header {} in mode {}'.format(height, assert_mode))
         # use lower timeout as we usually have network.bhi_lock here
         timeout = self.network.get_network_timeout_seconds(NetworkTimeout.Urgent)
-        res = await self.session.send_request('blockchain.block.header', [height], timeout=timeout)
+        cp_height = constants.net.max_checkpoint()
+        if height > cp_height:
+            cp_height = 0
+        res = await self.session.send_request('blockchain.block.header', [height, cp_height], timeout=timeout)
+        if cp_height != 0:
+            res = res["header"]
         return blockchain.deserialize_header(bytes.fromhex(res), height)
 
     async def request_chunk(self, height, tip=None, *, can_return_early=False):
@@ -361,8 +366,11 @@ class Interface(PrintError):
             size = min(size, tip - index * 2016 + 1)
             size = max(size, 0)
         try:
+            cp_height = constants.net.max_checkpoint()
+            if index * 2016 + size - 1 > cp_height:
+                cp_height = 0
             self._requested_chunks.add(index)
-            res = await self.session.send_request('blockchain.block.headers', [index * 2016, size])
+            res = await self.session.send_request('blockchain.block.headers', [index * 2016, size, cp_height])
         finally:
             try: self._requested_chunks.remove(index)
             except KeyError: pass

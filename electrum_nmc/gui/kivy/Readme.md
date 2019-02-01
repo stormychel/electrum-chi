@@ -59,7 +59,7 @@ You probably need to clear the cache: `rm -rf .buildozer/android/platform/build/
 Assuming `adb` is installed:
 ```
 $ adb -d install -r bin/Electrum-*-debug.apk
-$ adb shell monkey -p org.namecoin.electrum-nmc.electrum-nmc 1
+$ adb shell monkey -p org.namecoin.electrum_nmc.electrum_nmc 1
 ```
 
 

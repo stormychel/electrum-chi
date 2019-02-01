@@ -38,6 +38,7 @@ USER_ROLE_VALUE = 2
 # TODO: It'd be nice if we could further reduce code duplication against
 # UTXOList.
 class UNOList(UTXOList):
+    headers = [ _('Name'), _('Value'), _('Expires In'), _('Status')]
     filter_columns = [0, 1]  # Name, Value
 
     def update(self):
@@ -46,7 +47,7 @@ class UNOList(UTXOList):
         utxos = self.wallet.get_utxos()
         self.utxo_dict = {}
         self.model().clear()
-        self.update_headers([ _('Name'), _('Value'), _('Expires In'), _('Status')])
+        self.update_headers(self.__class__.headers)
         for idx, x in enumerate(utxos):
             txid = x.get('prevout_hash')
             vout = x.get('prevout_n')

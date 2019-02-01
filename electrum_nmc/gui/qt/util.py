@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import *
 
 from electrum_nmc import version
 from electrum_nmc import ecc
+from electrum_nmc import constants
 from electrum_nmc.i18n import _, languages
 from electrum_nmc.util import FileImportFailed, FileExportFailed, make_aiohttp_session, PrintError
 from electrum_nmc.paymentrequest import PR_UNPAID, PR_PAID, PR_EXPIRED
@@ -845,6 +846,8 @@ class UpdateCheck(QWidget, PrintError):
         self.content.addWidget(self.heading_label)
 
         self.detail_label = QLabel()
+        self.detail_label.setTextInteractionFlags(Qt.LinksAccessibleByMouse)
+        self.detail_label.setOpenExternalLinks(True)
         self.content.addWidget(self.detail_label)
 
         self.pb = QProgressBar()
@@ -925,7 +928,8 @@ class UpdateCheckThread(QThread, PrintError):
                         continue
                     sig = base64.b64decode(sig)
                     msg = version_num.encode('utf-8')
-                    if ecc.verify_message_with_address(address=address, sig65=sig, message=msg):
+                    if ecc.verify_message_with_address(address=address, sig65=sig, message=msg,
+                                                       net=constants.BitcoinMainnet):
                         self.print_error(f"valid sig for version announcement '{version_num}' from address '{address}'")
                         break
                 else:

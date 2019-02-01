@@ -1,6 +1,5 @@
 include LICENCE RELEASE-NOTES AUTHORS
 include README.rst
-include electrum-nmc.conf.sample
 include electrum-nmc.desktop
 include *.py
 include run_electrum_nmc
@@ -11,8 +10,10 @@ recursive-include packages cacert.pem
 include icons.qrc
 graft icons
 
-graft electrum
-prune electrum/tests
+graft electrum_nmc
+prune electrum_nmc/tests
 
 global-exclude __pycache__
-global-exclude *.py[co]
+global-exclude *.py[co~]
+global-exclude *.py.orig
+global-exclude *.py.rej

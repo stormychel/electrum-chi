@@ -20,7 +20,7 @@ cd tmp
 
 pushd $WINEPREFIX/drive_c/electrum-nmc
 
-# Load electrum-icons and electrum-locale for this release
+# Load electrum-locale for this release
 git submodule init
 git submodule update
 
@@ -43,7 +43,6 @@ find -exec touch -d '2000-11-11T11:11:11+00:00' {} +
 popd
 
 cp $WINEPREFIX/drive_c/electrum-nmc/LICENCE .
-cp $WINEPREFIX/drive_c/electrum-nmc/contrib/deterministic-build/electrum-icons/icons_rc.py $WINEPREFIX/drive_c/electrum-nmc/electrum_nmc/gui/qt/
 
 # Install frozen dependencies
 $PYTHON -m pip install -r ../../deterministic-build/requirements.txt
@@ -51,7 +50,7 @@ $PYTHON -m pip install -r ../../deterministic-build/requirements.txt
 $PYTHON -m pip install -r ../../deterministic-build/requirements-hw.txt
 
 pushd $WINEPREFIX/drive_c/electrum-nmc
-$PYTHON setup.py install
+$PYTHON -m pip install .
 popd
 
 cd ..
@@ -75,4 +74,4 @@ mv electrum-nmc-setup.exe $NAME_ROOT-$VERSION-setup.exe
 cd ..
 
 echo "Done."
-md5sum dist/electrum-nmc*exe
+sha256sum dist/electrum-nmc*exe

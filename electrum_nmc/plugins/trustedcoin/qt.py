@@ -36,6 +36,7 @@ from electrum_nmc.gui.qt.util import *
 from electrum_nmc.gui.qt.qrcodewidget import QRCodeWidget
 from electrum_nmc.gui.qt.amountedit import AmountEdit
 from electrum_nmc.gui.qt.main_window import StatusBarButton
+from electrum_nmc.gui.qt.installwizard import InstallWizard
 from electrum_nmc.i18n import _
 from electrum_nmc.plugin import hook
 from electrum_nmc.util import PrintError, is_valid_email
@@ -90,7 +91,7 @@ class Plugin(TrustedCoinPlugin):
             action = lambda: window.show_message(msg)
         else:
             action = partial(self.settings_dialog, window)
-        button = StatusBarButton(QIcon(":icons/trustedcoin-status.png"),
+        button = StatusBarButton(read_QIcon("trustedcoin-status.png"),
                                  _("TrustedCoin"), action)
         window.statusBar().addPermanentWidget(button)
         self.start_request_thread(window.wallet)
@@ -152,7 +153,7 @@ class Plugin(TrustedCoinPlugin):
         hbox = QHBoxLayout()
 
         logo = QLabel()
-        logo.setPixmap(QPixmap(":icons/trustedcoin-status.png"))
+        logo.setPixmap(QPixmap(icon_path("trustedcoin-status.png")))
         msg = _('This wallet is protected by TrustedCoin\'s two-factor authentication.') + '<br/>'\
               + _("For more information, visit") + " <a href=\"https://api.trustedcoin.com/#/electrum-help\">https://api.trustedcoin.com/#/electrum-help</a>"
         label = QLabel(msg)
@@ -195,7 +196,7 @@ class Plugin(TrustedCoinPlugin):
         vbox.addLayout(Buttons(CloseButton(d)))
         d.exec_()
 
-    def go_online_dialog(self, wizard):
+    def go_online_dialog(self, wizard: InstallWizard):
         msg = [
             _("Your wallet file is: {}.").format(os.path.abspath(wizard.storage.path)),
             _("You need to be online in order to complete the creation of "
@@ -206,7 +207,7 @@ class Plugin(TrustedCoinPlugin):
             _('If you are online, click on "{}" to continue.').format(_('Next'))
         ]
         msg = '\n\n'.join(msg)
-        wizard.stack = []
+        wizard.reset_stack()
         wizard.confirm_dialog(title='', message=msg, run_next = lambda x: wizard.run('accept_terms_of_use'))
 
     def accept_terms_of_use(self, window):

@@ -8,9 +8,11 @@ import threading
 import traceback
 from typing import Tuple, List, Callable
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import QRect, QEventLoop, Qt, pyqtSignal
+from PyQt5.QtGui import QPalette, QPen, QPainter, QPixmap
+from PyQt5.QtWidgets import (QWidget, QDialog, QLabel, QHBoxLayout, QMessageBox,
+                             QVBoxLayout, QLineEdit, QFileDialog, QPushButton,
+                             QGridLayout, QSlider, QScrollArea)
 
 from electrum.wallet import Wallet
 from electrum.storage import WalletStorage
@@ -20,7 +22,8 @@ from electrum.i18n import _
 
 from .seed_dialog import SeedLayout, KeysLayout
 from .network_dialog import NetworkChoiceLayout
-from .util import *
+from .util import (MessageBoxMixin, Buttons, icon_path, ChoicesLayout, WWLabel,
+                   InfoButton)
 from .password_dialog import PasswordLayout, PasswordLayoutForHW, PW_NEW
 
 
@@ -159,7 +162,7 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
         self.raise_()
         self.refresh_gui()  # Need for QT on MacOSX.  Lame.
 
-    def run_and_get_wallet(self, get_wallet_from_daemon):
+    def select_storage(self, path, get_wallet_from_daemon):
 
         vbox = QVBoxLayout()
         hbox = QHBoxLayout()
@@ -183,6 +186,7 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
         vbox.addLayout(hbox2)
         self.set_layout(vbox, title=_('Electrum wallet'))
 
+        self.storage = WalletStorage(path, manual_upgrades=True)
         wallet_folder = os.path.dirname(self.storage.path)
 
         def on_choose():
@@ -284,7 +288,9 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
                         return
                 else:
                     raise Exception('Unexpected encryption version')
+        return True
 
+    def run_and_get_wallet(self):
         path = self.storage.path
         if self.storage.requires_split():
             self.hide()

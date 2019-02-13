@@ -23,6 +23,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import os
 import signal
 import sys
 import traceback
@@ -34,14 +35,14 @@ try:
 except Exception:
     sys.exit("Error: Could not import PyQt5 on Linux systems, you may try 'sudo apt-get install python3-pyqt5'")
 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtGui import QGuiApplication
+from PyQt5.QtWidgets import (QApplication, QSystemTrayIcon, QWidget, QMenu,
+                             QMessageBox)
+from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 import PyQt5.QtCore as QtCore
 
 from electrum_nmc.i18n import _, set_language
 from electrum_nmc.plugin import run_hook
-from electrum_nmc.storage import WalletStorage
 from electrum_nmc.base_wizard import GoBack
 from electrum_nmc.util import (UserCancelled, PrintError, profiler,
                            WalletFileException, BitcoinException, get_new_wallet_name)
@@ -49,7 +50,7 @@ from electrum_nmc.util import (UserCancelled, PrintError, profiler,
 from .installwizard import InstallWizard
 
 
-from .util import *   # * needed for plugins
+from .util import get_default_language, read_QIcon, ColorScheme
 from .main_window import ElectrumWindow
 from .network_dialog import NetworkDialog
 
@@ -226,10 +227,10 @@ class ElectrumGui(PrintError):
             else:
                 return
         if not wallet:
-            storage = WalletStorage(path, manual_upgrades=True)
-            wizard = InstallWizard(self.config, self.app, self.plugins, storage)
+            wizard = InstallWizard(self.config, self.app, self.plugins, None)
             try:
-                wallet = wizard.run_and_get_wallet(self.daemon.get_wallet)
+                if wizard.select_storage(path, self.daemon.get_wallet):
+                    wallet = wizard.run_and_get_wallet()
             except UserCancelled:
                 pass
             except GoBack as e:

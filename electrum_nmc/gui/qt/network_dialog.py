@@ -24,12 +24,13 @@
 # SOFTWARE.
 
 import socket
+import time
 from enum import IntEnum
 
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-import PyQt5.QtCore as QtCore
+from PyQt5.QtCore import Qt, pyqtSignal, QThread
+from PyQt5.QtWidgets import (QTreeWidget, QTreeWidgetItem, QMenu, QGridLayout, QComboBox,
+                             QLineEdit, QDialog, QVBoxLayout, QHeaderView, QCheckBox,
+                             QTabWidget, QWidget, QLabel)
 
 from electrum_nmc.i18n import _
 from electrum_nmc import constants, blockchain
@@ -37,7 +38,7 @@ from electrum_nmc.util import print_error
 from electrum_nmc.interface import serialize_server, deserialize_server
 from electrum_nmc.network import Network
 
-from .util import *
+from .util import Buttons, CloseButton, HelpButton, read_QIcon
 
 protocol_names = ['TCP', 'SSL']
 protocol_letters = 'ts'

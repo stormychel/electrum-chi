@@ -24,13 +24,19 @@ folder.
     $ sudo docker build -t electrum-android-builder-img electrum_nmc/gui/kivy/tools
     ```
 
-3. Prepare pure python dependencies
+3. Build locale files
 
     ```
-    $ sudo ./contrib/make_packages
+    $ ./contrib/make_locale
     ```
 
-4. Build binaries
+4. Prepare pure python dependencies
+
+    ```
+    $ ./contrib/make_packages
+    ```
+
+5. Build binaries
 
     ```
     $ sudo docker run -it --rm \
@@ -79,6 +85,6 @@ See `log_level` in `buildozer.spec`
 ### Kivy can be run directly on Linux Desktop. How?
 Install Kivy.
 
-Build atlas: `(cd electrum/gui/kivy/; make theming)`
+Build atlas: `(cd electrum_nmc/gui/kivy/; make theming)`
 
-Run electrum with the `-g` switch: `electrum -g kivy`
+Run electrum-nmc with the `-g` switch: `electrum-nmc -g kivy`

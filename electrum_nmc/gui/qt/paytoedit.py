@@ -26,7 +26,7 @@
 import re
 from decimal import Decimal
 
-from PyQt5.QtGui import *
+from PyQt5.QtGui import QFontMetrics
 
 from electrum_nmc import bitcoin
 from electrum_nmc.util import bfh, PrintError

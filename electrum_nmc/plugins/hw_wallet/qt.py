@@ -25,11 +25,14 @@
 # SOFTWARE.
 
 import threading
+from functools import partial
 
-from PyQt5.QtWidgets import QVBoxLayout, QLabel
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
 
 from electrum_nmc.gui.qt.password_dialog import PasswordLayout, PW_PASSPHRASE
-from electrum_nmc.gui.qt.util import *
+from electrum_nmc.gui.qt.util import (read_QIcon, WWLabel, OkButton, WindowModalDialog,
+                                      Buttons, CancelButton, TaskThread)
 
 from electrum_nmc.i18n import _
 from electrum_nmc.util import PrintError

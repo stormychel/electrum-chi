@@ -68,7 +68,7 @@ def deserialize_header(s: bytes, height: int, expect_trailing_data=False, start_
     h['nonce'] = hex_to_int(s[start_position+76:start_position+80])
     h['block_height'] = height
 
-    if auxpow.auxpow_active(h):
+    if auxpow.auxpow_active(h) and height > constants.net.max_checkpoint():
         if expect_trailing_data:
             h['auxpow'], start_position = auxpow.deserialize_auxpow_header(h, s, expect_trailing_data=True, start_position=start_position+HEADER_SIZE)
         else:
@@ -271,7 +271,9 @@ class Blockchain(util.PrintError):
     @classmethod
     def verify_header(cls, header: dict, prev_hash: str, target: int, expected_header_hash: str=None) -> None:
         _hash = hash_header(header)
-        _pow_hash = auxpow.hash_parent_header(header)
+        # Don't verify AuxPoW when covered by a checkpoint
+        if header.get('block_height') > constants.net.max_checkpoint():
+            _pow_hash = auxpow.hash_parent_header(header)
         if expected_header_hash and expected_header_hash != _hash:
             raise Exception("hash mismatches with expected: {} vs {}".format(expected_header_hash, _hash))
         if prev_hash != header.get('prev_block_hash'):
@@ -281,9 +283,11 @@ class Blockchain(util.PrintError):
         bits = cls.target_to_bits(target)
         if bits != header.get('bits'):
             raise Exception("bits mismatch: %s vs %s" % (bits, header.get('bits')))
-        block_hash_as_num = int.from_bytes(bfh(_pow_hash), byteorder='big')
-        if block_hash_as_num > target:
-            raise Exception(f"insufficient proof of work: {block_hash_as_num} vs target {target}")
+        # Don't verify AuxPoW when covered by a checkpoint
+        if header.get('block_height') > constants.net.max_checkpoint():
+            block_hash_as_num = int.from_bytes(bfh(_pow_hash), byteorder='big')
+            if block_hash_as_num > target:
+                raise Exception(f"insufficient proof of work: {block_hash_as_num} vs target {target}")
 
     def verify_chunk(self, index: int, data: bytes) -> bytes:
         stripped = bytearray()

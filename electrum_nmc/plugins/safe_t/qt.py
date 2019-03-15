@@ -265,7 +265,7 @@ class SettingsDialog(WindowModalDialog):
                         "can use this wallet again at any time by re-enabling "
                         "passphrases and entering its passphrase.")
             else:
-                msg = _("Your current Electrum wallet can only be used with "
+                msg = _("Your current Electrum-NMC wallet can only be used with "
                         "an empty passphrase.  You must create a separate "
                         "wallet with the install wizard for other passphrases "
                         "as each one generates a new set of addresses.")

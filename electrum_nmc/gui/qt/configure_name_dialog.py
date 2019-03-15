@@ -23,6 +23,9 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import sys
+import traceback
+
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -30,6 +33,8 @@ from PyQt5.QtWidgets import *
 from electrum_nmc.bitcoin import TYPE_ADDRESS
 from electrum_nmc.i18n import _
 from electrum_nmc.names import format_name_identifier
+from electrum_nmc.util import NotEnoughFunds, NoDynamicFeeEstimates
+from electrum_nmc.wallet import InternalAddressCorruption
 
 from .paytoedit import PayToEdit
 
@@ -120,9 +125,18 @@ class ConfigureNameDialog(QDialog):
         try:
             # TODO: support non-ASCII encodings
             name_autoregister(identifier.decode('ascii'), value.decode('ascii'), recipient_address)
-        except Exception as e:
+        except (NotEnoughFunds, NoDynamicFeeEstimates) as e:
+            formatted_name = format_name_identifier(identifier)
+            self.main_window.show_message(_("Error registering ") + formatted_name + ": " + str(e))
+            return
+        except InternalAddressCorruption as e:
             formatted_name = format_name_identifier(identifier)
             self.main_window.show_error(_("Error registering ") + formatted_name + ": " + str(e))
+            raise
+        except BaseException as e:
+            traceback.print_exc(file=sys.stdout)
+            formatted_name = format_name_identifier(identifier)
+            self.main_window.show_message(_("Error registering ") + formatted_name + ": " + str(e))
             return
 
     def update_and_broadcast(self, identifier, value, transfer_to):
@@ -149,9 +163,18 @@ class ConfigureNameDialog(QDialog):
         try:
             # TODO: support non-ASCII encodings
             tx = name_update(identifier.decode('ascii'), value.decode('ascii'), recipient_address)['hex']
-        except Exception as e:
+        except (NotEnoughFunds, NoDynamicFeeEstimates) as e:
+            formatted_name = format_name_identifier(identifier)
+            self.main_window.show_message(_("Error creating update for ") + formatted_name + ": " + str(e))
+            return
+        except InternalAddressCorruption as e:
             formatted_name = format_name_identifier(identifier)
             self.main_window.show_error(_("Error creating update for ") + formatted_name + ": " + str(e))
+            raise
+        except BaseException as e:
+            traceback.print_exc(file=sys.stdout)
+            formatted_name = format_name_identifier(identifier)
+            self.main_window.show_message(_("Error creating update for ") + formatted_name + ": " + str(e))
             return
 
         try:

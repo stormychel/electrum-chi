@@ -294,7 +294,7 @@ class NetworkChoiceLayout(object):
         # Blockchain Tab
         grid = QGridLayout(blockchain_tab)
         msg =  ' '.join([
-            _("Electrum connects to several nodes in order to download block headers and find out the longest blockchain."),
+            _("Electrum-NMC connects to several nodes in order to download block headers and find out the longest blockchain."),
             _("This blockchain is used to verify the transactions sent by your transaction server.")
         ])
         self.status_label = QLabel('')

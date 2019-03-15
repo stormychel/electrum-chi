@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Electrum-NMC - lightweight Namecoin client
-# Copyright (C) 2018 Namecoin Developers
+# Copyright (C) 2018-2019 Namecoin Developers
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -23,12 +23,23 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import Optional, List
+from enum import IntEnum
+import sys
+import traceback
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
+from PyQt5.QtWidgets import QAbstractItemView, QMenu
+
 from electrum_nmc.commands import NameUpdatedTooRecentlyError
 from electrum_nmc.i18n import _
 from electrum_nmc.names import format_name_identifier, format_name_value, name_expires_in
+from electrum_nmc.util import NotEnoughFunds, NoDynamicFeeEstimates
+from electrum_nmc.wallet import InternalAddressCorruption
 
 from .configure_name_dialog import show_configure_name
-from .util import *
+from .util import MyTreeView, ColorScheme, MONOSPACE_FONT
 from .utxo_list import UTXOList
 
 USER_ROLE_TXOUT = 0
@@ -38,61 +49,91 @@ USER_ROLE_VALUE = 2
 # TODO: It'd be nice if we could further reduce code duplication against
 # UTXOList.
 class UNOList(UTXOList):
-    headers = [ _('Name'), _('Value'), _('Expires In'), _('Status')]
-    filter_columns = [0, 1]  # Name, Value
+    class Columns(IntEnum):
+        NAME = 0
+        VALUE = 1
+        EXPIRES_IN = 2
+        STATUS = 3
+
+    headers = {
+        Columns.NAME: _('Name'),
+        Columns.VALUE: _('Value'),
+        Columns.EXPIRES_IN: _('Expires In'),
+        Columns.STATUS: _('Status'),
+    }
+    filter_columns = [Columns.NAME, Columns.VALUE]
+
+    # TODO: Break out stretch_column into its own attribute so that we can
+    # subclass it without re-implementing __init__
+    def __init__(self, parent=None):
+        MyTreeView.__init__(self, parent, self.create_menu,
+                            stretch_column=self.Columns.VALUE,
+                            editable_columns=[])
+        self.setModel(QStandardItemModel(self))
+        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setSortingEnabled(True)
+        self.update()
 
     def update(self):
-        self.wallet = self.parent.wallet
         self.network = self.parent.network
-        utxos = self.wallet.get_utxos()
-        self.utxo_dict = {}
-        self.model().clear()
-        self.update_headers(self.__class__.headers)
-        for idx, x in enumerate(utxos):
-            txid = x.get('prevout_hash')
-            vout = x.get('prevout_n')
-            name_op = self.wallet.transactions[txid].outputs()[vout].name_op
-            if name_op is None:
-                continue
+        super().update()
 
-            # TODO: Support name_new
-            if 'name' in name_op:
-                name = name_op['name']
-                formatted_name = format_name_identifier(name)
-                value = name_op['value']
-                formatted_value = format_name_value(value)
-            else:
-                name = None
-                formatted_name = ''
-                value = None
-                formatted_value = ''
+    def insert_utxo(self, idx, x):
+        txid = x.get('prevout_hash')
+        vout = x.get('prevout_n')
+        name_op = self.wallet.transactions[txid].outputs()[vout].name_op
+        if name_op is None:
+            return
 
-            height = x.get('height')
-            chain_height = self.network.blockchain().height()
-            expires_in = name_expires_in(height, chain_height)
-            formatted_expires_in = '%d'%expires_in if expires_in is not None else ''
+        # TODO: Support name_new
+        if 'name' in name_op:
+            name = name_op['name']
+            formatted_name = format_name_identifier(name)
+            value = name_op['value']
+            formatted_value = format_name_value(value)
+        else:
+            name = None
+            formatted_name = ''
+            value = None
+            formatted_value = ''
 
-            status = '' if expires_in is not None else _('Update Pending')
+        height = x.get('height')
+        chain_height = self.network.blockchain().height()
+        expires_in = name_expires_in(height, chain_height)
+        formatted_expires_in = '%d'%expires_in if expires_in is not None else ''
 
-            txout = txid + ":%d"%vout
+        status = '' if expires_in is not None else _('Update Pending')
 
-            self.utxo_dict[txout] = x
+        txout = txid + ":%d"%vout
 
-            labels = [formatted_name, formatted_value, formatted_expires_in, status]
-            utxo_item = [QStandardItem(x) for x in labels]
-            self.set_editability(utxo_item)
+        self.utxo_dict[txout] = x
 
-            utxo_item[0].setFont(QFont(MONOSPACE_FONT))
-            utxo_item[1].setFont(QFont(MONOSPACE_FONT))
+        labels = [formatted_name, formatted_value, formatted_expires_in, status]
+        utxo_item = [QStandardItem(x) for x in labels]
+        self.set_editability(utxo_item)
 
-            utxo_item[0].setData(txout, Qt.UserRole)
-            utxo_item[0].setData(name, Qt.UserRole + USER_ROLE_NAME)
-            utxo_item[0].setData(value, Qt.UserRole + USER_ROLE_VALUE)
+        utxo_item[0].setFont(QFont(MONOSPACE_FONT))
+        utxo_item[1].setFont(QFont(MONOSPACE_FONT))
 
-            address = x.get('address')
-            if self.wallet.is_frozen(address):
-                utxo_item[0].setBackground(ColorScheme.BLUE.as_color(True))
-            self.model().appendRow(utxo_item)
+        utxo_item[0].setData(txout, Qt.UserRole)
+        utxo_item[0].setData(name, Qt.UserRole + USER_ROLE_NAME)
+        utxo_item[0].setData(value, Qt.UserRole + USER_ROLE_VALUE)
+
+        address = x.get('address')
+        if self.wallet.is_frozen(address):
+            utxo_item[0].setBackground(ColorScheme.BLUE.as_color(True))
+        self.model().appendRow(utxo_item)
+
+    # TODO: Break out self.selected_in_column argument into its own attribute
+    # so that we can subclass it without re-implementing
+    # selected_column_0_user_roles
+    def selected_column_0_user_roles(self) -> Optional[List[str]]:
+        if not self.model():
+            return None
+        items = self.selected_in_column(self.Columns.NAME)
+        if not items:
+            return None
+        return [x.data(Qt.UserRole) for x in items]
 
     def create_menu(self, position):
         selected = self.selected_column_0_user_roles()
@@ -132,6 +173,16 @@ class UNOList(UTXOList):
             except NameUpdatedTooRecentlyError:
                 # The name was recently updated, so skip it and don't renew.
                 continue
+            except (NotEnoughFunds, NoDynamicFeeEstimates) as e:
+                self.parent.show_message(str(e))
+                return
+            except InternalAddressCorruption as e:
+                self.parent.show_error(str(e))
+                raise
+            except BaseException as e:
+                traceback.print_exc(file=sys.stdout)
+                self.parent.show_message(str(e))
+                return
 
             try:
                 broadcast(tx)

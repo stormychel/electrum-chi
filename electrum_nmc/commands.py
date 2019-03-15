@@ -40,7 +40,7 @@ from . import bitcoin
 from .bitcoin import is_address,  hash_160, COIN, TYPE_ADDRESS
 from . import bip32
 from .i18n import _
-from .names import build_name_new, name_expires_in, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE, validate_value_length
+from .names import build_name_new, format_name_identifier, name_expires_in, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE, validate_value_length
 from .verifier import verify_tx_is_in_block
 from .transaction import Transaction, multisig_script, TxOutput
 from .paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
@@ -579,10 +579,9 @@ class Commands:
         name_txid_domain = None if name_txid_domain is None else map(self._resolver, name_txid_domain)
         name_identifier_domain = None if name_identifier_domain is None else map(self._resolver, name_identifier_domain)
         final_outputs = []
-        for address, amount, name_op in name_outputs:
+        for address, amount, name_op, memo in name_outputs:
             if address is None:
-                # TODO: add a memo argument to addrequest
-                address = self.addrequest(None)['address']
+                address = self.addrequest(None, memo=memo)['address']
             address = self._resolver(address)
             amount = satoshis(amount)
             final_outputs.append(TxOutput(TYPE_ADDRESS, address, amount, name_op))
@@ -640,8 +639,9 @@ class Commands:
         # TODO: enforce length limit on identifier
         identifier_bytes = identifier.encode("ascii")
         name_op, rand = build_name_new(identifier_bytes)
+        memo = "Pre-Registration: " + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_outputs=[(destination, amount, name_op)])
+        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_outputs=[(destination, amount, name_op, memo)])
         return {"tx": tx.as_dict(), "txid": tx.txid(), "rand": bh2u(rand)}
 
     @command('wp')
@@ -663,8 +663,9 @@ class Commands:
         value_bytes = value.encode("ascii")
         rand_bytes = bfh(rand)
         name_op = {"op": OP_NAME_FIRSTUPDATE, "name": identifier_bytes, "rand": rand_bytes, "value": value_bytes}
+        memo = "Registration: " + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_txids=[name_new_txid], name_outputs=[(destination, amount, name_op)])
+        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_txids=[name_new_txid], name_outputs=[(destination, amount, name_op, memo)])
         return tx.as_dict()
 
     @command('wpn')
@@ -676,6 +677,7 @@ class Commands:
 
         # Allow renewing a name without any value changes by omitting the
         # value.
+        renew = False
         if value is None:
             list_results = self.name_list(identifier)[0]
 
@@ -689,14 +691,16 @@ class Commands:
                 raise NameUpdatedTooRecentlyError("Name was updated too recently to safely determine current value.  Either wait or specify an explicit value.")
 
             value = list_results["value"]
+            renew = True
 
         # TODO: support non-ASCII encodings
         # TODO: enforce length limits on identifier and value
         identifier_bytes = identifier.encode("ascii")
         value_bytes = value.encode("ascii")
         name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": value_bytes}
+        memo = ("Renew: " if renew else "Update: ") + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_identifiers=[identifier_bytes], name_outputs=[(destination, amount, name_op)])
+        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_identifiers=[identifier_bytes], name_outputs=[(destination, amount, name_op, memo)])
         return tx.as_dict()
 
     @command('wpn')
@@ -714,10 +718,7 @@ class Commands:
         new_rand = new_result["rand"]
         new_tx = new_result["tx"]["hex"]
 
-        try:
-            self.broadcast(new_tx)
-        except Exception as e:
-            raise Exception("Error broadcasting name pre-registration: " + str(e))
+        self.broadcast(new_tx)
 
         # We add the name_new transaction to the wallet explicitly because
         # otherwise, the wallet will only learn about the name_new once the

@@ -3468,6 +3468,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         except util.BitcoinException:
             # This happens if the name identifier exceeded the 255-byte limit.
             name_valid = False
+        except BestEffortRequestFailed:
+            msg = repr(e)
+            self.show_error(msg)
+            return
 
         if not name_valid:
             self.buy_names_available_widget.hide()

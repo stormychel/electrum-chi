@@ -23,9 +23,14 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import sys
+import traceback
+
 from electrum_nmc.commands import NameUpdatedTooRecentlyError
 from electrum_nmc.i18n import _
 from electrum_nmc.names import format_name_identifier, format_name_value, name_expires_in
+from electrum_nmc.util import NotEnoughFunds, NoDynamicFeeEstimates
+from electrum_nmc.wallet import InternalAddressCorruption
 
 from .configure_name_dialog import show_configure_name
 from .util import *
@@ -132,6 +137,16 @@ class UNOList(UTXOList):
             except NameUpdatedTooRecentlyError:
                 # The name was recently updated, so skip it and don't renew.
                 continue
+            except (NotEnoughFunds, NoDynamicFeeEstimates) as e:
+                self.parent.show_message(str(e))
+                return
+            except InternalAddressCorruption as e:
+                self.parent.show_error(str(e))
+                raise
+            except BaseException as e:
+                traceback.print_exc(file=sys.stdout)
+                self.parent.show_message(str(e))
+                return
 
             try:
                 broadcast(tx)

@@ -718,10 +718,7 @@ class Commands:
         new_rand = new_result["rand"]
         new_tx = new_result["tx"]["hex"]
 
-        try:
-            self.broadcast(new_tx)
-        except Exception as e:
-            raise Exception("Error broadcasting name pre-registration: " + str(e))
+        self.broadcast(new_tx)
 
         # We add the name_new transaction to the wallet explicitly because
         # otherwise, the wallet will only learn about the name_new once the

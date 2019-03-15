@@ -684,5 +684,5 @@ class WalletStorage(JsonDB):
                 msg += "\nIt does not contain any keys, and can safely be removed."
             else:
                 # creation was complete if electrum was run from source
-                msg += "\nPlease open this file with Electrum 1.9.8, and move your coins to a new wallet."
+                msg += "\nPlease open this file with Electrum-NMC 1.9.8, and move your coins to a new wallet."
         raise WalletFileException(msg)

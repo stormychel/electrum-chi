@@ -119,7 +119,7 @@ class SimpleConfig(PrintError):
             path = os.path.join(path, 'simnet')
             make_dir(path, allow_symlink=False)
 
-        self.print_error("electrum directory", path)
+        self.print_error("electrum-nmc directory", path)
         return path
 
     def rename_config_keys(self, config, keypairs, deprecation_warning=False):

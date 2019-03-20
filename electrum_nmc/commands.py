@@ -107,7 +107,7 @@ def command(s):
             wallet = args[0].wallet
             password = kwargs.get('password')
             if c.requires_wallet and wallet is None:
-                raise Exception("wallet not loaded. Use 'electrum daemon load_wallet'")
+                raise Exception("wallet not loaded. Use 'electrum-nmc daemon load_wallet'")
             if c.requires_password and password is None and wallet.has_password():
                 return {'error': 'Password required' }
             return func(*args, **kwargs)
@@ -1318,7 +1318,7 @@ def add_global_options(parser):
     # const is for when no argument is given to verbosity
     # default is for when the flag is missing
     group.add_argument("-v", dest="verbosity", help="Set verbosity filter", default='', const='*', nargs='?')
-    group.add_argument("-D", "--dir", dest="electrum_path", help="electrum directory")
+    group.add_argument("-D", "--dir", dest="electrum_path", help="electrum-nmc directory")
     group.add_argument("-P", "--portable", action="store_true", dest="portable", default=False, help="Use local 'electrum-nmc_data' directory")
     group.add_argument("-w", "--wallet", dest="wallet_path", help="wallet path")
     group.add_argument("--testnet", action="store_true", dest="testnet", default=False, help="Use Testnet")

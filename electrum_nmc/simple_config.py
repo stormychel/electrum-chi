@@ -119,7 +119,7 @@ class SimpleConfig(PrintError):
             path = os.path.join(path, 'simnet')
             make_dir(path, allow_symlink=False)
 
-        self.print_error("electrum directory", path)
+        self.print_error("electrum-nmc directory", path)
         return path
 
     def rename_config_keys(self, config, keypairs, deprecation_warning=False):
@@ -202,7 +202,7 @@ class SimpleConfig(PrintError):
         base_unit = self.user_config.get('base_unit')
         if isinstance(base_unit, str):
             self._set_key_in_user_config('base_unit', None)
-            map_ = {'btc':8, 'mbtc':5, 'ubtc':2, 'bits':2, 'sat':0}
+            map_ = {'nmc':8, 'mnmc':5, 'unmc':2, 'bits':2, 'swartz':0}
             decimal_point = map_.get(base_unit.lower())
             self._set_key_in_user_config('decimal_point', decimal_point)
 

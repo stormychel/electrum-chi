@@ -22,6 +22,7 @@ cache:
     - /tmp/electrum-build
 script:
     - tox
+    - ./contrib/check_nmc_rebranding
 after_success:
     - if [ "$TRAVIS_BRANCH" = "master" ]; then pip install requests && contrib/make_locale; fi
     - coveralls

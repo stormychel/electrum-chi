@@ -128,4 +128,19 @@ if grep -r $EXCEPTIONS "electrum\\\\wordlist" ./; then
     exit 1
 fi
 
+if grep -r $EXCEPTIONS "electrum.icns" ./; then
+    echo "Rebranding needed"
+    exit 1
+fi
+
+if grep -r $EXCEPTIONS "electrum\\.ico" ./; then
+    echo "Rebranding needed"
+    exit 1
+fi
+
+if grep -r $EXCEPTIONS "electrum.png" ./; then
+    echo "Rebranding needed"
+    exit 1
+fi
+
 exit 0

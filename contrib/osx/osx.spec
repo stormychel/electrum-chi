@@ -7,7 +7,7 @@ import sys, os
 PACKAGE='Electrum-NMC'
 PYPKG='electrum_nmc'
 MAIN_SCRIPT='run_electrum_nmc'
-ICONS_FILE=PYPKG + '/gui/icons/electrum.icns'
+ICONS_FILE=PYPKG + '/gui/icons/electrum_nmc.icns'
 APP_SIGN = os.environ.get('APP_SIGN', '')
 
 def fail(*msg):

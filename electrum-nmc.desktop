@@ -6,7 +6,7 @@ Comment=Lightweight Namecoin Client
 Exec=sh -c "PATH=\"\\$HOME/.local/bin:\\$PATH\"; electrum-nmc %u"
 GenericName[en_US]=Namecoin Wallet
 GenericName=Namecoin Wallet
-Icon=electrum-nmc
+Icon=electrum_nmc
 Name[en_US]=Electrum Namecoin Wallet
 Name=Electrum Namecoin Wallet
 Categories=Finance;Network;

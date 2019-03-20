@@ -122,7 +122,7 @@ cp "/usr/lib/libzbar.so.0" "$APPDIR/usr/lib/libzbar.so.0"
 
 info "desktop integration."
 cp "$PROJECT_ROOT/electrum-nmc.desktop" "$APPDIR/electrum-nmc.desktop"
-cp "$PROJECT_ROOT/electrum_nmc/gui/icons/electrum.png" "$APPDIR/electrum.png"
+cp "$PROJECT_ROOT/electrum_nmc/gui/icons/electrum_nmc.png" "$APPDIR/electrum_nmc.png"
 
 
 # add launcher

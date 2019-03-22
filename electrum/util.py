@@ -199,7 +199,7 @@ class MyEncoder(json.JSONEncoder):
             return obj.isoformat(' ')[:-3]
         if isinstance(obj, set):
             return list(obj)
-        return super(MyEncoder, self).default(obj)
+        return super().default(obj)
 
 class PrintError(object):
     '''A handy base class'''
@@ -798,17 +798,25 @@ def parse_URI(uri: str, on_pr: Callable=None) -> dict:
     return out
 
 
-def create_URI(addr, amount, message):
+def create_bip21_uri(addr, amount_sat: Optional[int], message: Optional[str],
+                     *, extra_query_params: Optional[dict] = None) -> str:
     from . import bitcoin
     if not bitcoin.is_address(addr):
         return ""
+    if extra_query_params is None:
+        extra_query_params = {}
     query = []
-    if amount:
-        query.append('amount=%s'%format_satoshis_plain(amount))
+    if amount_sat:
+        query.append('amount=%s'%format_satoshis_plain(amount_sat))
     if message:
         query.append('message=%s'%urllib.parse.quote(message))
+    for k, v in extra_query_params.items():
+        if not isinstance(k, str) or k != urllib.parse.quote(k):
+            raise Exception(f"illegal key for URI: {repr(k)}")
+        v = urllib.parse.quote(v)
+        query.append(f"{k}={v}")
     p = urllib.parse.ParseResult(scheme='bitcoin', netloc='', path=addr, params='', query='&'.join(query), fragment='')
-    return urllib.parse.urlunparse(p)
+    return str(urllib.parse.urlunparse(p))
 
 
 # Python bug (http://bugs.python.org/issue1927) causes raw_input
@@ -940,7 +948,7 @@ class TxMinedInfo(NamedTuple):
     header_hash: Optional[str] = None  # hash of block that mined tx
 
 
-def make_aiohttp_session(proxy: dict, headers=None, timeout=None):
+def make_aiohttp_session(proxy: Optional[dict], headers=None, timeout=None):
     if headers is None:
         headers = {'User-Agent': 'Electrum'}
     if timeout is None:
@@ -1106,3 +1114,14 @@ class OrderedDictWithIndex(OrderedDict):
             self._key_to_pos[key] = pos
             self._pos_to_key[pos] = key
         return ret
+
+
+def multisig_type(wallet_type):
+    '''If wallet_type is mofn multi-sig, return [m, n],
+    otherwise return None.'''
+    if not wallet_type:
+        return None
+    match = re.match(r'(\d+)of(\d+)', wallet_type)
+    if match:
+        match = [int(x) for x in match.group(1, 2)]
+    return match

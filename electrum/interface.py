@@ -217,12 +217,19 @@ class Interface(PrintError):
         else:
             self.proxy = None
 
-    async def is_server_ca_signed(self, sslc):
+    async def is_server_ca_signed(self, ca_ssl_context):
+        """Given a CA enforcing SSL context, returns True if the connection
+        can be established. Returns False if the server has a self-signed
+        certificate but otherwise is okay. Any other failures raise.
+        """
         try:
-            await self.open_session(sslc, exit_early=True)
+            await self.open_session(ca_ssl_context, exit_early=True)
         except ssl.SSLError as e:
-            assert e.reason == 'CERTIFICATE_VERIFY_FAILED'
-            return False
+            if e.reason == 'CERTIFICATE_VERIFY_FAILED':
+                # failures due to self-signed certs are normal
+                return False
+            # e.g. too weak crypto
+            raise
         return True
 
     async def _try_saving_ssl_cert_for_first_time(self, ca_ssl_context):
@@ -292,6 +299,8 @@ class Interface(PrintError):
             finally:
                 await self.network.connection_down(self)
                 self.got_disconnected.set_result(1)
+                # if was not 'ready' yet, schedule waiting coroutines:
+                self.ready.cancel()
         return wrapper_func
 
     @ignore_exceptions  # do not kill main_taskgroup

@@ -287,7 +287,7 @@ class Network(PrintError):
         return fut.result()
 
     @staticmethod
-    def get_instance():
+    def get_instance() -> Optional["Network"]:
         return INSTANCE
 
     def with_recent_servers_lock(func):
@@ -780,7 +780,7 @@ class Network(PrintError):
             try:
                 return await func(self, *args, **kwargs)
             except aiorpcx.jsonrpc.CodeMessageError as e:
-                raise UntrustedServerReturnedError(original_exception=e)
+                raise UntrustedServerReturnedError(original_exception=e) from e
         return wrapper
 
     @best_effort_reliable
@@ -1147,8 +1147,8 @@ class Network(PrintError):
                     raise
             await asyncio.sleep(0.1)
 
-
-    async def _send_http_on_proxy(self, method: str, url: str, params: str = None, body: bytes = None, json: dict = None, headers=None, on_finish=None):
+    @classmethod
+    async def _send_http_on_proxy(cls, method: str, url: str, params: str = None, body: bytes = None, json: dict = None, headers=None, on_finish=None):
         async def default_on_finish(resp: ClientResponse):
             resp.raise_for_status()
             return await resp.text()
@@ -1156,7 +1156,9 @@ class Network(PrintError):
             headers = {}
         if on_finish is None:
             on_finish = default_on_finish
-        async with make_aiohttp_session(self.proxy) as session:
+        network = cls.get_instance()
+        proxy = network.proxy if network else None
+        async with make_aiohttp_session(proxy) as session:
             if method == 'get':
                 async with session.get(url, params=params, headers=headers) as resp:
                     return await on_finish(resp)
@@ -1171,14 +1173,16 @@ class Network(PrintError):
             else:
                 assert False
 
-    @staticmethod
-    def send_http_on_proxy(method, url, **kwargs):
-        network = Network.get_instance()
-        assert network._loop_thread is not threading.currentThread()
-        coro = asyncio.run_coroutine_threadsafe(network._send_http_on_proxy(method, url, **kwargs), network.asyncio_loop)
+    @classmethod
+    def send_http_on_proxy(cls, method, url, **kwargs):
+        network = cls.get_instance()
+        if network:
+            assert network._loop_thread is not threading.currentThread()
+            loop = network.asyncio_loop
+        else:
+            loop = asyncio.get_event_loop()
+        coro = asyncio.run_coroutine_threadsafe(cls._send_http_on_proxy(method, url, **kwargs), loop)
         return coro.result(5)
-
-
 
     # methods used in scripts
     async def get_peers(self):
@@ -1188,24 +1192,21 @@ class Network(PrintError):
         return parse_servers(await session.send_request('server.peers.subscribe'))
 
     async def send_multiple_requests(self, servers: List[str], method: str, params: Sequence):
-        num_connecting = len(self.connecting)
-        for server in servers:
-            self._start_interface(server)
-        # sleep a bit
-        for _ in range(10):
-            if len(self.connecting) < num_connecting:
-                break
-            await asyncio.sleep(1)
         responses = dict()
-        async def get_response(iface: Interface):
+        async def get_response(server):
+            interface = Interface(self, server, self.proxy)
+            timeout = self.get_network_timeout_seconds(NetworkTimeout.Urgent)
             try:
-                res = await iface.session.send_request(method, params, timeout=10)
+                await asyncio.wait_for(interface.ready, timeout)
+            except BaseException as e:
+                await interface.close()
+                return
+            try:
+                res = await interface.session.send_request(method, params, timeout=10)
             except Exception as e:
                 res = e
-            responses[iface.server] = res
+            responses[interface.server] = res
         async with TaskGroup() as group:
             for server in servers:
-                interface = self.interfaces.get(server)
-                if interface:
-                    await group.spawn(get_response(interface))
+                await group.spawn(get_response(server))
         return responses

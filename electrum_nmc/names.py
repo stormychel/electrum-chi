@@ -278,7 +278,7 @@ def get_default_name_tx_label(wallet, tx):
                 addr_history = wallet.get_address_history(addr)
                 for addr_txid, addr_height in addr_history:
                     # Examine a candidate tx that might be the NAME_FIRSTUPDATE
-                    addr_tx = wallet.transactions.get(addr_txid)
+                    addr_tx = wallet.db.transactions.get(addr_txid)
                     # Look at all the candidate's inputs to make sure it's
                     # actually spending the NAME_NEW
                     for addr_tx_input in addr_tx.inputs():
@@ -295,8 +295,8 @@ def get_default_name_tx_label(wallet, tx):
                                             return "Pre-Registration: " + format_name_identifier(addr_tx_output.name_op['name'])
 
                 # Look for queued transactions that spend the NAME_NEW
-                for addr_txid in wallet.queued_transactions:
-                    addr_tx_queue_item = wallet.queued_transactions[addr_txid]
+                for addr_txid in wallet.db.queued_transactions:
+                    addr_tx_queue_item = wallet.db.queued_transactions[addr_txid]
                     # Check whether the queued transaction is contingent on the NAME_NEW transaction
                     if addr_tx_queue_item['sendWhen']['txid'] == tx.txid():
                         addr_tx = Transaction(addr_tx_queue_item['tx'])
@@ -339,7 +339,7 @@ def get_wallet_name_delta(wallet, tx):
     for txin in tx.inputs():
         addr = wallet.get_txin_address(txin)
         if wallet.is_mine(addr):
-            prev_tx = wallet.transactions.get(txin['prevout_hash'])
+            prev_tx = wallet.db.transactions.get(txin['prevout_hash'])
             if prev_tx.outputs()[txin['prevout_n']].name_op is not None:
                 name_input_is_mine = True
                 if 'value' in prev_tx.outputs()[txin['prevout_n']].name_op:

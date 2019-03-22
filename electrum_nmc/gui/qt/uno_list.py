@@ -81,7 +81,7 @@ class UNOList(UTXOList):
     def insert_utxo(self, idx, x):
         txid = x.get('prevout_hash')
         vout = x.get('prevout_n')
-        name_op = self.wallet.transactions[txid].outputs()[vout].name_op
+        name_op = self.wallet.db.transactions[txid].outputs()[vout].name_op
         if name_op is None:
             return
 
@@ -144,7 +144,7 @@ class UNOList(UTXOList):
         menu.addAction(_("Renew"), lambda: self.renew_selected_items())
         if len(selected) == 1:
             txid = selected[0].split(':')[0]
-            tx = self.wallet.transactions.get(txid)
+            tx = self.wallet.db.transactions.get(txid)
             if tx:
                 label = self.wallet.get_label(txid) or None # Prefer None if empty (None hides the Description: field in the window)
                 menu.addAction(_("Configure"), lambda: self.configure_selected_item())

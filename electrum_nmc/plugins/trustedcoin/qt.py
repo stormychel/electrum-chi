@@ -121,10 +121,20 @@ class Plugin(TrustedCoinPlugin):
     def prompt_user_for_otp(self, wallet, tx, on_success, on_failure):
         wallet.handler_2fa.prompt_user_for_otp(wallet, tx, on_success, on_failure)
 
-    def waiting_dialog(self, window, on_finished=None):
-        task = partial(self.request_billing_info, window.wallet)
-        return WaitingDialog(window, 'Getting billing information...', task,
-                             on_finished)
+    def waiting_dialog_for_billing_info(self, window, *, on_finished=None):
+        def task():
+            return self.request_billing_info(window.wallet, suppress_connection_error=False)
+        def on_error(exc_info):
+            e = exc_info[1]
+            window.show_error("{header}\n{exc}\n\n{tor}"
+                              .format(header=_('Error getting TrustedCoin account info.'),
+                                      exc=str(e),
+                                      tor=_('If you keep experiencing network problems, try using a Tor proxy.')))
+        return WaitingDialog(parent=window,
+                             message=_('Requesting account info from TrustedCoin server...'),
+                             task=task,
+                             on_success=on_finished,
+                             on_error=on_error)
 
     @hook
     def abort_send(self, window):
@@ -134,14 +144,13 @@ class Plugin(TrustedCoinPlugin):
         if wallet.can_sign_without_server():
             return
         if wallet.billing_info is None:
-            self.start_request_thread(wallet)
-            window.show_error(_('Requesting account info from TrustedCoin server...') + '\n' +
-                                _('Please try again.'))
+            self.waiting_dialog_for_billing_info(window)
             return True
         return False
 
     def settings_dialog(self, window):
-        self.waiting_dialog(window, partial(self.show_settings_dialog, window))
+        self.waiting_dialog_for_billing_info(window,
+                                             on_finished=partial(self.show_settings_dialog, window))
 
     def show_settings_dialog(self, window, success):
         if not success:
@@ -200,7 +209,7 @@ class Plugin(TrustedCoinPlugin):
 
     def go_online_dialog(self, wizard: InstallWizard):
         msg = [
-            _("Your wallet file is: {}.").format(os.path.abspath(wizard.storage.path)),
+            _("Your wallet file is: {}.").format(os.path.abspath(wizard.path)),
             _("You need to be online in order to complete the creation of "
               "your wallet.  If you generated your seed on an offline "
               'computer, click on "{}" to close this window, move your '
@@ -209,6 +218,7 @@ class Plugin(TrustedCoinPlugin):
             _('If you are online, click on "{}" to continue.').format(_('Next'))
         ]
         msg = '\n\n'.join(msg)
+        wizard.create_storage(wizard.path)
         wizard.reset_stack()
         wizard.confirm_dialog(title='', message=msg, run_next = lambda x: wizard.run('accept_terms_of_use'))
 

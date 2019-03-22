@@ -26,9 +26,9 @@
 
 from electrum_nmc.plugin import BasePlugin, hook
 from electrum_nmc.i18n import _
-from electrum_nmc.bitcoin import is_address, TYPE_SCRIPT
+from electrum_nmc.bitcoin import is_address, TYPE_SCRIPT, opcodes
 from electrum_nmc.util import bfh, versiontuple, UserFacingException
-from electrum_nmc.transaction import opcodes, TxOutput, Transaction
+from electrum_nmc.transaction import TxOutput, Transaction
 
 
 class HW_PluginBase(BasePlugin):

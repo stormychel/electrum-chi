@@ -256,11 +256,11 @@ def format_name_op(name_op):
 
 
 def get_default_name_tx_label(wallet, tx):
-    for o in tx.outputs():
+    for idx, o in enumerate(tx.outputs()):
         name_op = o.name_op
         if name_op is not None:
             # TODO: Handle multiple atomic name ops.
-            name_input_is_mine, name_output_is_mine = get_wallet_name_delta(wallet, tx)
+            name_input_is_mine, name_output_is_mine, name_value_is_unchanged = get_wallet_name_delta(wallet, tx)
             if not name_input_is_mine and not name_output_is_mine:
                 return None
             if name_input_is_mine and not name_output_is_mine:
@@ -271,30 +271,88 @@ def get_default_name_tx_label(wallet, tx):
                 if name_op["op"] != OP_NAME_NEW:
                     return "Transfer (Incoming): " + format_name_identifier(name_op["name"])
             if name_op["op"] == OP_NAME_NEW:
-                # A name_new transaction doesn't have a name output, so there's
-                # nothing to format.
+                # Get the address where the NAME_NEW was sent to
+                addr = o.address
+                # Look for other transactions for this address, which might
+                # include the NAME_FIRSTUPDATE
+                addr_history = wallet.get_address_history(addr)
+                for addr_txid, addr_height in addr_history:
+                    # Examine a candidate tx that might be the NAME_FIRSTUPDATE
+                    addr_tx = wallet.transactions.get(addr_txid)
+                    # Look at all the candidate's inputs to make sure it's
+                    # actually spending the NAME_NEW
+                    for addr_tx_input in addr_tx.inputs():
+                        if addr_tx_input['prevout_hash'] == tx.txid():
+                            if addr_tx_input['prevout_n'] == idx:
+                                # We've confirmed that it spends the NAME_NEW.
+                                # Look at the outputs to find the
+                                # NAME_FIRSTUPDATE.
+                                for addr_tx_output in addr_tx.outputs():
+                                    if addr_tx_output.name_op is not None:
+                                        # We've found a name output; now we
+                                        # check for an identifier.
+                                        if 'name' in addr_tx_output.name_op:
+                                            return "Pre-Registration: " + format_name_identifier(addr_tx_output.name_op['name'])
+
+                # Look for queued transactions that spend the NAME_NEW
+                for addr_txid in wallet.queued_transactions:
+                    addr_tx_queue_item = wallet.queued_transactions[addr_txid]
+                    # Check whether the queued transaction is contingent on the NAME_NEW transaction
+                    if addr_tx_queue_item['sendWhen']['txid'] == tx.txid():
+                        addr_tx = Transaction(addr_tx_queue_item['tx'])
+                        # Look at all the candidate's inputs to make sure it's
+                        # actually spending the NAME_NEW
+                        for addr_tx_input in addr_tx.inputs():
+                            if addr_tx_input['prevout_hash'] == tx.txid():
+                                if addr_tx_input['prevout_n'] == idx:
+                                    # We've confirmed that it spends the NAME_NEW.
+                                    # Look at the outputs to find the
+                                    # NAME_FIRSTUPDATE.
+                                    for addr_tx_output in addr_tx.outputs():
+                                        if addr_tx_output.name_op is not None:
+                                            # We've found a name output; now we
+                                            # check for an identifier.
+                                            if 'name' in addr_tx_output.name_op:
+                                                return "Pre-Registration: " + format_name_identifier(addr_tx_output.name_op['name'])
+
+                # A name_new transaction doesn't have a visible 'name' field,
+                # so there's nothing to format if we can't find the name
+                # elsewhere in the wallet.
                 return "Pre-Registration"
             if name_op["op"] == OP_NAME_FIRSTUPDATE:
                 return "Registration: " + format_name_identifier(name_op["name"])
             if name_op["op"] == OP_NAME_UPDATE:
-                return "Update: " + format_name_identifier(name_op["name"])
+                if name_value_is_unchanged:
+                    return "Renew: " + format_name_identifier(name_op["name"])
+                else:
+                    return "Update: " + format_name_identifier(name_op["name"])
     return None
 
 
 def get_wallet_name_delta(wallet, tx):
     name_input_is_mine = False
     name_output_is_mine = False
+
+    name_input_value = None
+    name_output_value = None
+
     for txin in tx.inputs():
         addr = wallet.get_txin_address(txin)
         if wallet.is_mine(addr):
             prev_tx = wallet.transactions.get(txin['prevout_hash'])
             if prev_tx.outputs()[txin['prevout_n']].name_op is not None:
                 name_input_is_mine = True
+                if 'value' in prev_tx.outputs()[txin['prevout_n']].name_op:
+                    name_input_value = prev_tx.outputs()[txin['prevout_n']].name_op['value']
     for o in tx.outputs():
         if o.name_op is not None and wallet.is_mine(o.address):
             name_output_is_mine = True
+            if 'value' in o.name_op:
+                name_output_value = o.name_op['value']
 
-    return name_input_is_mine, name_output_is_mine
+    name_value_is_unchanged = name_input_value == name_output_value
+
+    return name_input_is_mine, name_output_is_mine, name_value_is_unchanged
 
 
 def name_expires_in(name_height, chain_height):
@@ -310,7 +368,7 @@ import re
 
 from .bitcoin import push_script, script_to_scripthash
 from .crypto import hash_160
-from .transaction import MalformedBitcoinScript, match_decoded, opcodes, OPPushDataGeneric, script_GetOp
+from .transaction import MalformedBitcoinScript, match_decoded, opcodes, OPPushDataGeneric, script_GetOp, Transaction
 from .util import bh2u, BitcoinException
 
 OP_NAME_NEW = opcodes.OP_1

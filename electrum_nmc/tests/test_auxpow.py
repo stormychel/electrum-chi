@@ -1,5 +1,5 @@
-from electrum import auxpow, blockchain, constants
-from electrum.util import bfh
+from electrum_nmc import auxpow, blockchain, constants
+from electrum_nmc.util import bfh
 
 from . import SequentialTestCase
 from . import TestCaseForTestnet

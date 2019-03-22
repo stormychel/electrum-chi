@@ -47,7 +47,7 @@ from electrum_nmc.plugin import run_hook
 from electrum_nmc.base_wizard import GoBack
 from electrum_nmc.util import (UserCancelled, PrintError, profiler,
                            WalletFileException, BitcoinException, get_new_wallet_name)
-from electrum.wallet import Wallet, Abstract_Wallet
+from electrum_nmc.wallet import Wallet, Abstract_Wallet
 
 from .installwizard import InstallWizard, WalletAlreadyOpenInMemory
 

@@ -65,65 +65,17 @@ if grep -r $EXCEPTIONS "from electrum import" ./; then
 fi
 
 # Locale rebranding is a known bug: https://github.com/namecoin/electrum-nmc/issues/109
-if grep -r $EXCEPTIONS "electrum/gui" ./ \
-    | grep -v "./contrib/deterministic-build/electrum-locale/locale/"; then
+# Issue 4994 has no Namecoin equivalent.
+# The localization button SVG is a known bug: https://github.com/namecoin/electrum-nmc/issues/114
+if grep -r $EXCEPTIONS "electrum/" ./ \
+    | grep -v "./contrib/deterministic-build/electrum-locale/locale/" \
+    | grep -v "https://github.com/spesmilo/electrum/issues/4994" \
+    | grep -v "https://d322cqt584bo4o.cloudfront.net/electrum/localized.svg"; then
     echo "Rebranding needed"
     exit 1
 fi
 
-if grep -r $EXCEPTIONS "electrum\\\\gui" ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-if grep -r $EXCEPTIONS "electrum/locale" ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-if grep -r $EXCEPTIONS "electrum\\\\locale" ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-# Locale rebranding is a known bug: https://github.com/namecoin/electrum-nmc/issues/109
-if grep -r $EXCEPTIONS "electrum/plugins" ./ \
-    | grep -v "./contrib/deterministic-build/electrum-locale/locale/"; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-if grep -r $EXCEPTIONS "electrum\\\\plugins" ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-if grep -r $EXCEPTIONS "electrum/scripts" ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-if grep -r $EXCEPTIONS "electrum\\\\scripts" ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-if grep -r $EXCEPTIONS "electrum/tests" ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-if grep -r $EXCEPTIONS "electrum\\\\tests" ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-if grep -r $EXCEPTIONS "electrum/wordlist" ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-if grep -r $EXCEPTIONS "electrum\\\\wordlist" ./; then
+if grep -r $EXCEPTIONS "electrum\\\\" ./; then
     echo "Rebranding needed"
     exit 1
 fi

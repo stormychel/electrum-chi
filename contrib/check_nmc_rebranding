@@ -70,7 +70,10 @@ fi
 if grep -r $EXCEPTIONS "electrum/" ./ \
     | grep -v "./contrib/deterministic-build/electrum-locale/locale/" \
     | grep -v "https://github.com/spesmilo/electrum/issues/4994" \
-    | grep -v "https://d322cqt584bo4o.cloudfront.net/electrum/localized.svg"; then
+    | grep -v "https://d322cqt584bo4o.cloudfront.net/electrum/localized.svg" \
+    | grep -v "./tox/log/" \
+    | grep -v "CalinsQRReader/README.md" \
+    | grep -v "./Electrum_NMC.egg-info/SOURCES.txt"; then
     echo "Rebranding needed"
     exit 1
 fi

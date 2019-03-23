@@ -45,6 +45,11 @@ for i in **/*.py; do
         echo "Rebranding needed"
         exit 1
     fi
+
+    if ./contrib/print_python_strings "$i" "['\"]bc1"; then
+        echo "Rebranding needed"
+        exit 1
+    fi
 done
 
 EXCEPTIONS="--exclude=check_nmc_rebranding --exclude-dir=.git"

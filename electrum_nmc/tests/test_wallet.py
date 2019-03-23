@@ -212,13 +212,17 @@ class TestCreateRestoreWallet(WalletTestCase):
         self.assertEqual(2, len(wallet.get_receiving_addresses()))
 
     def test_restore_wallet_from_text_privkeys(self):
-        text = 'p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL p2wpkh:L24GxnN7NNUAfCXA6hFzB1jt59fYAAiFZMcLaJ2ZSawGpM3uqhb1'
+        #text = 'p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL p2wpkh:L24GxnN7NNUAfCXA6hFzB1jt59fYAAiFZMcLaJ2ZSawGpM3uqhb1'
+        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
+        text = 'p2wpkh:TktYN7Gf6FfF7PEshsq9PKrzyhixC6of4hCtzidnJZZexCH2ETJ5 p2wpkh:TiD4hB6tUN7KL7D6rdnRa4fD1k7TZvp42L17fv3UyU8HTZUp13qP'
         d = restore_wallet_from_text(text, path=self.wallet_path, network=None)
         wallet = d['wallet']  # type: Abstract_Wallet
         addr0 = wallet.get_receiving_addresses()[0]
         #self.assertEqual('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw', addr0)
         # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
         self.assertEqual('nc1q2ccr34wzep58d4239tl3x3734ttle92aquuuud', addr0)
-        self.assertEqual('p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL',
+        #self.assertEqual('p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL',
+        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
+        self.assertEqual('p2wpkh:TktYN7Gf6FfF7PEshsq9PKrzyhixC6of4hCtzidnJZZexCH2ETJ5',
                          wallet.export_private_key(addr0, password=None)[0])
         self.assertEqual(2, len(wallet.get_receiving_addresses()))

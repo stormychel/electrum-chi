@@ -46,7 +46,14 @@ for i in **/*.py; do
         exit 1
     fi
 
+    # Bitcoin Bech32 addresses
     if ./contrib/print_python_strings "$i" "['\"]bc1"; then
+        echo "Rebranding needed"
+        exit 1
+    fi
+
+    # Bitcoin private keys
+    if ./contrib/print_python_strings "$i" "p2w?pkh(-p2sh)?:[KL]"; then
         echo "Rebranding needed"
         exit 1
     fi

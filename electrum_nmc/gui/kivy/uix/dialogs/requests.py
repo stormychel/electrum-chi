@@ -74,10 +74,10 @@ Builder.load_string('''
 ''')
 
 from kivy.properties import BooleanProperty
-from electrum_nmc.gui.kivy.i18n import _
-from electrum_nmc.util import format_time
-from electrum_nmc.paymentrequest import PR_UNPAID, PR_PAID, PR_UNKNOWN, PR_EXPIRED
-from electrum_nmc.gui.kivy.uix.context_menu import ContextMenu
+from electrum.gui.kivy.i18n import _
+from electrum.util import format_time
+from electrum.paymentrequest import PR_UNPAID, PR_PAID, PR_UNKNOWN, PR_EXPIRED
+from electrum.gui.kivy.uix.context_menu import ContextMenu
 
 pr_icon = {
     PR_UNPAID: 'atlas://electrum_nmc/gui/kivy/theming/light/important',

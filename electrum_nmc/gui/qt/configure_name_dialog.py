@@ -30,13 +30,13 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from electrum_nmc.bitcoin import TYPE_ADDRESS
-from electrum_nmc.commands import NameAlreadyExistsError
-from electrum_nmc.i18n import _
-from electrum_nmc.names import format_name_identifier
-from electrum_nmc.network import TxBroadcastError, BestEffortRequestFailed
-from electrum_nmc.util import NotEnoughFunds, NoDynamicFeeEstimates
-from electrum_nmc.wallet import InternalAddressCorruption
+from electrum.bitcoin import TYPE_ADDRESS
+from electrum.commands import NameAlreadyExistsError
+from electrum.i18n import _
+from electrum.names import format_name_identifier
+from electrum.network import TxBroadcastError, BestEffortRequestFailed
+from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates
+from electrum.wallet import InternalAddressCorruption
 
 from .paytoedit import PayToEdit
 

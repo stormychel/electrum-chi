@@ -15,3 +15,10 @@ from .commands import Commands, known_commands
 
 
 __version__ = ELECTRUM_VERSION
+
+# This trick allows accessing electrum_nmc from import statements as electrum,
+# so we can avoid merge conflicts while also avoiding namespace collisions with
+# upstream.
+import electrum_nmc
+import sys
+sys.modules['electrum'] = electrum_nmc

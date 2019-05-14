@@ -6,15 +6,15 @@ from struct import pack, unpack
 import os, sys, time, io
 import traceback
 
-from electrum_nmc.bip32 import BIP32Node, InvalidMasterKeyVersionBytes
-from electrum_nmc.i18n import _
-from electrum_nmc.plugin import Device
-from electrum_nmc.keystore import Hardware_KeyStore, xpubkey_to_pubkey, Xpub
-from electrum_nmc.transaction import Transaction
-from electrum_nmc.wallet import Standard_Wallet
-from electrum_nmc.crypto import hash_160
-from electrum_nmc.util import print_error, bfh, bh2u, versiontuple, UserFacingException
-from electrum_nmc.base_wizard import ScriptTypeNotSupported
+from electrum.bip32 import BIP32Node, InvalidMasterKeyVersionBytes
+from electrum.i18n import _
+from electrum.plugin import Device
+from electrum.keystore import Hardware_KeyStore, xpubkey_to_pubkey, Xpub
+from electrum.transaction import Transaction
+from electrum.wallet import Standard_Wallet
+from electrum.crypto import hash_160
+from electrum.util import print_error, bfh, bh2u, versiontuple, UserFacingException
+from electrum.base_wizard import ScriptTypeNotSupported
 
 from ..hw_wallet import HW_PluginBase
 from ..hw_wallet.plugin import LibraryFoundButUnusable

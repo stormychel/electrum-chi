@@ -6,14 +6,14 @@ import locale
 from decimal import Decimal
 import getpass
 
-import electrum_nmc as electrum
-from electrum_nmc.util import format_satoshis, set_verbosity
-from electrum_nmc.bitcoin import is_address, COIN, TYPE_ADDRESS
-from electrum_nmc.transaction import TxOutput
-from electrum_nmc.wallet import Wallet
-from electrum_nmc.storage import WalletStorage
-from electrum_nmc.network import NetworkParameters, TxBroadcastError, BestEffortRequestFailed
-from electrum_nmc.interface import deserialize_server
+import electrum
+from electrum.util import format_satoshis, set_verbosity
+from electrum.bitcoin import is_address, COIN, TYPE_ADDRESS
+from electrum.transaction import TxOutput
+from electrum.wallet import Wallet
+from electrum.storage import WalletStorage
+from electrum.network import NetworkParameters, TxBroadcastError, BestEffortRequestFailed
+from electrum.interface import deserialize_server
 
 _ = lambda x:x  # i18n
 

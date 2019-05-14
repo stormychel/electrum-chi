@@ -7,16 +7,16 @@ import traceback
 from decimal import Decimal
 import threading
 
-from electrum_nmc.bitcoin import TYPE_ADDRESS
-from electrum_nmc.storage import WalletStorage
-from electrum_nmc.wallet import Wallet, InternalAddressCorruption
-from electrum_nmc.paymentrequest import InvoiceStore
-from electrum_nmc.util import profiler, InvalidPassword, send_exception_to_crash_reporter
-from electrum_nmc.plugin import run_hook
-from electrum_nmc.util import format_satoshis, format_satoshis_plain
-from electrum_nmc.paymentrequest import PR_UNPAID, PR_PAID, PR_UNKNOWN, PR_EXPIRED
-from electrum_nmc import blockchain
-from electrum_nmc.network import Network, TxBroadcastError, BestEffortRequestFailed
+from electrum.bitcoin import TYPE_ADDRESS
+from electrum.storage import WalletStorage
+from electrum.wallet import Wallet, InternalAddressCorruption
+from electrum.paymentrequest import InvoiceStore
+from electrum.util import profiler, InvalidPassword, send_exception_to_crash_reporter
+from electrum.plugin import run_hook
+from electrum.util import format_satoshis, format_satoshis_plain
+from electrum.paymentrequest import PR_UNPAID, PR_PAID, PR_UNKNOWN, PR_EXPIRED
+from electrum import blockchain
+from electrum.network import Network, TxBroadcastError, BestEffortRequestFailed
 from .i18n import _
 
 from kivy.app import App
@@ -70,7 +70,7 @@ Label.register('Roboto',
                'electrum_nmc/gui/kivy/data/fonts/Roboto-Bold.ttf')
 
 
-from electrum_nmc.util import (base_units, NoDynamicFeeEstimates, decimal_point_to_base_unit_name,
+from electrum.util import (base_units, NoDynamicFeeEstimates, decimal_point_to_base_unit_name,
                            base_unit_name_to_decimal_point, NotEnoughFunds, UnknownBaseUnit,
                            DECIMAL_POINT_DEFAULT)
 
@@ -120,7 +120,7 @@ class ElectrumWindow(App):
         from .uix.dialogs.choice_dialog import ChoiceDialog
         protocol = 's'
         def cb2(host):
-            from electrum_nmc import constants
+            from electrum import constants
             pp = servers.get(host, constants.net.DEFAULT_PORTS)
             port = pp.get(protocol, '')
             popup.ids.host.text = host
@@ -339,7 +339,7 @@ class ElectrumWindow(App):
             self.send_screen.do_clear()
 
     def on_qr(self, data):
-        from electrum_nmc.bitcoin import base_decode, is_address
+        from electrum.bitcoin import base_decode, is_address
         data = data.strip()
         if is_address(data):
             self.set_URI(data)
@@ -348,8 +348,8 @@ class ElectrumWindow(App):
             self.set_URI(data)
             return
         # try to decode transaction
-        from electrum_nmc.transaction import Transaction
-        from electrum_nmc.util import bh2u
+        from electrum.transaction import Transaction
+        from electrum.util import bh2u
         try:
             text = bh2u(base_decode(data, None, base=43))
             tx = Transaction(text)
@@ -386,7 +386,7 @@ class ElectrumWindow(App):
         self.receive_screen.screen.address = addr
 
     def show_pr_details(self, req, status, is_invoice):
-        from electrum_nmc.util import format_time
+        from electrum.util import format_time
         requestor = req.get('requestor')
         exp = req.get('exp')
         memo = req.get('memo')
@@ -408,7 +408,7 @@ class ElectrumWindow(App):
         popup.open()
 
     def show_addr_details(self, req, status):
-        from electrum_nmc.util import format_time
+        from electrum.util import format_time
         fund = req.get('fund')
         isaddr = 'y'
         popup = Builder.load_file('electrum_nmc/gui/kivy/uix/ui_screens/invoice.kv')
@@ -761,7 +761,7 @@ class ElectrumWindow(App):
             self.fiat_balance = self.fx.format_amount(c+u+x) + ' [size=22dp]%s[/size]'% self.fx.ccy
 
     def get_max_amount(self):
-        from electrum_nmc.transaction import TxOutput
+        from electrum.transaction import TxOutput
         if run_hook('abort_send', self):
             return ''
         inputs = self.wallet.get_spendable_coins(None, self.electrum_config)

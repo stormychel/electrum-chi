@@ -32,11 +32,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
 from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
-from electrum_nmc.commands import NameUpdatedTooRecentlyError
-from electrum_nmc.i18n import _
-from electrum_nmc.names import format_name_identifier, format_name_value, name_expires_in
-from electrum_nmc.util import NotEnoughFunds, NoDynamicFeeEstimates
-from electrum_nmc.wallet import InternalAddressCorruption
+from electrum.commands import NameUpdatedTooRecentlyError
+from electrum.i18n import _
+from electrum.names import format_name_identifier, format_name_value, name_expires_in
+from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates
+from electrum.wallet import InternalAddressCorruption
 
 from .configure_name_dialog import show_configure_name
 from .util import MyTreeView, ColorScheme, MONOSPACE_FONT

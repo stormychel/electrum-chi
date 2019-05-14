@@ -2,11 +2,11 @@ from decimal import Decimal
 import getpass
 import datetime
 
-from electrum_nmc import WalletStorage, Wallet
-from electrum_nmc.util import format_satoshis, set_verbosity
-from electrum_nmc.bitcoin import is_address, COIN, TYPE_ADDRESS
-from electrum_nmc.transaction import TxOutput
-from electrum_nmc.network import TxBroadcastError, BestEffortRequestFailed
+from electrum import WalletStorage, Wallet
+from electrum.util import format_satoshis, set_verbosity
+from electrum.bitcoin import is_address, COIN, TYPE_ADDRESS
+from electrum.transaction import TxOutput
+from electrum.network import TxBroadcastError, BestEffortRequestFailed
 
 _ = lambda x:x  # i18n
 

@@ -28,10 +28,10 @@ from decimal import Decimal
 
 from PyQt5.QtGui import QFontMetrics
 
-from electrum_nmc import bitcoin
-from electrum_nmc.util import bfh, PrintError
-from electrum_nmc.transaction import TxOutput, push_script
-from electrum_nmc.bitcoin import opcodes
+from electrum import bitcoin
+from electrum.util import bfh, PrintError
+from electrum.transaction import TxOutput, push_script
+from electrum.bitcoin import opcodes
 
 from .qrtextedit import ScanQRTextEdit
 from .completion_text_edit import CompletionTextEdit

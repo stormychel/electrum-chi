@@ -33,15 +33,15 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import (QTextEdit, QVBoxLayout, QLabel, QGridLayout, QHBoxLayout,
                              QRadioButton, QCheckBox, QLineEdit)
 
-from electrum_nmc.gui.qt.util import (read_QIcon, WindowModalDialog, WaitingDialog, OkButton,
+from electrum.gui.qt.util import (read_QIcon, WindowModalDialog, WaitingDialog, OkButton,
                                       CancelButton, Buttons, icon_path, WWLabel, CloseButton)
-from electrum_nmc.gui.qt.qrcodewidget import QRCodeWidget
-from electrum_nmc.gui.qt.amountedit import AmountEdit
-from electrum_nmc.gui.qt.main_window import StatusBarButton
-from electrum_nmc.gui.qt.installwizard import InstallWizard
-from electrum_nmc.i18n import _
-from electrum_nmc.plugin import hook
-from electrum_nmc.util import PrintError, is_valid_email
+from electrum.gui.qt.qrcodewidget import QRCodeWidget
+from electrum.gui.qt.amountedit import AmountEdit
+from electrum.gui.qt.main_window import StatusBarButton
+from electrum.gui.qt.installwizard import InstallWizard
+from electrum.i18n import _
+from electrum.plugin import hook
+from electrum.util import PrintError, is_valid_email
 from .trustedcoin import TrustedCoinPlugin, server
 
 

@@ -36,13 +36,13 @@ from PyQt5.QtWidgets import (QDialog, QLabel, QPushButton, QHBoxLayout, QVBoxLay
 import qrcode
 from qrcode import exceptions
 
-from electrum_nmc.bitcoin import base_encode
-from electrum_nmc.i18n import _
-from electrum_nmc.names import format_name_op
-from electrum_nmc.plugin import run_hook
-from electrum_nmc import simple_config
-from electrum_nmc.util import bfh
-from electrum_nmc.transaction import SerializationError, Transaction
+from electrum.bitcoin import base_encode
+from electrum.i18n import _
+from electrum.names import format_name_op
+from electrum.plugin import run_hook
+from electrum import simple_config
+from electrum.util import bfh
+from electrum.transaction import SerializationError, Transaction
 
 from .util import (MessageBoxMixin, read_QIcon, Buttons, CopyButton,
                    MONOSPACE_FONT, ColorScheme, ButtonsLineEdit)

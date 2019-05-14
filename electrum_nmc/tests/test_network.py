@@ -2,12 +2,12 @@ import asyncio
 import tempfile
 import unittest
 
-from electrum_nmc import constants
-from electrum_nmc.simple_config import SimpleConfig
-from electrum_nmc import blockchain
-from electrum_nmc.interface import Interface
-from electrum_nmc.crypto import sha256
-from electrum_nmc.util import bh2u
+from electrum import constants
+from electrum.simple_config import SimpleConfig
+from electrum import blockchain
+from electrum.interface import Interface
+from electrum.crypto import sha256
+from electrum.util import bh2u
 
 
 class MockTaskGroup:

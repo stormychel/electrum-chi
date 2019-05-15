@@ -2037,7 +2037,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             'plugins': self.gui_object.plugins,
             'window': self,
             'config': self.config,
-            'electrum': electrum_nmc,
+            'electrum': electrum,
             'daemon': self.gui_object.daemon,
             'util': util,
             'bitcoin': bitcoin,

@@ -53,7 +53,7 @@ from electrum import (keystore, simple_config, ecc, constants, util, bitcoin, co
 from electrum.bitcoin import COIN, is_address, TYPE_ADDRESS
 from electrum.plugin import run_hook
 from electrum.i18n import _
-from electrum.names import format_name_identifier
+from electrum.names import format_name_identifier, get_wallet_name_count
 from electrum.util import (format_time, format_satoshis, format_fee_satoshis,
                            format_satoshis_plain, NotEnoughFunds,
                            UserCancelled, NoDynamicFeeEstimates, profiler,
@@ -858,6 +858,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                     icon = read_QIcon("status_connected%s.png"%fork_str)
                 else:
                     icon = read_QIcon("status_connected_proxy%s.png"%fork_str)
+
+                # append name count
+                name_confirmed_count, name_pending_count = get_wallet_name_count(self.wallet, self.network)
+                text += ", {} {}, {} {}".format(name_confirmed_count, _("names"), name_pending_count, _("pending registration"))
         else:
             if self.network.proxy:
                 text = "{} ({})".format(_("Not connected"), _("proxy enabled"))

@@ -355,6 +355,46 @@ def get_wallet_name_delta(wallet, tx):
     return name_input_is_mine, name_output_is_mine, name_value_is_unchanged
 
 
+def get_wallet_name_count(wallet, network):
+    confirmed_count = 0
+    pending_count = 0
+
+    utxos = wallet.get_utxos()
+    for _, x in enumerate(utxos):
+        txid = x.get('prevout_hash')
+        vout = x.get('prevout_n')
+        name_op = wallet.db.transactions[txid].outputs()[vout].name_op
+        if name_op is None:
+            continue
+        height = x.get('height')
+        chain_height = network.blockchain().height()
+        expires_in = name_expires_in(height, chain_height)
+        if expires_in is None:
+            # Transaction isn't mined yet
+            if name_op['op'] in [OP_NAME_NEW, OP_NAME_FIRSTUPDATE]:
+                # Registration is pending
+                pending_count += 1
+                continue
+            else:
+                # name_update is pending
+                # TODO: we shouldn't consider it confirmed if it's an incoming
+                # or outgoing transfer.
+                confirmed_count += 1
+                continue
+        if expires_in <= 0:
+            # Expired
+            continue
+        if 'name' in name_op:
+            # name_anyupdate is mined (not expired)
+            confirmed_count += 1
+            continue
+        else:
+            # name_new is mined
+            pending_count += 1
+            continue
+    return confirmed_count, pending_count
+
+
 def name_expires_in(name_height, chain_height):
     if name_height <= 0:
         return None

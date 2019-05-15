@@ -117,3 +117,16 @@ class Test_auxpow(SequentialTestCase):
         with self.assertRaises(auxpow.AuxPoWOwnChainIDError):
             blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
 
+    # Check that where the chain merkle branch is far too long to use, it's
+    # rejected.
+    def test_should_reject_very_long_merkle_branch(self):
+        header_bytes = bfh(namecoin_header_37174)
+        # We can't pass the real height because it's below a checkpoint, and
+        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
+        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
+
+        header['auxpow']['chain_merkle_branch'] = list([32 * '00' for i in range(32)])
+
+        with self.assertRaises(auxpow.AuxPoWChainMerkleTooLongError):
+            blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
+

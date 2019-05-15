@@ -34,7 +34,7 @@ from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
 from electrum.commands import NameUpdatedTooRecentlyError
 from electrum.i18n import _
-from electrum.names import format_name_identifier, format_name_value, name_expires_in
+from electrum.names import format_name_identifier, format_name_value, get_queued_firstupdate_from_new, name_expires_in
 from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates
 from electrum.wallet import InternalAddressCorruption
 
@@ -81,28 +81,40 @@ class UNOList(UTXOList):
     def insert_utxo(self, idx, x):
         txid = x.get('prevout_hash')
         vout = x.get('prevout_n')
-        name_op = self.wallet.db.transactions[txid].outputs()[vout].name_op
+        output = self.wallet.db.transactions[txid].outputs()[vout]
+        name_op = output.name_op
         if name_op is None:
             return
 
-        # TODO: Support name_new
+        if 'name' not in name_op:
+            # utxo is name_new
+            firstupdate_output = get_queued_firstupdate_from_new(self.wallet, txid, vout)
+            if firstupdate_output is not None:
+                if firstupdate_output.name_op is not None:
+                    name_op = firstupdate_output.name_op
+            expires_in = None
+            status = _('Registration Pending')
+        else:
+            # utxo is name_anyupdate
+            height = x.get('height')
+            chain_height = self.network.blockchain().height()
+            expires_in = name_expires_in(height, chain_height)
+            status = '' if expires_in is not None else _('Update Pending')
+
         if 'name' in name_op:
+            # utxo is name_anyupdate or a name_new that we've queued a name_firstupdate for
             name = name_op['name']
             formatted_name = format_name_identifier(name)
             value = name_op['value']
             formatted_value = format_name_value(value)
         else:
+            # utxo is a name_new that we haven't queued a name_firstupdate for
             name = None
             formatted_name = ''
             value = None
             formatted_value = ''
 
-        height = x.get('height')
-        chain_height = self.network.blockchain().height()
-        expires_in = name_expires_in(height, chain_height)
         formatted_expires_in = '%d'%expires_in if expires_in is not None else ''
-
-        status = '' if expires_in is not None else _('Update Pending')
 
         txout = txid + ":%d"%vout
 

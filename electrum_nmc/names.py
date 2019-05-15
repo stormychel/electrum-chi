@@ -295,25 +295,9 @@ def get_default_name_tx_label(wallet, tx):
                                             return "Pre-Registration: " + format_name_identifier(addr_tx_output.name_op['name'])
 
                 # Look for queued transactions that spend the NAME_NEW
-                for addr_txid in wallet.db.queued_transactions:
-                    addr_tx_queue_item = wallet.db.queued_transactions[addr_txid]
-                    # Check whether the queued transaction is contingent on the NAME_NEW transaction
-                    if addr_tx_queue_item['sendWhen']['txid'] == tx.txid():
-                        addr_tx = Transaction(addr_tx_queue_item['tx'])
-                        # Look at all the candidate's inputs to make sure it's
-                        # actually spending the NAME_NEW
-                        for addr_tx_input in addr_tx.inputs():
-                            if addr_tx_input['prevout_hash'] == tx.txid():
-                                if addr_tx_input['prevout_n'] == idx:
-                                    # We've confirmed that it spends the NAME_NEW.
-                                    # Look at the outputs to find the
-                                    # NAME_FIRSTUPDATE.
-                                    for addr_tx_output in addr_tx.outputs():
-                                        if addr_tx_output.name_op is not None:
-                                            # We've found a name output; now we
-                                            # check for an identifier.
-                                            if 'name' in addr_tx_output.name_op:
-                                                return "Pre-Registration: " + format_name_identifier(addr_tx_output.name_op['name'])
+                addr_tx_output = get_queued_firstupdate_from_new(wallet, tx.txid(), idx)
+                if addr_tx_output is not None:
+                    return "Pre-Registration: " + format_name_identifier(addr_tx_output.name_op['name'])
 
                 # A name_new transaction doesn't have a visible 'name' field,
                 # so there's nothing to format if we can't find the name
@@ -326,6 +310,30 @@ def get_default_name_tx_label(wallet, tx):
                     return "Renew: " + format_name_identifier(name_op["name"])
                 else:
                     return "Update: " + format_name_identifier(name_op["name"])
+    return None
+
+
+def get_queued_firstupdate_from_new(wallet, txid, idx):
+    # Look for queued transactions that spend the NAME_NEW
+    for addr_txid in wallet.db.queued_transactions:
+        addr_tx_queue_item = wallet.db.queued_transactions[addr_txid]
+        # Check whether the queued transaction is contingent on the NAME_NEW transaction
+        if addr_tx_queue_item['sendWhen']['txid'] == txid:
+            addr_tx = Transaction(addr_tx_queue_item['tx'])
+            # Look at all the candidate's inputs to make sure it's
+            # actually spending the NAME_NEW
+            for addr_tx_input in addr_tx.inputs():
+                if addr_tx_input['prevout_hash'] == txid:
+                    if addr_tx_input['prevout_n'] == idx:
+                        # We've confirmed that it spends the NAME_NEW.
+                        # Look at the outputs to find the
+                        # NAME_FIRSTUPDATE.
+                        for addr_tx_output in addr_tx.outputs():
+                            if addr_tx_output.name_op is not None:
+                                # We've found a name output; now we
+                                # check for an identifier.
+                                if 'name' in addr_tx_output.name_op:
+                                    return addr_tx_output
     return None
 
 

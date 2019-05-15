@@ -494,8 +494,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.gui_object._warned_testnet = True
         msg = ''.join([
             _("You are in testnet mode."), ' ',
-            _("Testnet coins are worthless."), '\n',
-            _("Testnet is separate from the main Bitcoin network. It is used for testing.")
+            _("Testnet coins and names are worthless."), '\n',
+            _("Testnet is separate from the main Namecoin network. It is used for testing.")
         ])
         cb = QCheckBox(_("Don't show this again."))
         cb_checked = False

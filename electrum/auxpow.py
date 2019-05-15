@@ -66,6 +66,9 @@ class AuxPowVerifyError(Exception):
 class AuxPoWNotGenerateError(AuxPowVerifyError):
     pass
 
+class AuxPoWOwnChainIDError(AuxPowVerifyError):
+    pass
+
 def auxpow_active(base_header):
     height_allows_auxpow = base_header['block_height'] >= MIN_AUXPOW_HEIGHT
     version_allows_auxpow = base_header['version'] & BLOCK_VERSION_AUXPOW_BIT
@@ -205,7 +208,7 @@ def verify_auxpow(header):
     #  return error("Aux POW parent has our chain ID");
 
     if (get_chain_id(parent_block) == CHAIN_ID):
-        raise Exception('Aux POW parent has our chain ID')
+        raise AuxPoWOwnChainIDError()
 
     #// Check that the chain merkle root is in the coinbase
     #uint256 nRootHash = CBlock::CheckMerkleBranch(hashAuxBlock, vChainMerkleBranch, nChainIndex);

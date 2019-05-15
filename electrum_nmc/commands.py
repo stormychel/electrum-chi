@@ -35,10 +35,9 @@ from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
 
 from .import util, ecc
-from .util import bfh, bh2u, format_satoshis, json_decode, print_error, json_encode, is_hash256_str
+from .util import bfh, bh2u, format_satoshis, json_decode, json_encode, is_hash256_str, is_hex_str, to_bytes
 from . import bitcoin
 from .bitcoin import is_address,  hash_160, COIN, TYPE_ADDRESS
-from . import bip32
 from .bip32 import BIP32Node
 from .i18n import _
 from .names import build_name_new, format_name_identifier, name_expires_in, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE, validate_value_length
@@ -46,11 +45,8 @@ from .verifier import verify_tx_is_in_block
 from .transaction import Transaction, multisig_script, TxOutput
 from .paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
 from .synchronizer import Notifier
-from .storage import WalletStorage
-from . import keystore
-from .wallet import Wallet, Imported_Wallet, Abstract_Wallet, create_new_wallet, restore_wallet_from_text
+from .wallet import Abstract_Wallet, create_new_wallet, restore_wallet_from_text
 from .address_synchronizer import TX_HEIGHT_LOCAL
-from .mnemonic import Mnemonic
 from . import constants
 
 if TYPE_CHECKING:
@@ -785,16 +781,27 @@ class Commands:
         return tx.as_dict()
 
     @command('')
-    def encrypt(self, pubkey, message):
+    def encrypt(self, pubkey, message) -> str:
         """Encrypt a message with a public key. Use quotes if the message contains whitespaces."""
+        if not is_hex_str(pubkey):
+            raise Exception(f"pubkey must be a hex string instead of {repr(pubkey)}")
+        try:
+            message = to_bytes(message)
+        except TypeError:
+            raise Exception(f"message must be a string-like object instead of {repr(message)}")
         public_key = ecc.ECPubkey(bfh(pubkey))
         encrypted = public_key.encrypt_message(message)
-        return encrypted
+        return encrypted.decode('utf-8')
 
     @command('wp')
-    def decrypt(self, pubkey, encrypted, password=None):
+    def decrypt(self, pubkey, encrypted, password=None) -> str:
         """Decrypt a message encrypted with a public key."""
-        return self.wallet.decrypt_message(pubkey, encrypted, password)
+        if not is_hex_str(pubkey):
+            raise Exception(f"pubkey must be a hex string instead of {repr(pubkey)}")
+        if not isinstance(encrypted, (str, bytes, bytearray)):
+            raise Exception(f"encrypted must be a string-like object instead of {repr(encrypted)}")
+        decrypted = self.wallet.decrypt_message(pubkey, encrypted, password)
+        return decrypted.decode('utf-8')
 
     def _format_request(self, out):
         pr_str = {
@@ -1305,9 +1312,8 @@ def add_network_options(parser):
 
 def add_global_options(parser):
     group = parser.add_argument_group('global options')
-    # const is for when no argument is given to verbosity
-    # default is for when the flag is missing
-    group.add_argument("-v", dest="verbosity", help="Set verbosity filter", default='', const='*', nargs='?')
+    group.add_argument("-v", dest="verbosity", help="Set verbosity (log levels)", default='')
+    group.add_argument("-V", dest="verbosity_shortcuts", help="Set verbosity (shortcut-filter list)", default='')
     group.add_argument("-D", "--dir", dest="electrum_path", help="electrum-nmc directory")
     group.add_argument("-P", "--portable", action="store_true", dest="portable", default=False, help="Use local 'electrum-nmc_data' directory")
     group.add_argument("-w", "--wallet", dest="wallet_path", help="wallet path")

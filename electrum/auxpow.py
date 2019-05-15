@@ -60,6 +60,12 @@ MIN_AUXPOW_HEIGHT = 19200
 # TODO: move this to network constants
 CHAIN_ID = 1
 
+class AuxPowVerifyError(Exception):
+    pass
+
+class AuxPoWNotGenerateError(AuxPowVerifyError):
+    pass
+
 def auxpow_active(base_header):
     height_allows_auxpow = base_header['block_height'] >= MIN_AUXPOW_HEIGHT
     version_allows_auxpow = base_header['version'] & BLOCK_VERSION_AUXPOW_BIT
@@ -188,6 +194,12 @@ def verify_auxpow(header):
 
     coinbase_merkle_branch = auxpow['coinbase_merkle_branch']
     coinbase_index = auxpow['coinbase_merkle_index']
+
+    #if (coinbaseTx.nIndex != 0)
+    #    return error("AuxPow is not a generate");
+
+    if (coinbase_index != 0):
+        raise AuxPoWNotGenerateError()
 
     #if (get_chain_id(parent_block) == chain_id)
     #  return error("Aux POW parent has our chain ID");

@@ -14,18 +14,18 @@ from PyQt5.QtWidgets import (QWidget, QDialog, QLabel, QHBoxLayout, QMessageBox,
                              QVBoxLayout, QLineEdit, QFileDialog, QPushButton,
                              QGridLayout, QSlider, QScrollArea)
 
-from electrum_nmc.wallet import Wallet, Abstract_Wallet
-from electrum_nmc.storage import WalletStorage
-from electrum_nmc.util import UserCancelled, InvalidPassword, WalletFileException
-from electrum_nmc.base_wizard import BaseWizard, HWD_SETUP_DECRYPT_WALLET, GoBack
-from electrum_nmc.i18n import _
+from electrum.wallet import Wallet, Abstract_Wallet
+from electrum.storage import WalletStorage
+from electrum.util import UserCancelled, InvalidPassword, WalletFileException
+from electrum.base_wizard import BaseWizard, HWD_SETUP_DECRYPT_WALLET, GoBack
+from electrum.i18n import _
 
 from .seed_dialog import SeedLayout, KeysLayout
 from .network_dialog import NetworkChoiceLayout
 from .util import (MessageBoxMixin, Buttons, icon_path, ChoicesLayout, WWLabel,
                    InfoButton)
 from .password_dialog import PasswordLayout, PasswordLayoutForHW, PW_NEW
-from electrum_nmc.plugin import run_hook
+from electrum.plugin import run_hook
 
 MSG_ENTER_PASSWORD = _("Choose a password to encrypt your wallet keys.") + '\n'\
                      + _("Leave this field empty if you want to disable encryption.")

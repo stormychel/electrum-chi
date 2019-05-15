@@ -30,12 +30,12 @@ from functools import partial
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
 
-from electrum_nmc.gui.qt.password_dialog import PasswordLayout, PW_PASSPHRASE
-from electrum_nmc.gui.qt.util import (read_QIcon, WWLabel, OkButton, WindowModalDialog,
+from electrum.gui.qt.password_dialog import PasswordLayout, PW_PASSPHRASE
+from electrum.gui.qt.util import (read_QIcon, WWLabel, OkButton, WindowModalDialog,
                                       Buttons, CancelButton, TaskThread)
 
-from electrum_nmc.i18n import _
-from electrum_nmc.util import PrintError
+from electrum.i18n import _
+from electrum.util import PrintError
 
 # The trickiest thing about this handler was getting windows properly
 # parented on macOS.
@@ -186,9 +186,9 @@ class QtHandlerBase(QObject, PrintError):
 
 
 
-from electrum_nmc.plugin import hook
-from electrum_nmc.util import UserCancelled
-from electrum_nmc.gui.qt.main_window import StatusBarButton
+from electrum.plugin import hook
+from electrum.util import UserCancelled
+from electrum.gui.qt.main_window import StatusBarButton
 
 class QtPluginBase(object):
 

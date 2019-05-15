@@ -47,14 +47,14 @@ from PyQt5.QtWidgets import (QMessageBox, QComboBox, QSystemTrayIcon, QTabWidget
                              QShortcut, QMainWindow, QCompleter, QInputDialog,
                              QWidget, QMenu, QSizePolicy, QStatusBar)
 
-import electrum_nmc
-from electrum_nmc import (keystore, simple_config, ecc, constants, util, bitcoin, commands,
+import electrum
+from electrum import (keystore, simple_config, ecc, constants, util, bitcoin, commands,
                       coinchooser, paymentrequest)
-from electrum_nmc.bitcoin import COIN, is_address, TYPE_ADDRESS
-from electrum_nmc.plugin import run_hook
-from electrum_nmc.i18n import _
-from electrum_nmc.names import format_name_identifier
-from electrum_nmc.util import (format_time, format_satoshis, format_fee_satoshis,
+from electrum.bitcoin import COIN, is_address, TYPE_ADDRESS
+from electrum.plugin import run_hook
+from electrum.i18n import _
+from electrum.names import format_name_identifier
+from electrum.util import (format_time, format_satoshis, format_fee_satoshis,
                            format_satoshis_plain, NotEnoughFunds, PrintError,
                            UserCancelled, NoDynamicFeeEstimates, profiler,
                            export_meta, import_meta, bh2u, bfh, InvalidPassword,
@@ -62,14 +62,14 @@ from electrum_nmc.util import (format_time, format_satoshis, format_fee_satoshis
                            decimal_point_to_base_unit_name, quantize_feerate,
                            UnknownBaseUnit, DECIMAL_POINT_DEFAULT, UserFacingException,
                            get_new_wallet_name, send_exception_to_crash_reporter)
-from electrum_nmc.transaction import Transaction, TxOutput
-from electrum_nmc.address_synchronizer import AddTransactionException
-from electrum_nmc.wallet import (Multisig_Wallet, CannotBumpFee, Abstract_Wallet,
+from electrum.transaction import Transaction, TxOutput
+from electrum.address_synchronizer import AddTransactionException
+from electrum.wallet import (Multisig_Wallet, CannotBumpFee, Abstract_Wallet,
                              sweep_preparations, InternalAddressCorruption)
-from electrum_nmc.version import ELECTRUM_VERSION
-from electrum_nmc.network import Network, TxBroadcastError, BestEffortRequestFailed
-from electrum_nmc.exchange_rate import FxThread
-from electrum_nmc.simple_config import SimpleConfig
+from electrum.version import ELECTRUM_VERSION
+from electrum.network import Network, TxBroadcastError, BestEffortRequestFailed
+from electrum.exchange_rate import FxThread
+from electrum.simple_config import SimpleConfig
 
 from .exception_window import Exception_Hook
 from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, FeerateEdit
@@ -109,7 +109,7 @@ class StatusBarButton(QPushButton):
             self.func()
 
 
-from electrum_nmc.paymentrequest import PR_PAID
+from electrum.paymentrequest import PR_PAID
 
 
 class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
@@ -2037,7 +2037,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             'plugins': self.gui_object.plugins,
             'window': self,
             'config': self.config,
-            'electrum': electrum_nmc,
+            'electrum': electrum,
             'daemon': self.gui_object.daemon,
             'util': util,
             'bitcoin': bitcoin,
@@ -2096,7 +2096,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.send_button.setVisible(not self.wallet.is_watching_only())
 
     def change_password_dialog(self):
-        from electrum_nmc.storage import STO_EV_XPUB_PW
+        from electrum.storage import STO_EV_XPUB_PW
         if self.wallet.get_available_storage_encryption_version() == STO_EV_XPUB_PW:
             from .password_dialog import ChangePasswordDialogForHW
             d = ChangePasswordDialogForHW(self, self.wallet)
@@ -2455,7 +2455,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         return d.run()
 
     def tx_from_text(self, txt):
-        from electrum_nmc.transaction import tx_from_str
+        from electrum.transaction import tx_from_str
         try:
             tx = tx_from_str(txt)
             return Transaction(tx)
@@ -2464,7 +2464,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             return
 
     def read_tx_from_qrcode(self):
-        from electrum_nmc import qrscanner
+        from electrum import qrscanner
         try:
             data = qrscanner.scan_barcode(self.config.get_video_device())
         except BaseException as e:
@@ -2513,7 +2513,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             self.show_transaction(tx)
 
     def do_process_from_txid(self):
-        from electrum_nmc import transaction
+        from electrum import transaction
         txid, ok = QInputDialog.getText(self, _('Lookup transaction'), _('Transaction ID') + ':')
         if ok and txid:
             txid = str(txid).strip()
@@ -2773,7 +2773,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         lang_help = _('Select which language is used in the GUI (after restart).')
         lang_label = HelpLabel(_('Language') + ':', lang_help)
         lang_combo = QComboBox()
-        from electrum_nmc.i18n import languages
+        from electrum.i18n import languages
         lang_combo.addItems(list(languages.values()))
         lang_keys = list(languages.keys())
         lang_cur_setting = self.config.get("language", '')
@@ -2947,7 +2947,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         block_ex_combo.currentIndexChanged.connect(on_be)
         gui_widgets.append((block_ex_label, block_ex_combo))
 
-        from electrum_nmc import qrscanner
+        from electrum import qrscanner
         system_cameras = qrscanner._find_system_cameras()
         qr_combo = QComboBox()
         qr_combo.addItem("Default","default")

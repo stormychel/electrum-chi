@@ -1,7 +1,22 @@
 import unittest
 import threading
 
-from electrum_nmc import constants
+# This trick allows accessing electrum_nmc from import statements as electrum,
+# so we can avoid merge conflicts while also avoiding namespace collisions with
+# upstream.
+import pkgutil
+import importlib
+import sys
+electrum_nmc = importlib.import_module('electrum_nmc')
+sys.modules['electrum'] = electrum_nmc
+for _, name, _ in pkgutil.iter_modules(['electrum_nmc']):
+    try:
+        m = importlib.import_module('electrum_nmc' + '.' + name)
+        sys.modules['electrum' + '.' + name] = m
+    except:
+        pass
+
+from electrum import constants
 
 
 # Set this locally to make the test suite run faster.

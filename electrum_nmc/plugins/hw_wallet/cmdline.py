@@ -1,4 +1,4 @@
-from electrum_nmc.util import print_error, print_stderr, raw_input
+from electrum.util import print_error, print_stderr, raw_input
 
 
 class CmdLineHandler:

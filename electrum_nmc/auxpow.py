@@ -45,9 +45,7 @@
 
 import binascii
 
-# electrum_nmc.blockchain is an absolute import because cyclic imports must be
-# absolute prior to Python 3.5.
-import electrum_nmc.blockchain
+from . import blockchain
 from .bitcoin import hash_encode, hash_decode
 from .crypto import sha256d
 from . import transaction
@@ -97,9 +95,9 @@ def deserialize_auxpow_header(base_header, s, expect_trailing_data=False, start_
     # Finally there's the parent header.  Deserialize it, along with any
     # trailing data if requested.
     if expect_trailing_data:
-        auxpow_header['parent_header'], start_position = electrum_nmc.blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data, start_position=start_position)
+        auxpow_header['parent_header'], start_position = blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data, start_position=start_position)
     else:
-        auxpow_header['parent_header'] = electrum_nmc.blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data, start_position=start_position)
+        auxpow_header['parent_header'] = blockchain.deserialize_header(s, 1, expect_trailing_data=expect_trailing_data, start_position=start_position)
     # The parent block header doesn't have any block height,
     # so delete that field.  (We used 1 as a dummy value above.)
     del auxpow_header['parent_header']['block_height']
@@ -131,19 +129,19 @@ def strip_auxpow_headers(index, chunk):
 
     i = 0
     while len(trailing_data) > 0:
-        header, trailing_data = electrum_nmc.blockchain.deserialize_header(trailing_data, index*2016 + i, expect_trailing_data=True)
-        result.extend(bfh(electrum_nmc.blockchain.serialize_header(header)))
+        header, trailing_data = blockchain.deserialize_header(trailing_data, index*2016 + i, expect_trailing_data=True)
+        result.extend(bfh(blockchain.serialize_header(header)))
         i = i + 1
 
     return bytes(result)
 
 def hash_parent_header(header):
     if not auxpow_active(header):
-        return electrum_nmc.blockchain.hash_header(header)
+        return blockchain.hash_header(header)
 
     verify_auxpow(header)
 
-    return electrum_nmc.blockchain.hash_header(header['auxpow']['parent_header'])
+    return blockchain.hash_header(header['auxpow']['parent_header'])
 
 # Reimplementation of btcutils.check_merkle_branch from Electrum-DOGE.
 # btcutils seems to have an unclear license and no obvious Git repo, so it
@@ -176,7 +174,7 @@ def calc_merkle_index(chain_id, nonce, merkle_size):
 # Copied from Electrum-DOGE
 # TODO: Audit this function carefully.
 def verify_auxpow(header):
-    auxhash = electrum_nmc.blockchain.hash_header(header)
+    auxhash = blockchain.hash_header(header)
     auxpow = header['auxpow']
 
     parent_block = auxpow['parent_header']

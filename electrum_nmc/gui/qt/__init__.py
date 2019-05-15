@@ -42,12 +42,12 @@ from PyQt5.QtWidgets import (QApplication, QSystemTrayIcon, QWidget, QMenu,
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 import PyQt5.QtCore as QtCore
 
-from electrum_nmc.i18n import _, set_language
-from electrum_nmc.plugin import run_hook
-from electrum_nmc.base_wizard import GoBack
-from electrum_nmc.util import (UserCancelled, PrintError, profiler,
+from electrum.i18n import _, set_language
+from electrum.plugin import run_hook
+from electrum.base_wizard import GoBack
+from electrum.util import (UserCancelled, PrintError, profiler,
                            WalletFileException, BitcoinException, get_new_wallet_name)
-from electrum_nmc.wallet import Wallet, Abstract_Wallet
+from electrum.wallet import Wallet, Abstract_Wallet
 
 from .installwizard import InstallWizard, WalletAlreadyOpenInMemory
 

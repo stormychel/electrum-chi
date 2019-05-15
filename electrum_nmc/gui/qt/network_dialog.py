@@ -32,11 +32,11 @@ from PyQt5.QtWidgets import (QTreeWidget, QTreeWidgetItem, QMenu, QGridLayout, Q
                              QLineEdit, QDialog, QVBoxLayout, QHeaderView, QCheckBox,
                              QTabWidget, QWidget, QLabel)
 
-from electrum_nmc.i18n import _
-from electrum_nmc import constants, blockchain
-from electrum_nmc.util import print_error
-from electrum_nmc.interface import serialize_server, deserialize_server
-from electrum_nmc.network import Network
+from electrum.i18n import _
+from electrum import constants, blockchain
+from electrum.util import print_error
+from electrum.interface import serialize_server, deserialize_server
+from electrum.network import Network
 
 from .util import Buttons, CloseButton, HelpButton, read_QIcon
 

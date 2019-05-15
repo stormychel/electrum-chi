@@ -18,18 +18,18 @@ from kivy.lang import Builder
 from kivy.factory import Factory
 from kivy.utils import platform
 
-from electrum_nmc.util import profiler, parse_URI, format_time, InvalidPassword, NotEnoughFunds, Fiat
-from electrum_nmc import bitcoin
-from electrum_nmc.transaction import TxOutput
-from electrum_nmc.util import send_exception_to_crash_reporter
-from electrum_nmc.paymentrequest import PR_UNPAID, PR_PAID, PR_UNKNOWN, PR_EXPIRED
-from electrum_nmc.plugin import run_hook
-from electrum_nmc.wallet import InternalAddressCorruption
+from electrum.util import profiler, parse_URI, format_time, InvalidPassword, NotEnoughFunds, Fiat
+from electrum import bitcoin
+from electrum.transaction import TxOutput
+from electrum.util import send_exception_to_crash_reporter
+from electrum.paymentrequest import PR_UNPAID, PR_PAID, PR_UNKNOWN, PR_EXPIRED
+from electrum.plugin import run_hook
+from electrum.wallet import InternalAddressCorruption
 
 from .context_menu import ContextMenu
 
 
-from electrum_nmc.gui.kivy.i18n import _
+from electrum.gui.kivy.i18n import _
 
 class HistoryRecycleView(RecycleView):
     pass
@@ -173,7 +173,7 @@ class SendScreen(CScreen):
         if not self.app.wallet:
             self.payment_request_queued = text
             return
-        import electrum_nmc as electrum
+        import electrum
         try:
             uri = electrum.util.parse_URI(text, self.app.on_pr)
         except:
@@ -217,7 +217,7 @@ class SendScreen(CScreen):
             # it should be already saved
             return
         # save address as invoice
-        from electrum_nmc.paymentrequest import make_unsigned_request, PaymentRequest
+        from electrum.paymentrequest import make_unsigned_request, PaymentRequest
         req = {'address':self.screen.address, 'memo':self.screen.message}
         amount = self.app.get_amount(self.screen.amount) if self.screen.amount else 0
         req['amount'] = amount
@@ -363,7 +363,7 @@ class ReceiveScreen(CScreen):
         Clock.schedule_once(lambda dt: self.update_qr())
 
     def get_URI(self):
-        from electrum_nmc.util import create_bip21_uri
+        from electrum.util import create_bip21_uri
         amount = self.screen.amount
         if amount:
             a, u = self.screen.amount.split()

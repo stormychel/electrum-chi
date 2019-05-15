@@ -7,14 +7,14 @@ from decimal import Decimal
 import time
 
 from io import StringIO
-from electrum_nmc.storage import WalletStorage
-from electrum_nmc.json_db import FINAL_SEED_VERSION
-from electrum_nmc.wallet import (Abstract_Wallet, Standard_Wallet, create_new_wallet,
+from electrum.storage import WalletStorage
+from electrum.json_db import FINAL_SEED_VERSION
+from electrum.wallet import (Abstract_Wallet, Standard_Wallet, create_new_wallet,
                                  restore_wallet_from_text)
-from electrum_nmc.exchange_rate import ExchangeBase, FxThread
-from electrum_nmc.util import TxMinedInfo
-from electrum_nmc.bitcoin import COIN
-from electrum_nmc.json_db import JsonDB
+from electrum.exchange_rate import ExchangeBase, FxThread
+from electrum.util import TxMinedInfo
+from electrum.bitcoin import COIN
+from electrum.json_db import JsonDB
 
 from . import SequentialTestCase
 

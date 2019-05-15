@@ -1,4 +1,4 @@
-from electrum_nmc.i18n import _
+from electrum.i18n import _
 
 fullname = _('Revealer Backup Utility')
 description = ''.join(["<br/>",

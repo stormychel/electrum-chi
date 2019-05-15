@@ -3,11 +3,11 @@ from kivy.factory import Factory
 from kivy.properties import ObjectProperty
 from kivy.lang import Builder
 
-from electrum_nmc.util import base_units_list
-from electrum_nmc.i18n import languages
-from electrum_nmc.gui.kivy.i18n import _
-from electrum_nmc.plugin import run_hook
-from electrum_nmc import coinchooser
+from electrum.util import base_units_list
+from electrum.i18n import languages
+from electrum.gui.kivy.i18n import _
+from electrum.plugin import run_hook
+from electrum import coinchooser
 
 from .choice_dialog import ChoiceDialog
 

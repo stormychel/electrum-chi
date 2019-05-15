@@ -23,8 +23,8 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from electrum_nmc.i18n import _
-from electrum_nmc.plugin import hook
+from electrum.i18n import _
+from electrum.plugin import hook
 from .trustedcoin import TrustedCoinPlugin
 
 

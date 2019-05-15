@@ -35,19 +35,19 @@ from urllib.parse import urljoin
 from urllib.parse import quote
 from aiohttp import ClientResponse
 
-from electrum_nmc import ecc, constants, keystore, version, bip32, bitcoin
-from electrum_nmc.bitcoin import TYPE_ADDRESS
-from electrum_nmc.bip32 import CKD_pub, BIP32Node, xpub_type
-from electrum_nmc.crypto import sha256
-from electrum_nmc.transaction import TxOutput
-from electrum_nmc.mnemonic import Mnemonic, seed_type, is_any_2fa_seed_type
-from electrum_nmc.wallet import Multisig_Wallet, Deterministic_Wallet
-from electrum_nmc.i18n import _
-from electrum_nmc.plugin import BasePlugin, hook
-from electrum_nmc.util import NotEnoughFunds, UserFacingException, PrintError
-from electrum_nmc.storage import STO_EV_USER_PW
-from electrum_nmc.network import Network
-from electrum_nmc.base_wizard import BaseWizard
+from electrum import ecc, constants, keystore, version, bip32, bitcoin
+from electrum.bitcoin import TYPE_ADDRESS
+from electrum.bip32 import CKD_pub, BIP32Node, xpub_type
+from electrum.crypto import sha256
+from electrum.transaction import TxOutput
+from electrum.mnemonic import Mnemonic, seed_type, is_any_2fa_seed_type
+from electrum.wallet import Multisig_Wallet, Deterministic_Wallet
+from electrum.i18n import _
+from electrum.plugin import BasePlugin, hook
+from electrum.util import NotEnoughFunds, UserFacingException, PrintError
+from electrum.storage import STO_EV_USER_PW
+from electrum.network import Network
+from electrum.base_wizard import BaseWizard
 
 def get_signing_xpub(xtype):
     if not constants.net.TESTNET:

@@ -1,8 +1,8 @@
-from electrum_nmc import transaction
-from electrum_nmc.transaction import TxOutputForUI, tx_from_str
-from electrum_nmc.bitcoin import TYPE_ADDRESS
-from electrum_nmc.keystore import xpubkey_to_address
-from electrum_nmc.util import bh2u, bfh
+from electrum import transaction
+from electrum.transaction import TxOutputForUI, tx_from_str
+from electrum.bitcoin import TYPE_ADDRESS
+from electrum.keystore import xpubkey_to_address
+from electrum.util import bh2u, bfh
 
 from . import SequentialTestCase, TestCaseForTestnet
 from .test_bitcoin import needs_test_with_all_ecc_implementations

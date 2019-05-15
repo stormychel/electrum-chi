@@ -59,7 +59,7 @@ for i in **/*.py; do
     fi
 done
 
-EXCEPTIONS="--exclude=check_nmc_rebranding --exclude-dir=.git"
+EXCEPTIONS="--exclude=check_nmc_rebranding --exclude=RELEASE-NOTES --exclude-dir=.git"
 
 # Locale rebranding is a known bug: https://github.com/namecoin/electrum-nmc/issues/109
 # Issue 4994 has no Namecoin equivalent.

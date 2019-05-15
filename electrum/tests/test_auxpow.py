@@ -83,3 +83,15 @@ class Test_auxpow(SequentialTestCase):
 
         blockchain.Blockchain.verify_header(header, namecoin_prev_hash_19414, namecoin_target_19414)
 
+    # Check that a non-generate AuxPoW transaction is rejected.
+    def test_should_reject_non_generate_auxpow(self):
+        header_bytes = bfh(namecoin_header_37174)
+        # We can't pass the real height because it's below a checkpoint, and
+        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
+        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
+
+        header['auxpow']['coinbase_merkle_index'] = 0x01
+
+        with self.assertRaises(auxpow.AuxPoWNotGenerateError):
+            blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
+

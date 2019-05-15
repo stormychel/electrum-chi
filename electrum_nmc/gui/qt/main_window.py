@@ -477,8 +477,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if self.wallet.is_watching_only():
             msg = ' '.join([
                 _("This wallet is watching-only."),
-                _("This means you will not be able to spend Namecoins with it."),
-                _("Make sure you own the seed phrase or the private keys, before you request Namecoins to be sent to this wallet.")
+                _("This means you will not be able to spend Namecoins or update names with it."),
+                _("Make sure you own the seed phrase or the private keys, before you request Namecoins or names to be sent to this wallet.")
             ])
             self.show_warning(msg, title=_('Watch-only wallet'))
 

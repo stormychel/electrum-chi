@@ -69,6 +69,9 @@ class AuxPoWNotGenerateError(AuxPowVerifyError):
 class AuxPoWOwnChainIDError(AuxPowVerifyError):
     pass
 
+class AuxPoWChainMerkleTooLongError(AuxPowVerifyError):
+    pass
+
 def auxpow_active(base_header):
     height_allows_auxpow = base_header['block_height'] >= MIN_AUXPOW_HEIGHT
     version_allows_auxpow = base_header['version'] & BLOCK_VERSION_AUXPOW_BIT
@@ -209,6 +212,12 @@ def verify_auxpow(header):
 
     if (get_chain_id(parent_block) == CHAIN_ID):
         raise AuxPoWOwnChainIDError()
+
+    #if (vChainMerkleBranch.size() > 30)
+    #    return error("Aux POW chain merkle branch too long");
+
+    if (len(chain_merkle_branch) > 30):
+        raise AuxPoWChainMerkleTooLongError()
 
     #// Check that the chain merkle root is in the coinbase
     #uint256 nRootHash = CBlock::CheckMerkleBranch(hashAuxBlock, vChainMerkleBranch, nChainIndex);

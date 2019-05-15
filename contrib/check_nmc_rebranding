@@ -61,21 +61,6 @@ done
 
 EXCEPTIONS="--exclude=check_nmc_rebranding --exclude-dir=.git"
 
-if grep -r $EXCEPTIONS "import electrum\\." ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-if grep -r $EXCEPTIONS "from electrum\\." ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-if grep -r $EXCEPTIONS "from electrum import" ./; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
 # Locale rebranding is a known bug: https://github.com/namecoin/electrum-nmc/issues/109
 # Issue 4994 has no Namecoin equivalent.
 # The localization button SVG is a known bug: https://github.com/namecoin/electrum-nmc/issues/114

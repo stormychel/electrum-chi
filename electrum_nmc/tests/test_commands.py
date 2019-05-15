@@ -67,7 +67,9 @@ class TestCommands(unittest.TestCase):
 
     @mock.patch.object(storage.WalletStorage, '_write')
     def test_encrypt_decrypt(self, mock_write):
-        wallet = restore_wallet_from_text('p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN',
+        #wallet = restore_wallet_from_text('p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN',
+        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
+        wallet = restore_wallet_from_text('p2wpkh:Tm1LGU9bmMk5y8w1CAqfDfC2PzE83v6QjqVUp4odMi3aUiFsx7F5',
                                           path='if_this_exists_mocking_failed_648151893')['wallet']
         cmds = Commands(config=None, wallet=wallet, network=None)
         cleartext = "asdasd this is the message"

@@ -75,6 +75,9 @@ class AuxPoWChainMerkleTooLongError(AuxPowVerifyError):
 class AuxPoWBadCoinbaseMerkleBranchError(AuxPowVerifyError):
     pass
 
+class AuxPoWCoinbaseNoInputsError(AuxPowVerifyError):
+    pass
+
 def auxpow_active(base_header):
     height_allows_auxpow = base_header['block_height'] >= MIN_AUXPOW_HEIGHT
     version_allows_auxpow = base_header['version'] & BLOCK_VERSION_AUXPOW_BIT
@@ -235,6 +238,14 @@ def verify_auxpow(header):
     #    return error("Aux POW merkle root incorrect");
     if (calculate_merkle_root(coinbase_hash, coinbase_merkle_branch, coinbase_index) != parent_block['merkle_root']):
         raise AuxPoWBadCoinbaseMerkleBranchError()
+
+    #// Check that there is at least one input.
+    #if (coinbaseTx->vin.empty())
+    #    return error("Aux POW coinbase has no inputs");
+
+    # Check that there is at least one input.
+    if (len(coinbase.inputs()) == 0):
+        raise AuxPoWCoinbaseNoInputsError()
 
     #// Check that the same work is not submitted twice to our chain.
     #//

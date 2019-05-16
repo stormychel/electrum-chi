@@ -130,3 +130,26 @@ class Test_auxpow(SequentialTestCase):
         with self.assertRaises(auxpow.AuxPoWChainMerkleTooLongError):
             blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
 
+    # Later steps in AuxPoW validation depend on the contents of the coinbase
+    # transaction. Obviously that's useless if we don't check the coinbase
+    # transaction is actually part of the parent chain block, so first we test
+    # that the transaction hash is part of the merkle tree. This test modifies
+    # the transaction, invalidating the hash, to confirm that it's rejected.
+    def test_should_reject_bad_coinbase_merkle_branch(self):
+        header_bytes = bfh(namecoin_header_37174)
+        # We can't pass the real height because it's below a checkpoint, and
+        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
+        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
+
+        # Set outputs to an empty list
+        header['auxpow']['parent_coinbase_tx']._outputs = []
+        # Clear the cached raw serialization
+        header['auxpow']['parent_coinbase_tx'].raw = None
+        header['auxpow']['parent_coinbase_tx'].raw_bytes = None
+        # Re-serialize.  Note that our AuxPoW library won't do this for us,
+        # because it optimizes via fast_txid.
+        header['auxpow']['parent_coinbase_tx'].raw_bytes = bfh(header['auxpow']['parent_coinbase_tx'].serialize_to_network(witness=False))
+
+        with self.assertRaises(auxpow.AuxPoWBadCoinbaseMerkleBranchError):
+            blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
+

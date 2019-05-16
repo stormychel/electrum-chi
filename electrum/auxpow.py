@@ -72,6 +72,9 @@ class AuxPoWOwnChainIDError(AuxPowVerifyError):
 class AuxPoWChainMerkleTooLongError(AuxPowVerifyError):
     pass
 
+class AuxPoWBadCoinbaseMerkleBranchError(AuxPowVerifyError):
+    pass
+
 def auxpow_active(base_header):
     height_allows_auxpow = base_header['block_height'] >= MIN_AUXPOW_HEIGHT
     version_allows_auxpow = base_header['version'] & BLOCK_VERSION_AUXPOW_BIT
@@ -231,7 +234,7 @@ def verify_auxpow(header):
     # if (CBlock::CheckMerkleBranch(GetHash(), vMerkleBranch, nIndex) != parentBlock.hashMerkleRoot)
     #    return error("Aux POW merkle root incorrect");
     if (calculate_merkle_root(coinbase_hash, coinbase_merkle_branch, coinbase_index) != parent_block['merkle_root']):
-        raise Exception('Aux POW merkle root incorrect')
+        raise AuxPoWBadCoinbaseMerkleBranchError()
 
     #// Check that the same work is not submitted twice to our chain.
     #//

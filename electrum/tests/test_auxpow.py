@@ -1,5 +1,5 @@
 from electrum import auxpow, blockchain, constants
-from electrum.util import bfh
+from electrum.util import bfh, bh2u
 
 from . import SequentialTestCase
 from . import TestCaseForTestnet
@@ -180,6 +180,42 @@ class Test_auxpow(SequentialTestCase):
         update_merkle_root_to_match_coinbase(header['auxpow'])
 
         with self.assertRaises(auxpow.AuxPoWCoinbaseNoInputsError):
+            blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
+
+    # Catch the case that the coinbase transaction does not contain details of
+    # the merged block. In this case we make the transaction script too short
+    # for it to do so.  This test is for the code path with an implicit MM
+    # coinbase header.
+    def test_should_reject_coinbase_root_too_late(self):
+        header_bytes = bfh(namecoin_header_19414)
+        # We can't pass the real height because it's below a checkpoint, and
+        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
+        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
+
+        input_script = bfh(header['auxpow']['parent_coinbase_tx'].inputs()[0]['scriptSig'])
+
+        padded_script = bfh('00') * (auxpow.MAX_INDEX_PC_BACKWARDS_COMPATIBILITY + 4)
+        padded_script += input_script[8:]
+
+        header['auxpow']['parent_coinbase_tx']._inputs[0]['scriptSig'] = bh2u(padded_script)
+
+        # Set outputs to an empty list; this is necessary to re-serialize
+        # because any outputs present are invalid due to fast_tx_deserialize
+        # optimization.
+        header['auxpow']['parent_coinbase_tx']._outputs = []
+        # Clear the cached raw serialization
+        header['auxpow']['parent_coinbase_tx'].raw = None
+        header['auxpow']['parent_coinbase_tx'].raw_bytes = None
+        # Re-serialize.  Note that our AuxPoW library won't do this for us,
+        # because it optimizes via fast_txid.
+        header['auxpow']['parent_coinbase_tx'].raw_bytes = bfh(header['auxpow']['parent_coinbase_tx'].serialize_to_network(witness=False))
+
+        # Correct the coinbase Merkle root.  This will also break the
+        # difficulty check, but as that doesn't occur until the end, we can get
+        # away with it.
+        update_merkle_root_to_match_coinbase(header['auxpow'])
+
+        with self.assertRaises(auxpow.AuxPoWCoinbaseRootTooLate):
             blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
 
 

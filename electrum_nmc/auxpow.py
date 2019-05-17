@@ -52,11 +52,39 @@ from . import transaction
 from .transaction import BCDataStream, Transaction, TYPE_SCRIPT
 from .util import bfh, bh2u
 
+# Maximum index of the merkle root hash in the coinbase transaction script,
+# where no merged mining header is present.
+MAX_INDEX_PC_BACKWARDS_COMPATIBILITY = 20
+
+# Header for merge-mining data in the coinbase.
+COINBASE_MERGED_MINING_HEADER = bfh('fabe') + b'mm'
+
 BLOCK_VERSION_AUXPOW_BIT = 0x100
 MIN_AUXPOW_HEIGHT = 19200
 
 # TODO: move this to network constants
 CHAIN_ID = 1
+
+class AuxPowVerifyError(Exception):
+    pass
+
+class AuxPoWNotGenerateError(AuxPowVerifyError):
+    pass
+
+class AuxPoWOwnChainIDError(AuxPowVerifyError):
+    pass
+
+class AuxPoWChainMerkleTooLongError(AuxPowVerifyError):
+    pass
+
+class AuxPoWBadCoinbaseMerkleBranchError(AuxPowVerifyError):
+    pass
+
+class AuxPoWCoinbaseNoInputsError(AuxPowVerifyError):
+    pass
+
+class AuxPoWCoinbaseRootTooLate(AuxPowVerifyError):
+    pass
 
 def auxpow_active(base_header):
     height_allows_auxpow = base_header['block_height'] >= MIN_AUXPOW_HEIGHT
@@ -187,11 +215,23 @@ def verify_auxpow(header):
     coinbase_merkle_branch = auxpow['coinbase_merkle_branch']
     coinbase_index = auxpow['coinbase_merkle_index']
 
+    #if (coinbaseTx.nIndex != 0)
+    #    return error("AuxPow is not a generate");
+
+    if (coinbase_index != 0):
+        raise AuxPoWNotGenerateError()
+
     #if (get_chain_id(parent_block) == chain_id)
     #  return error("Aux POW parent has our chain ID");
 
     if (get_chain_id(parent_block) == CHAIN_ID):
-        raise Exception('Aux POW parent has our chain ID')
+        raise AuxPoWOwnChainIDError()
+
+    #if (vChainMerkleBranch.size() > 30)
+    #    return error("Aux POW chain merkle branch too long");
+
+    if (len(chain_merkle_branch) > 30):
+        raise AuxPoWChainMerkleTooLongError()
 
     #// Check that the chain merkle root is in the coinbase
     #uint256 nRootHash = CBlock::CheckMerkleBranch(hashAuxBlock, vChainMerkleBranch, nChainIndex);
@@ -199,50 +239,83 @@ def verify_auxpow(header):
     #std::reverse(vchRootHash.begin(), vchRootHash.end()); // correct endian
 
     # Check that the chain merkle root is in the coinbase
-    root_hash = calculate_merkle_root(auxhash, chain_merkle_branch, chain_index)
+    root_hash_bytes = bfh(calculate_merkle_root(auxhash, chain_merkle_branch, chain_index))
 
     # Check that we are in the parent block merkle tree
     # if (CBlock::CheckMerkleBranch(GetHash(), vMerkleBranch, nIndex) != parentBlock.hashMerkleRoot)
     #    return error("Aux POW merkle root incorrect");
     if (calculate_merkle_root(coinbase_hash, coinbase_merkle_branch, coinbase_index) != parent_block['merkle_root']):
-        raise Exception('Aux POW merkle root incorrect')
+        raise AuxPoWBadCoinbaseMerkleBranchError()
+
+    #// Check that there is at least one input.
+    #if (coinbaseTx->vin.empty())
+    #    return error("Aux POW coinbase has no inputs");
+
+    # Check that there is at least one input.
+    if (len(coinbase.inputs()) == 0):
+        raise AuxPoWCoinbaseNoInputsError()
+
+    # const CScript script = coinbaseTx->vin[0].scriptSig;
+
+    script_bytes = bfh(coinbase.inputs()[0]['scriptSig'])
 
     #// Check that the same work is not submitted twice to our chain.
     #//
 
-    #CScript::const_iterator pcHead =
-        #std::search(script.begin(), script.end(), UBEGIN(pchMergedMiningHeader), UEND(pchMergedMiningHeader));
+    # const unsigned char* const mmHeaderBegin = pchMergedMiningHeader;
+    # const unsigned char* const mmHeaderEnd
+    #    = mmHeaderBegin + sizeof (pchMergedMiningHeader);
+    # CScript::const_iterator pcHead =
+    #    std::search(script.begin(), script.end(), mmHeaderBegin, mmHeaderEnd);
+
+    pos_header = script_bytes.find(COINBASE_MERGED_MINING_HEADER)
 
     #CScript::const_iterator pc =
-        #std::search(script.begin(), script.end(), vchRootHash.begin(), vchRootHash.end());
+    #    std::search(script.begin(), script.end(), vchRootHash.begin(), vchRootHash.end());
+
+    pos = script_bytes.find(root_hash_bytes)
 
     #if (pc == script.end())
+
+    if pos == -1:
+
         #return error("Aux POW missing chain merkle root in parent coinbase");
 
-    script = coinbase.inputs()[0]['scriptSig']
-    pos = script.find(root_hash)
-
-    # todo: if pos == -1 ??
-    if pos == -1:
         raise Exception('Aux POW missing chain merkle root in parent coinbase')
 
-    #todo: make sure only submitted once
     #if (pcHead != script.end())
     #{
+
+    if pos_header != -1:
+
         #// Enforce only one chain merkle root by checking that a single instance of the merged
         #// mining header exists just before.
         #if (script.end() != std::search(pcHead + 1, script.end(), UBEGIN(pchMergedMiningHeader), UEND(pchMergedMiningHeader)))
             #return error("Multiple merged mining headers in coinbase");
         #if (pcHead + sizeof(pchMergedMiningHeader) != pc)
             #return error("Merged mining header is not just before chain merkle root");
+
+        # TODO
+        pass
+
     #}
     #else
     #{
+
+    else:
+
         #// For backward compatibility.
         #// Enforce only one chain merkle root by checking that it starts early in the coinbase.
         #// 8-12 bytes are enough to encode extraNonce and nBits.
         #if (pc - script.begin() > 20)
             #return error("Aux POW chain merkle root must start in the first 20 bytes of the parent coinbase");
+
+        # For backward compatibility.
+        # Enforce only one chain merkle root by checking that it starts early in the coinbase.
+        # 8-12 bytes are enough to encode extraNonce and nBits.
+        if pos > 20:
+            raise AuxPoWCoinbaseRootTooLate()
+
     #}
 
 
@@ -252,8 +325,8 @@ def verify_auxpow(header):
     #if (script.end() - pc < 8)
         #return error("Aux POW missing chain merkle tree size and nonce in parent coinbase");
 
-    pos = pos + len(root_hash)
-    if (len(script) - pos < 8):
+    pos = pos + len(root_hash_bytes)
+    if (len(script_bytes) - pos < 8):
         raise Exception('Aux POW missing chain merkle tree size and nonce in parent coinbase')
 
      #int nSize;
@@ -261,14 +334,11 @@ def verify_auxpow(header):
     #if (nSize != (1 << vChainMerkleBranch.size()))
         #return error("Aux POW merkle branch size does not match parent coinbase");
 
-    def hex_to_int(s):
-        b = bytes.fromhex(s)
-        b_reversed = b[::-1]
-        h = binascii.hexlify(b_reversed).decode('ascii')
-        return int(h, 16)
+    def bytes_to_int(b):
+        return int.from_bytes(b, byteorder='little')
 
-    size = hex_to_int(script[pos:pos+8])
-    nonce = hex_to_int(script[pos+8:pos+16])
+    size = bytes_to_int(script_bytes[pos:pos+4])
+    nonce = bytes_to_int(script_bytes[pos+4:pos+8])
 
     #print 'size',size
     #print 'nonce',nonce

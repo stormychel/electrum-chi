@@ -410,7 +410,20 @@ def name_expires_in(name_height, chain_height):
     return name_height - chain_height + 36000
 
 
+def name_expiration_datetime_estimate(name_height, chain_height, chain_unixtime):
+    expiration_blocks = name_expires_in(name_height, chain_height)
+
+    if expiration_blocks is None:
+        return None, None
+
+    block_timedelta = timedelta(minutes=10)
+    expiration_timedelta = expiration_blocks * block_timedelta
+    chain_datetime = datetime.fromtimestamp(chain_unixtime)
+    return expiration_blocks, chain_datetime + expiration_timedelta
+
+
 import binascii
+from datetime import datetime, timedelta
 import os
 import re
 

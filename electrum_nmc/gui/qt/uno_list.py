@@ -34,7 +34,7 @@ from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
 from electrum.commands import NameUpdatedTooRecentlyError
 from electrum.i18n import _
-from electrum.names import format_name_identifier, format_name_value, get_queued_firstupdate_from_new, name_expires_in
+from electrum.names import format_name_identifier, format_name_value, get_queued_firstupdate_from_new, name_expiration_datetime_estimate
 from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates
 from electrum.wallet import InternalAddressCorruption
 
@@ -58,7 +58,7 @@ class UNOList(UTXOList):
     headers = {
         Columns.NAME: _('Name'),
         Columns.VALUE: _('Value'),
-        Columns.EXPIRES_IN: _('Expires In'),
+        Columns.EXPIRES_IN: _('Expires (Est.)'),
         Columns.STATUS: _('Status'),
     }
     filter_columns = [Columns.NAME, Columns.VALUE]
@@ -92,13 +92,14 @@ class UNOList(UTXOList):
             if firstupdate_output is not None:
                 if firstupdate_output.name_op is not None:
                     name_op = firstupdate_output.name_op
-            expires_in = None
+            expires_in, expires_datetime = None, None
             status = _('Registration Pending')
         else:
             # utxo is name_anyupdate
             height = x.get('height')
-            chain_height = self.network.blockchain().height()
-            expires_in = name_expires_in(height, chain_height)
+            header_at_tip = self.network.blockchain().header_at_tip()
+            #chain_height = self.network.blockchain().height()
+            expires_in, expires_datetime = name_expiration_datetime_estimate(height, header_at_tip['block_height'], header_at_tip['timestamp'])
             status = '' if expires_in is not None else _('Update Pending')
 
         if 'name' in name_op:
@@ -114,13 +115,14 @@ class UNOList(UTXOList):
             value = None
             formatted_value = ''
 
-        formatted_expires_in = '%d'%expires_in if expires_in is not None else ''
+        formatted_expires_in = ( _('Expires in %d blocks\nDate/time is only an estimate; do not rely on it!')%expires_in) if expires_in is not None else ''
+        formatted_expires_datetime = expires_datetime.isoformat(' ') if expires_datetime is not None else ''
 
         txout = txid + ":%d"%vout
 
         self.utxo_dict[txout] = x
 
-        labels = [formatted_name, formatted_value, formatted_expires_in, status]
+        labels = [formatted_name, formatted_value, formatted_expires_datetime, status]
         utxo_item = [QStandardItem(x) for x in labels]
         self.set_editability(utxo_item)
 
@@ -130,6 +132,8 @@ class UNOList(UTXOList):
         utxo_item[self.Columns.NAME].setData(txout, Qt.UserRole)
         utxo_item[self.Columns.NAME].setData(name, Qt.UserRole + USER_ROLE_NAME)
         utxo_item[self.Columns.NAME].setData(value, Qt.UserRole + USER_ROLE_VALUE)
+
+        utxo_item[self.Columns.EXPIRES_IN].setToolTip(formatted_expires_in)
 
         address = x.get('address')
         if self.wallet.is_frozen_address(address) or self.wallet.is_frozen_coin(x):

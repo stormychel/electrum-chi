@@ -21,7 +21,7 @@ folder.
 2. Build image
 
     ```
-    $ sudo docker build -t electrum-android-builder-img electrum_nmc/gui/kivy/tools
+    $ sudo docker build -t electrum-nmc-android-builder-img electrum_nmc/gui/kivy/tools
     ```
 
 3. Build locale files
@@ -40,11 +40,11 @@ folder.
 
     ```
     $ sudo docker run -it --rm \
-        --name electrum-android-builder-cont \
+        --name electrum-nmc-android-builder-cont \
         -v $PWD:/home/user/wspace/electrum \
         -v ~/.keystore:/home/user/.keystore \
         --workdir /home/user/wspace/electrum \
-        electrum-android-builder-img \
+        electrum-nmc-android-builder-img \
         ./contrib/make_apk
     ```
     This mounts the project dir inside the container,
@@ -74,7 +74,7 @@ $ adb shell monkey -p org.namecoin.electrum_nmc.electrum_nmc 1
 $ sudo docker run -it --rm \
     -v $PWD:/home/user/wspace/electrum \
     --workdir /home/user/wspace/electrum \
-    electrum-android-builder-img
+    electrum-nmc-android-builder-img
 ```
 
 

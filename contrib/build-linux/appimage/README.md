@@ -17,18 +17,18 @@ folder.
 2. Build image
 
     ```
-    $ sudo docker build --no-cache -t electrum-appimage-builder-img contrib/build-linux/appimage
+    $ sudo docker build --no-cache -t electrum-nmc-appimage-builder-img contrib/build-linux/appimage
     ```
 
 3. Build binary
 
     ```
     $ sudo docker run -it \
-        --name electrum-appimage-builder-cont \
+        --name electrum-nmc-appimage-builder-cont \
         -v $PWD:/opt/electrum-nmc \
         --rm \
         --workdir /opt/electrum-nmc/contrib/build-linux/appimage \
-        electrum-appimage-builder-img \
+        electrum-nmc-appimage-builder-img \
         ./build.sh
     ```
 

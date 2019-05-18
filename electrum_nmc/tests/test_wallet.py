@@ -211,7 +211,9 @@ class TestCreateRestoreWallet(WalletTestCase):
         self.assertEqual('nc1q2ccr34wzep58d4239tl3x3734ttle92aquuuud', wallet.get_receiving_addresses()[0])
         self.assertEqual(2, len(wallet.get_receiving_addresses()))
         # also test addr deletion
-        wallet.delete_address('bc1qnp78h78vp92pwdwq5xvh8eprlga5q8gu66960c')
+        #wallet.delete_address('bc1qnp78h78vp92pwdwq5xvh8eprlga5q8gu66960c')
+        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
+        wallet.delete_address('nc1qnp78h78vp92pwdwq5xvh8eprlga5q8guak6a0m')
         self.assertEqual(1, len(wallet.get_receiving_addresses()))
 
     def test_restore_wallet_from_text_privkeys(self):
@@ -230,5 +232,7 @@ class TestCreateRestoreWallet(WalletTestCase):
                          wallet.export_private_key(addr0, password=None)[0])
         self.assertEqual(2, len(wallet.get_receiving_addresses()))
         # also test addr deletion
-        wallet.delete_address('bc1qnp78h78vp92pwdwq5xvh8eprlga5q8gu66960c')
+        #wallet.delete_address('bc1qnp78h78vp92pwdwq5xvh8eprlga5q8gu66960c')
+        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
+        wallet.delete_address('nc1qnp78h78vp92pwdwq5xvh8eprlga5q8guak6a0m')
         self.assertEqual(1, len(wallet.get_receiving_addresses()))

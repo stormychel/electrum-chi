@@ -35,7 +35,7 @@ from PyQt5.QtWidgets import QAbstractItemView, QMenu
 from electrum.commands import NameUpdatedTooRecentlyError
 from electrum.i18n import _
 from electrum.names import format_name_identifier, format_name_value, get_queued_firstupdate_from_new, name_expiration_datetime_estimate
-from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates
+from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates, bh2u
 from electrum.wallet import InternalAddressCorruption
 
 from .configure_name_dialog import show_configure_name
@@ -157,6 +157,28 @@ class UNOList(UTXOList):
             return None
         return [x.data(Qt.UserRole) for x in items]
 
+    # TODO: Break out self.selected_in_column argument into its own attribute
+    # so that we can subclass it without re-implementing
+    # selected_column_0_user_roles
+    def selected_column_0_user_role_identifiers(self) -> Optional[List[bytes]]:
+        if not self.model():
+            return None
+        items = self.selected_in_column(self.Columns.NAME)
+        if not items:
+            return None
+        return [x.data(Qt.UserRole + USER_ROLE_NAME) for x in items]
+
+    # TODO: Break out self.selected_in_column argument into its own attribute
+    # so that we can subclass it without re-implementing
+    # selected_column_0_user_roles
+    def selected_column_0_user_role_values(self) -> Optional[List[bytes]]:
+        if not self.model():
+            return None
+        items = self.selected_in_column(self.Columns.NAME)
+        if not items:
+            return None
+        return [x.data(Qt.UserRole + USER_ROLE_VALUE) for x in items]
+
     def create_menu(self, position):
         selected = self.selected_column_0_user_roles()
         if not selected:
@@ -171,6 +193,29 @@ class UNOList(UTXOList):
                 label = self.wallet.get_label(txid) or None # Prefer None if empty (None hides the Description: field in the window)
                 menu.addAction(_("Configure"), lambda: self.configure_selected_item())
                 menu.addAction(_("Transaction Details"), lambda: self.parent.show_transaction(tx, label))
+
+        # "Copy ..."
+
+        idx = self.indexAt(position)
+        col = idx.column()
+        if col == self.Columns.NAME:
+            selected_data = self.selected_column_0_user_role_identifiers()
+            selected_data_type = "identifier"
+        elif col == self.Columns.VALUE:
+            selected_data = self.selected_column_0_user_role_values()
+            selected_data_type = "value"
+        else:
+            selected_data = None
+
+        if selected_data is not None and len(selected_data) == 1:
+            data = selected_data[0]
+            try:
+                copy_ascii = data.decode('ascii')
+                menu.addAction(_("Copy {} as ASCII").format(selected_data_type), lambda: self.parent.app.clipboard().setText(copy_ascii))
+            except UnicodeDecodeError:
+                pass
+            copy_hex = bh2u(data)
+            menu.addAction(_("Copy {} as hex").format(selected_data_type), lambda: self.parent.app.clipboard().setText(copy_hex))
 
         menu.exec_(self.viewport().mapToGlobal(position))
 

@@ -19,11 +19,11 @@ from electrum.logging import Logger
 
 
 class UpdateCheck(QWidget, Logger):
-    url = "https://electrum.org/version"
-    download_url = "https://electrum.org/#download"
+    url = "https://www.namecoin.org/download/electrum-nmc/version"
+    download_url = "https://www.namecoin.org/download/betas/#electrum-nmc"
 
     VERSION_ANNOUNCEMENT_SIGNING_KEYS = (
-        "13xjmVAB1EATPP8RshTE8S8sNwwSUM9p1P",
+        "N8XRR1apE8bRVe47JkRNWZ3LLx3hD2jRNn",
     )
 
     def __init__(self, main_window, latest_version=None):

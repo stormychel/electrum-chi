@@ -1,17 +1,7 @@
 {
-    "elec.luggs.co": {
-        "pruning": "-",
-        "s": "446",
-        "version": "1.4"
-    },
     "electrum-nmc.le-space.de": {
         "pruning": "-",
         "s": "50002",
-        "version": "1.4"
-    },
-    "luggscoqbymhvnkp.onion": {
-        "pruning": "-",
-        "t": "82",
         "version": "1.4"
     },
     "nmc.bitcoins.sk": {

@@ -79,7 +79,9 @@ class TestCommands(unittest.TestCase):
 
     @mock.patch.object(storage.WalletStorage, '_write')
     def test_export_private_key_imported(self, mock_write):
-        wallet = restore_wallet_from_text('p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL',
+        #wallet = restore_wallet_from_text('p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL',
+        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
+        wallet = restore_wallet_from_text('p2wpkh:Tm1LGU9bmMk5y8w1CAqfDfC2PzE83v6QjqVUp4odMi3aUiFsx7F5 p2wpkh:TktYN7Gf6FfF7PEshsq9PKrzyhixC6of4hCtzidnJZZexCH2ETJ5',
                                           path='if_this_exists_mocking_failed_648151893')['wallet']
         cmds = Commands(config=None, wallet=wallet, network=None)
         # single address tests
@@ -89,7 +91,9 @@ class TestCommands(unittest.TestCase):
             #cmds.getprivatekeys("bc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackyj6r23")  # not in wallet
             # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
             cmds.getprivatekeys("nc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackr79y2j")  # not in wallet
-        self.assertEqual("p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL",
+        #self.assertEqual("p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL",
+        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
+        self.assertEqual("p2wpkh:TktYN7Gf6FfF7PEshsq9PKrzyhixC6of4hCtzidnJZZexCH2ETJ5",
                          #cmds.getprivatekeys("bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw"))
                          # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
                          cmds.getprivatekeys("nc1q2ccr34wzep58d4239tl3x3734ttle92aquuuud"))
@@ -98,7 +102,9 @@ class TestCommands(unittest.TestCase):
             #cmds.getprivatekeys(['bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw', 'asd'])
             # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
             cmds.getprivatekeys(['nc1q2ccr34wzep58d4239tl3x3734ttle92aquuuud', 'asd'])
-        self.assertEqual(['p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL', 'p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN'],
+        #self.assertEqual(['p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL', 'p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN'],
+        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
+        self.assertEqual(['p2wpkh:TktYN7Gf6FfF7PEshsq9PKrzyhixC6of4hCtzidnJZZexCH2ETJ5', 'p2wpkh:Tm1LGU9bmMk5y8w1CAqfDfC2PzE83v6QjqVUp4odMi3aUiFsx7F5'],
                          #cmds.getprivatekeys(['bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw', 'bc1q9pzjpjq4nqx5ycnywekcmycqz0wjp2nq604y2n']))
                          # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
                          cmds.getprivatekeys(['nc1q2ccr34wzep58d4239tl3x3734ttle92aquuuud', 'nc1q9pzjpjq4nqx5ycnywekcmycqz0wjp2nqar2r2s']))
@@ -116,7 +122,9 @@ class TestCommands(unittest.TestCase):
             #cmds.getprivatekeys("bc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackyj6r23")  # not in wallet
             # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
             cmds.getprivatekeys("nc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackr79y2j")  # not in wallet
-        self.assertEqual("p2wpkh:L15oxP24NMNAXxq5r2aom24pHPtt3Fet8ZutgL155Bad93GSubM2",
+        #self.assertEqual("p2wpkh:L15oxP24NMNAXxq5r2aom24pHPtt3Fet8ZutgL155Bad93GSubM2",
+        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
+        self.assertEqual("p2wpkh:ThEbgmkqUM1KCsX2by7FA4z9DzLoT1kgbYJfmx1zc4mdnFb4WPQ4",
                          #cmds.getprivatekeys("bc1q3g5tmkmlvxryhh843v4dz026avatc0zzr6h3af"))
                          # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
                          cmds.getprivatekeys("nc1q3g5tmkmlvxryhh843v4dz026avatc0zzykgka2"))
@@ -125,7 +133,9 @@ class TestCommands(unittest.TestCase):
             #cmds.getprivatekeys(['bc1q3g5tmkmlvxryhh843v4dz026avatc0zzr6h3af', 'asd'])
             # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
             cmds.getprivatekeys(['nc1q3g5tmkmlvxryhh843v4dz026avatc0zzykgka2', 'asd'])
-        self.assertEqual(['p2wpkh:L15oxP24NMNAXxq5r2aom24pHPtt3Fet8ZutgL155Bad93GSubM2', 'p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN'],
+        #self.assertEqual(['p2wpkh:L15oxP24NMNAXxq5r2aom24pHPtt3Fet8ZutgL155Bad93GSubM2', 'p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN'],
+        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
+        self.assertEqual(['p2wpkh:ThEbgmkqUM1KCsX2by7FA4z9DzLoT1kgbYJfmx1zc4mdnFb4WPQ4', 'p2wpkh:Tm1LGU9bmMk5y8w1CAqfDfC2PzE83v6QjqVUp4odMi3aUiFsx7F5'],
                          #cmds.getprivatekeys(['bc1q3g5tmkmlvxryhh843v4dz026avatc0zzr6h3af', 'bc1q9pzjpjq4nqx5ycnywekcmycqz0wjp2nq604y2n']))
                          # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
                          cmds.getprivatekeys(['nc1q3g5tmkmlvxryhh843v4dz026avatc0zzykgka2', 'nc1q9pzjpjq4nqx5ycnywekcmycqz0wjp2nqar2r2s']))

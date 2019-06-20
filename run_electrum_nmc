@@ -52,7 +52,7 @@ if is_local or is_android:
     sys.path.insert(0, os.path.join(script_dir, 'packages'))
 
 # Namecoin import aliasing
-sys.path.insert(0, os.path.join(script_dir, 'electrum_nmc'))
+sys.path = [os.path.join(p, 'electrum_nmc') for p in sys.path] + sys.path
 
 
 def check_imports():

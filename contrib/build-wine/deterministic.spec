@@ -38,12 +38,12 @@ binaries += [b for b in collect_dynamic_libs('PyQt5') if 'qwindowsvista' in b[0]
 binaries += [('C:/tmp/libsecp256k1.dll', '.')]
 
 datas = [
-    (home+'electrum_nmc/electrum/*.json', 'electrum_nmc/electrum'),
-    (home+'electrum_nmc/electrum/wordlist/english.txt', 'electrum_nmc/electrum/wordlist'),
-    (home+'electrum_nmc/electrum/locale', 'electrum_nmc/electrum/locale'),
-    (home+'electrum_nmc/electrum/plugins', 'electrum_nmc/electrum/plugins'),
+    (home+'electrum_nmc/electrum/*.json', 'electrum'),
+    (home+'electrum_nmc/electrum/wordlist/english.txt', 'electrum/wordlist'),
+    (home+'electrum_nmc/electrum/locale', 'electrum/locale'),
+    (home+'electrum_nmc/electrum/plugins', 'electrum/plugins'),
     ('C:\\Program Files (x86)\\ZBar\\bin\\', '.'),
-    (home+'electrum_nmc/electrum/gui/icons', 'electrum_nmc/electrum/gui/icons'),
+    (home+'electrum_nmc/electrum/gui/icons', 'electrum/gui/icons'),
 ]
 datas += collect_data_files('trezorlib')
 datas += collect_data_files('safetlib')

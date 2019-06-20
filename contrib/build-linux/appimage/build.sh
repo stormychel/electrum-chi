@@ -102,7 +102,7 @@ info "preparing electrum-locale."
         exit 1
     fi
     for i in ./locale/*; do
-        dir="$PROJECT_ROOT/electrum_nmc/$i/LC_MESSAGES"
+        dir="$PROJECT_ROOT/electrum_nmc/electrum/$i/LC_MESSAGES"
         mkdir -p $dir
         msgfmt --output-file="$dir/electrum.mo" "$i/electrum.po" || true
     done
@@ -124,7 +124,7 @@ cp "/usr/lib/libzbar.so.0" "$APPDIR/usr/lib/libzbar.so.0"
 
 info "desktop integration."
 cp "$PROJECT_ROOT/electrum-nmc.desktop" "$APPDIR/electrum-nmc.desktop"
-cp "$PROJECT_ROOT/electrum_nmc/gui/icons/electrum_nmc.png" "$APPDIR/electrum_nmc.png"
+cp "$PROJECT_ROOT/electrum_nmc/electrum/gui/icons/electrum_nmc.png" "$APPDIR/electrum_nmc.png"
 
 
 # add launcher

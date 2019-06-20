@@ -15,19 +15,3 @@ from .commands import Commands, known_commands
 
 
 __version__ = ELECTRUM_VERSION
-
-# This trick allows accessing electrum_nmc from import statements as electrum,
-# so we can avoid merge conflicts while also avoiding namespace collisions with
-# upstream.
-import pkgutil
-import importlib
-import sys
-electrum_nmc = importlib.import_module('electrum_nmc')
-sys.modules['electrum'] = electrum_nmc
-for _, name, _ in pkgutil.iter_modules(['electrum_nmc']):
-    try:
-        m = importlib.import_module('electrum_nmc' + '.' + name)
-        sys.modules['electrum' + '.' + name] = m
-    except:
-        pass
-

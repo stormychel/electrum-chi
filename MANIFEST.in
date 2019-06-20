@@ -9,7 +9,7 @@ recursive-include packages *.py
 recursive-include packages cacert.pem
 
 graft electrum_nmc
-prune electrum_nmc/tests
+prune electrum_nmc/electrum/tests
 
 global-exclude __pycache__
 global-exclude *.py[co~]

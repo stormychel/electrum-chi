@@ -21,7 +21,7 @@ folder.
 2. Build image
 
     ```
-    $ sudo docker build -t electrum-nmc-android-builder-img electrum_nmc/gui/kivy/tools
+    $ sudo docker build -t electrum-nmc-android-builder-img electrum_nmc/electrum/gui/kivy/tools
     ```
 
 3. Build locale files
@@ -85,6 +85,6 @@ See `log_level` in `buildozer.spec`
 ### Kivy can be run directly on Linux Desktop. How?
 Install Kivy.
 
-Build atlas: `(cd electrum_nmc/gui/kivy/; make theming)`
+Build atlas: `(cd electrum_nmc/electrum/gui/kivy/; make theming)`
 
 Run electrum-nmc with the `-g` switch: `electrum-nmc -g kivy`

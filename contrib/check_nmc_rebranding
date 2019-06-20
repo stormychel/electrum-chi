@@ -23,7 +23,7 @@ for i in **/*.py; do
         | grep -v "'b\"Bitcoin seed\"'" \
         | grep -v "main_window.py.*\"'bitcoin'\"" \
         | grep -v "org.bitcoin.protocols.payments" \
-        | grep -v "electrum_nmc/plugins/ledger/"; then
+        | grep -v "electrum_nmc/electrum/plugins/ledger/"; then
         echo "Rebranding needed"
         exit 1
     fi
@@ -60,27 +60,6 @@ for i in **/*.py; do
 done
 
 EXCEPTIONS="--exclude=check_nmc_rebranding --exclude=RELEASE-NOTES --exclude-dir=.git"
-
-# Locale rebranding is a known bug: https://github.com/namecoin/electrum-nmc/issues/109
-# Issue 4994 has no Namecoin equivalent.
-# The localization button SVG is a known bug: https://github.com/namecoin/electrum-nmc/issues/114
-if grep -r $EXCEPTIONS "electrum/" ./ \
-    | grep -v "./contrib/deterministic-build/electrum-locale/locale/" \
-    | grep -v "https://github.com/spesmilo/electrum/issues/4994" \
-    | grep -v "https://d322cqt584bo4o.cloudfront.net/electrum/localized.svg" \
-    | grep -v "./.tox/" \
-    | grep -v "CalinsQRReader/README.md" \
-    | grep -v "./Electrum_NMC.egg-info/SOURCES.txt"; then
-    echo "Rebranding needed"
-    exit 1
-fi
-
-# Locale rebranding is a known bug: https://github.com/namecoin/electrum-nmc/issues/109
-if grep -r $EXCEPTIONS "electrum\\\\" ./ \
-    | grep -v "./contrib/deterministic-build/electrum-locale/locale/"; then
-    echo "Rebranding needed"
-    exit 1
-fi
 
 if grep -r $EXCEPTIONS "electrum.icns" ./; then
     echo "Rebranding needed"

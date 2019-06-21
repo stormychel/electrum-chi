@@ -136,7 +136,7 @@ class HistoryScreen(CScreen):
 
     def get_card(self, tx_hash, tx_mined_status, value, balance):
         status, status_str = self.app.wallet.get_tx_status(tx_hash, tx_mined_status)
-        icon = "atlas://electrum_nmc/gui/kivy/theming/light/" + TX_ICONS[status]
+        icon = "atlas://electrum_nmc/electrum/gui/kivy/theming/light/" + TX_ICONS[status]
         label = self.app.wallet.get_label(tx_hash) if tx_hash else _('Pruned transaction outputs')
         ri = {}
         ri['screen'] = self

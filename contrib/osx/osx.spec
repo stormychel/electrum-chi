@@ -7,7 +7,7 @@ import sys, os
 PACKAGE='Electrum-NMC'
 PYPKG='electrum_nmc'
 MAIN_SCRIPT='run_electrum_nmc'
-ICONS_FILE=PYPKG + '/gui/icons/electrum_nmc.icns'
+ICONS_FILE=PYPKG + '/electrum/gui/icons/electrum_nmc.icns'
 APP_SIGN = os.environ.get('APP_SIGN', '')
 
 def fail(*msg):
@@ -73,11 +73,11 @@ hiddenimports.remove('safetlib.qt.pinmatrix')
 
 
 datas = [
-    (electrum + PYPKG + '/*.json', PYPKG),
-    (electrum + PYPKG + '/wordlist/english.txt', PYPKG + '/wordlist'),
-    (electrum + PYPKG + '/locale', PYPKG + '/locale'),
-    (electrum + PYPKG + '/plugins', PYPKG + '/plugins'),
-    (electrum + PYPKG + '/gui/icons', PYPKG + '/gui/icons'),
+    (electrum + PYPKG + '/electrum/*.json', PYPKG + '/electrum'),
+    (electrum + PYPKG + '/electrum/wordlist/english.txt', PYPKG + '/electrum/wordlist'),
+    (electrum + PYPKG + '/electrum/locale', PYPKG + '/electrum/locale'),
+    (electrum + PYPKG + '/electrum/plugins', PYPKG + '/electrum/plugins'),
+    (electrum + PYPKG + '/electrum/gui/icons', PYPKG + '/electrum/gui/icons'),
 ]
 datas += collect_data_files('trezorlib')
 datas += collect_data_files('safetlib')

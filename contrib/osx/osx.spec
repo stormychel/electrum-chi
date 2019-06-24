@@ -7,7 +7,7 @@ import sys, os
 PACKAGE='Electrum-NMC'
 PYPKG='electrum_nmc'
 MAIN_SCRIPT='run_electrum_nmc'
-ICONS_FILE=PYPKG + '/gui/icons/electrum_nmc.icns'
+ICONS_FILE=PYPKG + '/electrum/gui/icons/electrum_nmc.icns'
 APP_SIGN = os.environ.get('APP_SIGN', '')
 
 def fail(*msg):
@@ -73,11 +73,11 @@ hiddenimports.remove('safetlib.qt.pinmatrix')
 
 
 datas = [
-    (electrum + PYPKG + '/*.json', PYPKG),
-    (electrum + PYPKG + '/wordlist/english.txt', PYPKG + '/wordlist'),
-    (electrum + PYPKG + '/locale', PYPKG + '/locale'),
-    (electrum + PYPKG + '/plugins', PYPKG + '/plugins'),
-    (electrum + PYPKG + '/gui/icons', PYPKG + '/gui/icons'),
+    (electrum + PYPKG + '/electrum/*.json', PYPKG + '/electrum'),
+    (electrum + PYPKG + '/electrum/wordlist/english.txt', PYPKG + '/electrum/wordlist'),
+    (electrum + PYPKG + '/electrum/locale', PYPKG + '/electrum/locale'),
+    (electrum + PYPKG + '/electrum/plugins', PYPKG + '/electrum/plugins'),
+    (electrum + PYPKG + '/electrum/gui/icons', PYPKG + '/electrum/gui/icons'),
 ]
 datas += collect_data_files('trezorlib')
 datas += collect_data_files('safetlib')
@@ -97,22 +97,22 @@ binaries += [b for b in collect_dynamic_libs('PyQt5') if 'macstyle' in b[0]]
 
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
 a = Analysis([electrum+ MAIN_SCRIPT,
-              electrum+'electrum_nmc/gui/qt/main_window.py',
-              electrum+'electrum_nmc/gui/text.py',
-              electrum+'electrum_nmc/util.py',
-              electrum+'electrum_nmc/wallet.py',
-              electrum+'electrum_nmc/simple_config.py',
-              electrum+'electrum_nmc/bitcoin.py',
-              electrum+'electrum_nmc/dnssec.py',
-              electrum+'electrum_nmc/commands.py',
-              electrum+'electrum_nmc/plugins/cosigner_pool/qt.py',
-              electrum+'electrum_nmc/plugins/email_requests/qt.py',
-              electrum+'electrum_nmc/plugins/trezor/qt.py',
-              electrum+'electrum_nmc/plugins/safe_t/client.py',
-              electrum+'electrum_nmc/plugins/safe_t/qt.py',
-              electrum+'electrum_nmc/plugins/keepkey/qt.py',
-              electrum+'electrum_nmc/plugins/ledger/qt.py',
-              electrum+'electrum_nmc/plugins/coldcard/qt.py',
+              electrum+'electrum_nmc/electrum/gui/qt/main_window.py',
+              electrum+'electrum_nmc/electrum/gui/text.py',
+              electrum+'electrum_nmc/electrum/util.py',
+              electrum+'electrum_nmc/electrum/wallet.py',
+              electrum+'electrum_nmc/electrum/simple_config.py',
+              electrum+'electrum_nmc/electrum/bitcoin.py',
+              electrum+'electrum_nmc/electrum/dnssec.py',
+              electrum+'electrum_nmc/electrum/commands.py',
+              electrum+'electrum_nmc/electrum/plugins/cosigner_pool/qt.py',
+              electrum+'electrum_nmc/electrum/plugins/email_requests/qt.py',
+              electrum+'electrum_nmc/electrum/plugins/trezor/qt.py',
+              electrum+'electrum_nmc/electrum/plugins/safe_t/client.py',
+              electrum+'electrum_nmc/electrum/plugins/safe_t/qt.py',
+              electrum+'electrum_nmc/electrum/plugins/keepkey/qt.py',
+              electrum+'electrum_nmc/electrum/plugins/ledger/qt.py',
+              electrum+'electrum_nmc/electrum/plugins/coldcard/qt.py',
               ],
              binaries=binaries,
              datas=datas,

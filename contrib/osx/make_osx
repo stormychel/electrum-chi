@@ -71,7 +71,7 @@ git submodule update
 rm  -rf $BUILDDIR > /dev/null 2>&1
 mkdir $BUILDDIR
 
-cp -R ./contrib/deterministic-build/electrum-locale/locale/ ./electrum_nmc/locale/
+cp -R ./contrib/deterministic-build/electrum-locale/locale/ ./electrum_nmc/electrum/locale/
 
 
 info "Downloading libusb..."

@@ -26,7 +26,7 @@ with open('contrib/requirements/requirements-hw.txt') as f:
     requirements_hw = f.read().splitlines()
 
 # load version.py; needlessly complicated alternative to "imp.load_source":
-version_spec = importlib.util.spec_from_file_location('version', 'electrum_nmc/version.py')
+version_spec = importlib.util.spec_from_file_location('version', 'electrum_nmc/electrum/version.py')
 version_module = version = importlib.util.module_from_spec(version_spec)
 version_spec.loader.exec_module(version_module)
 
@@ -47,7 +47,7 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
             usr_share = os.path.expanduser('~/.local/share')
     data_files += [
         (os.path.join(usr_share, 'applications/'), ['electrum-nmc.desktop']),
-        (os.path.join(usr_share, icons_dirname), ['electrum_nmc/gui/icons/electrum_nmc.png']),
+        (os.path.join(usr_share, icons_dirname), ['electrum_nmc/electrum/gui/icons/electrum_nmc.png']),
     ]
 
 extras_require = {
@@ -66,24 +66,25 @@ setup(
     extras_require=extras_require,
     packages=[
         'electrum_nmc',
-        'electrum_nmc.gui',
-        'electrum_nmc.gui.qt',
-        'electrum_nmc.plugins',
-    ] + [('electrum_nmc.plugins.'+pkg) for pkg in find_packages('electrum_nmc/plugins')],
+        'electrum_nmc.electrum',
+        'electrum_nmc.electrum.gui',
+        'electrum_nmc.electrum.gui.qt',
+        'electrum_nmc.electrum.plugins',
+    ] + [('electrum_nmc.electrum.plugins.'+pkg) for pkg in find_packages('electrum_nmc/electrum/plugins')],
     package_dir={
         'electrum_nmc': 'electrum_nmc',
     },
     package_data={
         '': ['*.txt', '*.json', '*.ttf', '*.otf'],
-        'electrum_nmc': [
+        'electrum_nmc.electrum': [
             'wordlist/*.txt',
             'locale/*/LC_MESSAGES/electrum.mo',
         ],
-        'electrum.gui': [
+        'electrum_nmc.electrum.gui': [
             'icons/*',
         ],
     },
-    scripts=['electrum_nmc/electrum-nmc'],
+    scripts=['electrum_nmc/electrum/electrum-nmc'],
     data_files=data_files,
     description="Lightweight Namecoin Wallet",
     author="The Namecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors",

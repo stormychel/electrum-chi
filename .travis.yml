@@ -53,7 +53,7 @@ jobs:
       install:
         - pip install requests && ./contrib/make_locale
         - ./contrib/make_packages
-        - sudo docker build --no-cache -t electrum-nmc-android-builder-img electrum_nmc/gui/kivy/tools
+        - sudo docker build --no-cache -t electrum-nmc-android-builder-img electrum_nmc/electrum/gui/kivy/tools
       script:
         - sudo chown -R 1000:1000 .
         # Output something every minute or Travis kills the job

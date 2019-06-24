@@ -72,7 +72,7 @@
   !define MUI_ABORTWARNING
   !define MUI_ABORTWARNING_TEXT "Are you sure you wish to abort the installation of ${PRODUCT_NAME}?"
   
-  !define MUI_ICON "c:\electrum-nmc\electrum_nmc\gui\icons\electrum_nmc.ico"
+  !define MUI_ICON "c:\electrum-nmc\electrum_nmc\electrum\gui\icons\electrum_nmc.ico"
   
 ;--------------------------------
 ;Pages
@@ -111,7 +111,7 @@ Section
   
   ;Files to pack into the installer
   File /r "dist\electrum-nmc\*.*"
-  File "c:\electrum-nmc\electrum_nmc\gui\icons\electrum_nmc.ico"
+  File "c:\electrum-nmc\electrum_nmc\electrum\gui\icons\electrum_nmc.ico"
 
   ;Store installation folder
   WriteRegStr HKCU "Software\${PRODUCT_NAME}" "" $INSTDIR

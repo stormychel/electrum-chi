@@ -71,7 +71,8 @@ if TYPE_CHECKING:
     from .simple_config import SimpleConfig
 
 
-from .names import get_default_name_tx_label
+from .names import (get_default_name_tx_label, OP_NAME_NEW, OP_NAME_FIRSTUPDATE,
+                    OP_NAME_UPDATE)
 
 _logger = get_logger(__name__)
 
@@ -663,7 +664,9 @@ class Abstract_Wallet(AddressSynchronizer):
     def dust_threshold(self):
         return dust_threshold(self.network)
 
-    def get_unconfirmed_base_tx_for_batching(self, name_identifier=None) -> Optional[Transaction]:
+    # name_op is for a name operation that will be added to the base tx.
+    # Namecoin consensus rules disallow multiple name outputs per tx.
+    def get_unconfirmed_base_tx_for_batching(self, name_op=None) -> Optional[Transaction]:
         candidate = None
         for tx_hash, tx_mined_status, delta, balance in self.get_history():
             # tx should not be mined yet
@@ -686,8 +689,24 @@ class Abstract_Wallet(AddressSynchronizer):
             # Namecoin: avoid multiple name outputs in a single transaction,
             # but allow replacing a name_anyupdate output with the same
             # identifier
-            if name_identifier is None or any([o.name_op is not None and ("name" not in o.name_op or o.name_op["name"] != name_identifier) for o in tx.outputs()]):
-                continue
+            if name_op is not None:
+                # We'll be adding a name operation to the base tx.
+                if name_op["op"] in [OP_NAME_NEW, OP_NAME_FIRSTUPDATE]:
+                    # We'll be adding a name registration operation to the base tx.
+                    if any([o.name_op is not None for o in tx.outputs()]):
+                        # The base tx already has a name operation.  Don't use
+                        # it.
+                        continue
+                else:
+                    # We'll be adding a name_update operation to the base tx.
+                    if any([o.name_op is not None and o.name_op["op"] in [OP_NAME_NEW, OP_NAME_FIRSTUPDATE] for o in tx.outputs()]):
+                        # The base tx already has a name registration
+                        # operation.  Don't use it.
+                        continue
+                    if any([o.name_op is not None and o.name_op["name"] != name_op["name"] for o in tx.outputs()]):
+                        # The base tx already has a name_update operation for a
+                        # different name identifier.  Don't use it.
+                        continue
             # prefer txns already in mempool (vs local)
             if tx_mined_status.height == TX_HEIGHT_LOCAL:
                 candidate = tx
@@ -728,7 +747,7 @@ class Abstract_Wallet(AddressSynchronizer):
                                   change_addr=None, is_sweep=False, name_inputs=[]):
         # check outputs
         i_max = None
-        name_identifier = None
+        name_op = None
         for i, o in enumerate(outputs):
             if o.type == TYPE_ADDRESS:
                 if not is_address(o.address):
@@ -737,10 +756,10 @@ class Abstract_Wallet(AddressSynchronizer):
                 if i_max is not None:
                     raise Exception("More than one output set to spend max")
                 i_max = i
-            if o.name_op is not None and "name" in o.name_op:
-                if name_identifier is not None:
+            if o.name_op is not None:
+                if name_op is not None:
                     raise Exception("More than one name output")
-                name_identifier = o.name_op["name"]
+                name_op = o.name_op
 
         if fixed_fee is None and config.fee_per_kb() is None:
             raise NoDynamicFeeEstimates()
@@ -765,7 +784,7 @@ class Abstract_Wallet(AddressSynchronizer):
             # Let the coin chooser select the coins to spend
             coin_chooser = coinchooser.get_coin_chooser(config)
             # If there is an unconfirmed RBF tx, merge with it
-            base_tx = self.get_unconfirmed_base_tx_for_batching(name_identifier=name_identifier)
+            base_tx = self.get_unconfirmed_base_tx_for_batching(name_op=name_op)
             if config.get('batch_rbf', False) and base_tx:
                 # make sure we don't try to spend change from the tx-to-be-replaced:
                 coins = [c for c in coins if c['prevout_hash'] != base_tx.txid()]

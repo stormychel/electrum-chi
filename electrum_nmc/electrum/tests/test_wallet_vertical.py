@@ -1255,7 +1255,9 @@ class TestWalletSending(TestCaseForTestnet):
 
         # create new tx (output should be batched with existing!)
         # no new input will be needed. just a new output, and change decreased.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1qy6xmdj96v5dzt3j08hgc05yk3kltqsnmw4r6ry', 2_500_000)]
+        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1qy6xmdj96v5dzt3j08hgc05yk3kltqsnmw4r6ry', 2_500_000)]
+        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1qy6xmdj96v5dzt3j08hgc05yk3kltqsnm52lgnu', 2_500_000)]
         coins = wallet.get_spendable_coins(domain=None, config=config)
         tx = wallet.make_unsigned_transaction(coins, outputs, config=config, fixed_fee=20000)
         tx.set_rbf(True)

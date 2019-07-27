@@ -63,8 +63,6 @@ class Test_auxpow(SequentialTestCase):
         header = self.deserialize_with_auxpow(namecoin_header_37174)
         header_auxpow = header['auxpow']
 
-        self.assertEqual(auxpow.CHAIN_ID, header_auxpow['chain_id'])
-
         coinbase_tx = header_auxpow['parent_coinbase_tx']
         expected_coinbase_txid = '8a3164be45a621f85318647d425fe9f45837b8e42ec4fdd902d7f64daf61ff4a'
         observed_coinbase_txid = auxpow.fast_txid(coinbase_tx)
@@ -128,18 +126,6 @@ class Test_auxpow(SequentialTestCase):
         header['auxpow']['coinbase_merkle_index'] = 0x01
 
         with self.assertRaises(auxpow.AuxPoWNotGenerateError):
-            blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
-
-    # Check that block headers from the sidechain are rejected as parent chain
-    # for AuxPoW, via checking of the chain ID's.
-    def test_should_reject_own_chain_id(self):
-        parent_header = self.deserialize_with_auxpow(namecoin_header_19204)
-        self.assertEqual(1, auxpow.get_chain_id(parent_header))
-
-        header = self.deserialize_with_auxpow(namecoin_header_37174)
-        header['auxpow']['parent_header'] = parent_header
-
-        with self.assertRaises(auxpow.AuxPoWOwnChainIDError):
             blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
 
     # Check that where the chain merkle branch is far too long to use, it's

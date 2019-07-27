@@ -84,8 +84,8 @@ def deserialize_full_header(s: bytes, height: int, expect_trailing_data=False, s
     h = deserialize_pure_header(pure_header_bytes, height)
     start_position += HEADER_SIZE
 
-    if auxpow.auxpow_active(h) and height > constants.net.max_checkpoint():
-        h['auxpow'], start_position = auxpow.deserialize_auxpow_header(h, s, start_position=start_position)
+    if height > constants.net.max_checkpoint():
+        h['auxpow'], start_position = auxpow.deserialize_auxpow_header(s, start_position=start_position)
 
     if expect_trailing_data:
         return h, start_position

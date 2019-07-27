@@ -382,7 +382,7 @@ def assert_datadir_available(config_path):
         return
     else:
         raise FileNotFoundError(
-            'Electrum-NMC datadir does not exist. Was it deleted while running?' + '\n' +
+            'Electrum-CHI datadir does not exist. Was it deleted while running?' + '\n' +
             'Should be at {}'.format(path))
 
 
@@ -472,11 +472,11 @@ def user_dir():
     if 'ANDROID_DATA' in os.environ:
         return android_data_dir()
     elif os.name == 'posix':
-        return os.path.join(os.environ["HOME"], ".electrum-nmc")
+        return os.path.join(os.environ["HOME"], ".electrum-chi")
     elif "APPDATA" in os.environ:
-        return os.path.join(os.environ["APPDATA"], "Electrum-NMC")
+        return os.path.join(os.environ["APPDATA"], "Electrum-CHI")
     elif "LOCALAPPDATA" in os.environ:
-        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum-NMC")
+        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum-CHI")
     else:
         #raise Exception("No home directory found in environment variables.")
         return

@@ -105,7 +105,7 @@ def command(s):
             wallet = args[0].wallet
             password = kwargs.get('password')
             if c.requires_wallet and wallet is None:
-                raise Exception("wallet not loaded. Use 'electrum-nmc daemon load_wallet'")
+                raise Exception("wallet not loaded. Use 'electrum-chi daemon load_wallet'")
             if c.requires_password and password is None and wallet.has_password():
                 return {'error': 'Password required' }
             return func(*args, **kwargs)
@@ -392,7 +392,7 @@ class Commands:
     @command('')
     def dumpprivkeys(self):
         """Deprecated."""
-        return "This command is deprecated. Use a pipe instead: 'electrum-nmc listaddresses | electrum-nmc getprivatekeys - '"
+        return "This command is deprecated. Use a pipe instead: 'electrum-chi listaddresses | electrum-chi getprivatekeys - '"
 
     @command('')
     def validateaddress(self, address):
@@ -1310,8 +1310,8 @@ def add_global_options(parser):
     group = parser.add_argument_group('global options')
     group.add_argument("-v", dest="verbosity", help="Set verbosity (log levels)", default='')
     group.add_argument("-V", dest="verbosity_shortcuts", help="Set verbosity (shortcut-filter list)", default='')
-    group.add_argument("-D", "--dir", dest="electrum_path", help="electrum-nmc directory")
-    group.add_argument("-P", "--portable", action="store_true", dest="portable", default=False, help="Use local 'electrum-nmc_data' directory")
+    group.add_argument("-D", "--dir", dest="electrum_path", help="electrum-chi directory")
+    group.add_argument("-P", "--portable", action="store_true", dest="portable", default=False, help="Use local 'electrum-chi_data' directory")
     group.add_argument("-w", "--wallet", dest="wallet_path", help="wallet path")
     group.add_argument("--testnet", action="store_true", dest="testnet", default=False, help="Use Testnet")
     group.add_argument("--regtest", action="store_true", dest="regtest", default=False, help="Use Regtest")
@@ -1320,11 +1320,11 @@ def add_global_options(parser):
 def get_parser():
     # create main parser
     parser = argparse.ArgumentParser(
-        epilog="Run 'electrum-nmc help <command>' to see the help for a command")
+        epilog="Run 'electrum-chi help <command>' to see the help for a command")
     add_global_options(parser)
     subparsers = parser.add_subparsers(dest='cmd', metavar='<command>')
     # gui
-    parser_gui = subparsers.add_parser('gui', description="Run Electrum-NMC's Graphical User Interface.", help="Run GUI (default)")
+    parser_gui = subparsers.add_parser('gui', description="Run Electrum-CHI's Graphical User Interface.", help="Run GUI (default)")
     parser_gui.add_argument("url", nargs='?', default=None, help="namecoin URI (or bip70 file)")
     parser_gui.add_argument("-g", "--gui", dest="gui", help="select graphical user interface", choices=['qt', 'kivy', 'text', 'stdio'])
     parser_gui.add_argument("-o", "--offline", action="store_true", dest="offline", default=False, help="Run offline")

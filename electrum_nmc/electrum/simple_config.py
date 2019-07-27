@@ -124,7 +124,7 @@ class SimpleConfig(Logger):
             path = os.path.join(path, 'simnet')
             make_dir(path, allow_symlink=False)
 
-        self.logger.info(f"electrum-nmc directory {path}")
+        self.logger.info(f"electrum-chi directory {path}")
         return path
 
     def rename_config_keys(self, config, keypairs, deprecation_warning=False):
@@ -268,7 +268,7 @@ class SimpleConfig(Logger):
         new_path = os.path.join(self.path, "wallets", "default_wallet")
 
         # default path in pre 1.9 versions
-        old_path = os.path.join(self.path, "electrum-nmc.dat")
+        old_path = os.path.join(self.path, "electrum-chi.dat")
         if os.path.exists(old_path) and not os.path.exists(new_path):
             os.rename(old_path, new_path)
 
@@ -572,7 +572,7 @@ class SimpleConfig(Logger):
 
 
 def read_user_config(path):
-    """Parse and store the user config settings in electrum-nmc.conf into user_config[]."""
+    """Parse and store the user config settings in electrum-chi.conf into user_config[]."""
     if not path:
         return {}
     config_path = os.path.join(path, "config")

@@ -51,8 +51,8 @@ from .logging import get_logger, Logger
 _logger = get_logger(__name__)
 
 
-REQUEST_HEADERS = {'Accept': 'application/namecoin-paymentrequest', 'User-Agent': 'Electrum-NMC'}
-ACK_HEADERS = {'Content-Type':'application/namecoin-payment','Accept':'application/namecoin-paymentack','User-Agent':'Electrum-NMC'}
+REQUEST_HEADERS = {'Accept': 'application/namecoin-paymentrequest', 'User-Agent': 'Electrum-CHI'}
+ACK_HEADERS = {'Content-Type':'application/namecoin-payment','Accept':'application/namecoin-paymentack','User-Agent':'Electrum-CHI'}
 
 ca_path = certifi.where()
 ca_list = None

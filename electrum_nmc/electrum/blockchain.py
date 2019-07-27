@@ -33,6 +33,7 @@ from .simple_config import SimpleConfig
 from .logging import get_logger, Logger
 
 from . import auxpow
+from . import powdata
 
 _logger = get_logger(__name__)
 

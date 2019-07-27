@@ -1,18 +1,8 @@
 {
-    "electrum-nmc.le-space.de": {
+    "127.0.0.1": {
         "pruning": "-",
         "s": "50002",
-        "version": "1.4"
-    },
-    "nmc.bitcoins.sk": {
-        "pruning": "-",
-        "s": "50002",
-        "version": "1.4"
-    },
-    "ulrichard.ch": {
-        "pruning": "-",
-        "s": "50006",
-        "t": "50005",
+        "t": "50001",
         "version": "1.4"
     }
 }

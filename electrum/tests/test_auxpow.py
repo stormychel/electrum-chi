@@ -194,6 +194,16 @@ class Test_auxpow(SequentialTestCase):
         with self.assertRaises(auxpow.AuxPoWCoinbaseRootTooLate):
             blockchain.Blockchain.verify_header(header, namecoin_prev_hash_19414, namecoin_target_19414)
 
+    # Verifies that the commitment of the auxpow to the block header it is
+    # proving for is actually checked.
+    def test_should_reject_coinbase_root_missing(self):
+        header = self.deserialize_with_auxpow(namecoin_header_19414)
+        # Modify the header so that its hash no longer matches the
+        # chain Merkle root in the AuxPoW.
+        header["timestamp"] = 42
+        with self.assertRaises(auxpow.AuxPoWCoinbaseRootMissingError):
+            blockchain.Blockchain.verify_header(header, namecoin_prev_hash_19414, namecoin_target_19414)
+
 
 # Fix up the merkle root of the parent block header to match the coinbase
 # transaction.

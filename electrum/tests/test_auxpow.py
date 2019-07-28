@@ -17,15 +17,24 @@ namecoin_target_37174 = 0x242a4a0000000000000000000000000000000000000000000000
 
 class Test_auxpow(SequentialTestCase):
 
+    @staticmethod
+    def deserialize_with_auxpow(data_hex: str) -> dict:
+        """Deserializes a block header given as hex string
+
+        This makes sure that the data is always deserialised as full
+        block header with AuxPoW."""
+
+        # We pass a height beyond the last checkpoint, because
+        # deserialize_header expects checkpointed headers to be truncated
+        # by ElectrumX (i.e. not contain an AuxPoW).
+        return blockchain.deserialize_header(bfh(data_hex), constants.net.max_checkpoint() + 1)
+
     # Deserialize the AuxPoW header from Namecoin block #37,174.
     # This height was chosen because it has large, non-equal lengths of the
     # coinbase and chain Merkle branches.  It has an explicit coinbase MM
     # header.
     def test_deserialize_auxpow_header_explicit_coinbase(self):
-        header_bytes = bfh(namecoin_header_37174)
-        # We can't pass the real height because it's below a checkpoint, and
-        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
-        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
+        header = self.deserialize_with_auxpow(namecoin_header_37174)
         header_auxpow = header['auxpow']
 
         self.assertEqual(auxpow.CHAIN_ID, header_auxpow['chain_id'])
@@ -68,30 +77,18 @@ class Test_auxpow(SequentialTestCase):
 
     # Verify the AuxPoW header from Namecoin block #37,174.
     def test_verify_auxpow_header_explicit_coinbase(self):
-        header_bytes = bfh(namecoin_header_37174)
-        # We can't pass the real height because it's below a checkpoint, and
-        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
-        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
-
+        header = self.deserialize_with_auxpow(namecoin_header_37174)
         blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
 
     # Verify the AuxPoW header from Namecoin block #19,414.  This header
     # doesn't have an explicit MM coinbase header.
     def test_verify_auxpow_header_implicit_coinbase(self):
-        header_bytes = bfh(namecoin_header_19414)
-        # We can't pass the real height because it's below a checkpoint, and
-        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
-        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
-
+        header = self.deserialize_with_auxpow(namecoin_header_19414)
         blockchain.Blockchain.verify_header(header, namecoin_prev_hash_19414, namecoin_target_19414)
 
     # Check that a non-generate AuxPoW transaction is rejected.
     def test_should_reject_non_generate_auxpow(self):
-        header_bytes = bfh(namecoin_header_37174)
-        # We can't pass the real height because it's below a checkpoint, and
-        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
-        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
-
+        header = self.deserialize_with_auxpow(namecoin_header_37174)
         header['auxpow']['coinbase_merkle_index'] = 0x01
 
         with self.assertRaises(auxpow.AuxPoWNotGenerateError):
@@ -100,18 +97,10 @@ class Test_auxpow(SequentialTestCase):
     # Check that block headers from the sidechain are rejected as parent chain
     # for AuxPoW, via checking of the chain ID's.
     def test_should_reject_own_chain_id(self):
-        parent_header_bytes = bfh(namecoin_header_19204)
-        # We can't pass the real height because it's below a checkpoint, and
-        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
-        parent_header = blockchain.deserialize_header(parent_header_bytes, constants.net.max_checkpoint() + 1)
-
+        parent_header = self.deserialize_with_auxpow(namecoin_header_19204)
         self.assertEqual(1, auxpow.get_chain_id(parent_header))
 
-        header_bytes = bfh(namecoin_header_37174)
-        # We can't pass the real height because it's below a checkpoint, and
-        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
-        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
-
+        header = self.deserialize_with_auxpow(namecoin_header_37174)
         header['auxpow']['parent_header'] = parent_header
 
         with self.assertRaises(auxpow.AuxPoWOwnChainIDError):
@@ -120,11 +109,7 @@ class Test_auxpow(SequentialTestCase):
     # Check that where the chain merkle branch is far too long to use, it's
     # rejected.
     def test_should_reject_very_long_merkle_branch(self):
-        header_bytes = bfh(namecoin_header_37174)
-        # We can't pass the real height because it's below a checkpoint, and
-        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
-        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
-
+        header = self.deserialize_with_auxpow(namecoin_header_37174)
         header['auxpow']['chain_merkle_branch'] = list([32 * '00' for i in range(32)])
 
         with self.assertRaises(auxpow.AuxPoWChainMerkleTooLongError):
@@ -136,10 +121,7 @@ class Test_auxpow(SequentialTestCase):
     # that the transaction hash is part of the merkle tree. This test modifies
     # the transaction, invalidating the hash, to confirm that it's rejected.
     def test_should_reject_bad_coinbase_merkle_branch(self):
-        header_bytes = bfh(namecoin_header_37174)
-        # We can't pass the real height because it's below a checkpoint, and
-        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
-        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
+        header = self.deserialize_with_auxpow(namecoin_header_37174)
 
         # Set outputs to an empty list
         header['auxpow']['parent_coinbase_tx']._outputs = []
@@ -156,10 +138,7 @@ class Test_auxpow(SequentialTestCase):
     # Ensure that in case of a malformed coinbase transaction (no inputs) it's
     # caught and processed neatly.
     def test_should_reject_coinbase_no_inputs(self):
-        header_bytes = bfh(namecoin_header_37174)
-        # We can't pass the real height because it's below a checkpoint, and
-        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
-        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
+        header = self.deserialize_with_auxpow(namecoin_header_37174)
 
         # Set inputs to an empty list
         header['auxpow']['parent_coinbase_tx']._inputs = []
@@ -187,10 +166,7 @@ class Test_auxpow(SequentialTestCase):
     # for it to do so.  This test is for the code path with an implicit MM
     # coinbase header.
     def test_should_reject_coinbase_root_too_late(self):
-        header_bytes = bfh(namecoin_header_19414)
-        # We can't pass the real height because it's below a checkpoint, and
-        # the deserializer expects ElectrumX to strip checkpointed AuxPoW.
-        header = blockchain.deserialize_header(header_bytes, constants.net.max_checkpoint() + 1)
+        header = self.deserialize_with_auxpow(namecoin_header_19414)
 
         input_script = bfh(header['auxpow']['parent_coinbase_tx'].inputs()[0]['scriptSig'])
 

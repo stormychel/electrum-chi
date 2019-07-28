@@ -107,3 +107,17 @@ class Test_powdata (SequentialTestCase):
     self.assertEqual (auxpow["chain_merkle_index"], 7)
     self.assertEqual (auxpow["coinbase_merkle_branch"][11],
         "084cf897b58d851626d0ba32d4c717584b018881ab022e8fba1c9d8ed6aaae0e")
+
+  def test_pow_hash_sha256d (self):
+    phash = powdata.pow_hash (header_sha256d[-160:], powdata.ALGO_SHA256D)
+    self.assertEqual (phash,
+        "00000000000000001903108b258887d0258a3e8caf776983069f94b9f47049f6")
+
+  def test_pow_hash_neoscrypt (self):
+    phash = powdata.pow_hash (header_neoscrypt[170:], powdata.ALGO_NEOSCRYPT)
+    self.assertEqual (phash,
+        "00000048e0ea0e9de977078ea296c0caf2dd5f9fa42f4fabb80db2f12914f5f3")
+
+  def test_pow_hash_invalid_algo (self):
+    with self.assertRaises (powdata.InvalidAlgoError):
+      powdata.pow_hash ("", 42)

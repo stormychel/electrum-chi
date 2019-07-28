@@ -29,7 +29,11 @@ see the spec at https://github.com/xaya/xaya/blob/master/doc/xaya/mining.md.
 """
 
 from . import auxpow
+from .bitcoin import hash_encode
 from . import blockchain
+from .util import bfh
+
+import neoscrypt
 
 
 MM_FLAG = 0x80
@@ -41,6 +45,15 @@ ALGO_NEOSCRYPT = 2
 class SerializedLengthError (Exception):
   def __init__ (self, length):
     super ().__init__ (f"Invalid PoW data length: {length}")
+
+
+class VerifyError (Exception):
+  def __init__ (self, msg):
+    super ().__init__ (f"PoW data is invalid: {msg}")
+
+
+class InvalidAlgoError (VerifyError):
+  pass
 
 
 def deserialize_base (s: bytes, start_position=0) -> (dict, int):
@@ -87,3 +100,23 @@ def deserialize (s: bytes, start_position=0) -> (dict, int):
     start_position += blockchain.HEADER_SIZE
 
   return res, start_position
+
+
+def pow_hash (data_hex: str, algo: int) -> str:
+  """
+  Computes the PoW hash for the given algorithm and the serialised header
+  data as hex string.  Returns the hash as hex.
+  """
+
+  if algo == ALGO_SHA256D:
+    return blockchain.hash_raw_header (data_hex)
+
+  if algo == ALGO_NEOSCRYPT:
+    data = bfh (data_hex)
+    swapped = bytes ()
+    for i in range (0, len (data), 4):
+      swapped += data[i : i + 4][::-1]
+    hashed = neoscrypt.getPoWHash (swapped)
+    return hash_encode (hashed)
+
+  raise InvalidAlgoError (f"Invalid mining algorithm: {algo}")

@@ -60,7 +60,7 @@ MAX_INDEX_PC_BACKWARDS_COMPATIBILITY = 20
 COINBASE_MERGED_MINING_HEADER = bfh('fabe') + b'mm'
 
 # TODO: move this to network constants
-CHAIN_ID = 1
+CHAIN_ID = 1829
 
 class AuxPowVerifyError(Exception):
     pass
@@ -161,10 +161,7 @@ def calc_merkle_index(chain_id, nonce, merkle_size):
 
 # Copied from Electrum-DOGE
 # TODO: Audit this function carefully.
-def verify_auxpow(header):
-    auxhash = blockchain.hash_header(header)
-    auxpow = header['auxpow']
-
+def verify_auxpow(auxpow, auxhash):
     parent_block = auxpow['parent_header']
     coinbase = auxpow['parent_coinbase_tx']
     coinbase_hash = fast_txid(coinbase)

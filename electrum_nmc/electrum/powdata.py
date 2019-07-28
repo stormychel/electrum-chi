@@ -56,6 +56,15 @@ class InvalidAlgoError (VerifyError):
   pass
 
 
+class InvalidCommitmentError (VerifyError):
+  pass
+
+
+class InsufficientPowError (VerifyError):
+  def __init__ (self, actual, target):
+    super ().__init__ (f"Insufficient PoW: {actual} vs target {target}")
+
+
 def deserialize_base (s: bytes, start_position=0) -> (dict, int):
   """
   Deserialises the base part (algo and bits) of a PoW data structure from
@@ -100,6 +109,45 @@ def deserialize (s: bytes, start_position=0) -> (dict, int):
     start_position += blockchain.HEADER_SIZE
 
   return res, start_position
+
+
+def verify (pow_data: dict, header_hash: str) -> None:
+  """
+  Verifies that the pow_data is valid for the given hash of the main
+  block header.  This checks that the PoW data actually commits to that
+  hash, that its algorithm and merge-mined flag are consistent, and
+  that the PoW data is valid for its specified bits.
+  """
+
+  algo = pow_data["algo"]
+  if algo == ALGO_SHA256D:
+    if not pow_data["mergemined"]:
+      raise InvalidAlgoError ("SHA256D must be merge mined")
+  elif algo == ALGO_NEOSCRYPT:
+    if pow_data["mergemined"]:
+      raise InvalidAlgoError ("Neoscrypt must not be merge mined")
+  else:
+    raise InvalidAlgoError (f"Invalid mining algorithm: {algo}")
+
+  if pow_data["mergemined"]:
+    if not "auxpow" in pow_data:
+      raise VerifyError ("No auxpow in merge mined PoW data")
+    apow = pow_data["auxpow"]
+    auxpow.verify_auxpow (apow, header_hash)
+    pow_header = apow["parent_header"]
+  else:
+    if not "fakeheader" in pow_data:
+      raise VerifyError ("No fakeheader in stand-alone PoW data")
+    fakeheader = pow_data["fakeheader"]
+    if fakeheader["merkle_root"] != header_hash:
+      raise InvalidCommitmentError ("Fake header does not commit to block")
+    pow_header = fakeheader
+
+  target = blockchain.Blockchain.bits_to_target (pow_data["bits"])
+  phash = pow_hash (blockchain.serialize_header (pow_header), algo)
+  phash_as_num = int.from_bytes (bfh (phash), byteorder="big")
+  if phash_as_num > target:
+    raise InsufficientPowError (phash_as_num, target)
 
 
 def pow_hash (data_hex: str, algo: int) -> str:

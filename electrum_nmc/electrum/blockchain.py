@@ -85,8 +85,10 @@ def deserialize_full_header(s: bytes, height: int, expect_trailing_data=False, s
     h = deserialize_pure_header(pure_header_bytes, height)
     start_position += HEADER_SIZE
 
-    if height > constants.net.max_checkpoint():
-        h['auxpow'], start_position = auxpow.deserialize_auxpow_header(s, start_position=start_position)
+    # FIXME: Add proper check here for truncation of headers when we support
+    # checkpoints in Xaya.
+    if True:
+        h['powdata'], start_position = powdata.deserialize(s, start_position=start_position)
 
     if expect_trailing_data:
         return h, start_position
@@ -312,19 +314,19 @@ class Blockchain(Logger):
             raise Exception("hash mismatches with expected: {} vs {}".format(expected_header_hash, _hash))
         if prev_hash != header.get('prev_block_hash'):
             raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
+        if header.get('bits') != 0:
+            raise Exception("main header has non-zero bits: %x" % header.get('bits'))
         if constants.net.TESTNET:
             return
         bits = cls.target_to_bits(target)
-        if bits != header.get('bits'):
-            raise Exception("bits mismatch: %s vs %s" % (bits, header.get('bits')))
+        if bits != header["powdata"].get('bits'):
+            raise Exception("bits mismatch: %s vs %s" % (bits, header["powdata"].get('bits')))
+
         # Don't verify AuxPoW when covered by a checkpoint
         if header.get('block_height') <= constants.net.max_checkpoint():
             skip_auxpow = True
         if not skip_auxpow:
-            _pow_hash = auxpow.hash_parent_header(header)
-            block_hash_as_num = int.from_bytes(bfh(_pow_hash), byteorder='big')
-            if block_hash_as_num > target:
-                raise Exception(f"insufficient proof of work: {block_hash_as_num} vs target {target}")
+            powdata.verify(header["powdata"], _hash)
 
     def verify_chunk(self, index: int, data: bytes) -> bytes:
         stripped = bytearray()

@@ -216,7 +216,7 @@ class Test_auxpow(SequentialTestCase):
         update_merkle_root_to_match_coinbase(header['auxpow'])
 
         with self.assertRaises(auxpow.AuxPoWCoinbaseRootTooLate):
-            blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
+            blockchain.Blockchain.verify_header(header, namecoin_prev_hash_19414, namecoin_target_19414)
 
 
 # Fix up the merkle root of the parent block header to match the coinbase

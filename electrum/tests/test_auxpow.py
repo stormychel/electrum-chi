@@ -45,32 +45,33 @@ class Test_auxpow(SequentialTestCase):
 
         self.assertEqual(expected_coinbase_txid, observed_coinbase_txid)
 
-        coinbase_merkle_branch = header_auxpow['coinbase_merkle_branch']
-        self.assertEqual(5, len(coinbase_merkle_branch))
-        self.assertEqual('f8f27314022a5165ae122642babb28dd44191dd36f99dad80b4f16b75197dde0', coinbase_merkle_branch[0])
-        self.assertEqual('c8a9dc420e17dee7b04bc0174c7a37ed9e5bc3f0ea0fdfe0b5d24bfc19ecedb0', coinbase_merkle_branch[1])
-        self.assertEqual('0ce9c5b98e212527e4aa7b9298435dc4e8f4dfc4dc63b7c89c06300637c33620', coinbase_merkle_branch[2])
-        self.assertEqual('3b6d0c4122a5b047cb879a440461839f0446f6bd451f01c6f0b14b6624e84136', coinbase_merkle_branch[3])
-        self.assertEqual('458500be38a68b215112df5e52d9c08fdd52034fb2005ce15d2a42be28e436cb', coinbase_merkle_branch[4])
+        self.assertEqual(header_auxpow['coinbase_merkle_branch'], [
+            "f8f27314022a5165ae122642babb28dd44191dd36f99dad80b4f16b75197dde0",
+            "c8a9dc420e17dee7b04bc0174c7a37ed9e5bc3f0ea0fdfe0b5d24bfc19ecedb0",
+            "0ce9c5b98e212527e4aa7b9298435dc4e8f4dfc4dc63b7c89c06300637c33620",
+            "3b6d0c4122a5b047cb879a440461839f0446f6bd451f01c6f0b14b6624e84136",
+            "458500be38a68b215112df5e52d9c08fdd52034fb2005ce15d2a42be28e436cb",
+        ])
 
         coinbase_merkle_index = header_auxpow['coinbase_merkle_index']
         self.assertEqual(0, coinbase_merkle_index)
 
-        chain_merkle_branch = header_auxpow['chain_merkle_branch']
-        self.assertEqual(4, len(chain_merkle_branch))
-        self.assertEqual('000000000000000000000000000000000000000000000000000000000000000a', chain_merkle_branch[0])
-        self.assertEqual('65bd8eb2c7e3a3646507977e8659e5396b197f197fbb51e7158927a263798302', chain_merkle_branch[1])
-        self.assertEqual('5f961bb13289d705abb28376a01f7097535c95f87b9e719b9ec39d8eb20d72e9', chain_merkle_branch[2])
-        self.assertEqual('7cb5fdcc41120d6135a40a6753bddc0c9b675ba2936d2e0cd78cdcb02e6beb50', chain_merkle_branch[3])
+        self.assertEqual(header_auxpow['chain_merkle_branch'], [
+            "000000000000000000000000000000000000000000000000000000000000000a",
+            "65bd8eb2c7e3a3646507977e8659e5396b197f197fbb51e7158927a263798302",
+            "5f961bb13289d705abb28376a01f7097535c95f87b9e719b9ec39d8eb20d72e9",
+            "7cb5fdcc41120d6135a40a6753bddc0c9b675ba2936d2e0cd78cdcb02e6beb50",
+        ])
 
         chain_merkle_index = header_auxpow['chain_merkle_index']
         self.assertEqual(11, chain_merkle_index)
 
-        expected_parent_hash = '00000000000024111173f561b36ad4906df95f52503a79332d7f540c2a57db84'
+        expected_parent_header = blockchain.deserialize_header(bfh('0100000055a7bc918827dbe7d8027781d803f4b418589b7b9fc03e718a03000000000000625a3d6dc4dfb0ab25f450cd202ff3bdb074f2edde1ddb4af5217e10c9dbafb9639a0a4fd7690d1a25aeaa97'), 1)
+
+        expected_parent_hash = blockchain.hash_header(expected_parent_header)
         observed_parent_hash = blockchain.hash_header(header_auxpow['parent_header'])
         self.assertEqual(expected_parent_hash, observed_parent_hash)
 
-        expected_parent_header = blockchain.deserialize_header(bfh('0100000055a7bc918827dbe7d8027781d803f4b418589b7b9fc03e718a03000000000000625a3d6dc4dfb0ab25f450cd202ff3bdb074f2edde1ddb4af5217e10c9dbafb9639a0a4fd7690d1a25aeaa97'), 1)
         expected_parent_merkle_root = expected_parent_header['merkle_root']
         observed_parent_merkle_root = header_auxpow['parent_header']['merkle_root']
         self.assertEqual(expected_parent_merkle_root, observed_parent_merkle_root)

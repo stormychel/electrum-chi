@@ -1,0 +1,7202 @@
+{
+  "439946": {
+    "timestamp": 1545327172, 
+    "bits": 408487054, 
+    "algo": "sha256d", 
+    "height": 439946
+  }, 
+  "440042": {
+    "timestamp": 1545330047, 
+    "bits": 405283017, 
+    "algo": "sha256d", 
+    "height": 440042
+  }, 
+  "440043": {
+    "timestamp": 1545330161, 
+    "bits": 486643492, 
+    "algo": "neoscrypt", 
+    "height": 440043
+  }, 
+  "440040": {
+    "timestamp": 1545330035, 
+    "bits": 486654528, 
+    "algo": "neoscrypt", 
+    "height": 440040
+  }, 
+  "440041": {
+    "timestamp": 1545330046, 
+    "bits": 486649297, 
+    "algo": "neoscrypt", 
+    "height": 440041
+  }, 
+  "440046": {
+    "timestamp": 1545330263, 
+    "bits": 486661965, 
+    "algo": "neoscrypt", 
+    "height": 440046
+  }, 
+  "440047": {
+    "timestamp": 1545330289, 
+    "bits": 405391415, 
+    "algo": "sha256d", 
+    "height": 440047
+  }, 
+  "440044": {
+    "timestamp": 1545330188, 
+    "bits": 405491589, 
+    "algo": "sha256d", 
+    "height": 440044
+  }, 
+  "440045": {
+    "timestamp": 1545330254, 
+    "bits": 486655956, 
+    "algo": "neoscrypt", 
+    "height": 440045
+  }, 
+  "440048": {
+    "timestamp": 1545330309, 
+    "bits": 486661783, 
+    "algo": "neoscrypt", 
+    "height": 440048
+  }, 
+  "440049": {
+    "timestamp": 1545330313, 
+    "bits": 486667105, 
+    "algo": "neoscrypt", 
+    "height": 440049
+  }, 
+  "440098": {
+    "timestamp": 1545331717, 
+    "bits": 486627237, 
+    "algo": "neoscrypt", 
+    "height": 440098
+  }, 
+  "439945": {
+    "timestamp": 1545327155, 
+    "bits": 408665901, 
+    "algo": "sha256d", 
+    "height": 439945
+  }, 
+  "344": {
+    "timestamp": 1531491872, 
+    "bits": 453359531, 
+    "algo": "sha256d", 
+    "height": 344
+  }, 
+  "0": {
+    "timestamp": 1531470713, 
+    "bits": 504365040, 
+    "algo": "neoscrypt", 
+    "height": 0
+  }, 
+  "346": {
+    "timestamp": 1531491885, 
+    "bits": 453305070, 
+    "algo": "sha256d", 
+    "height": 346
+  }, 
+  "347": {
+    "timestamp": 1531491886, 
+    "bits": 453280896, 
+    "algo": "sha256d", 
+    "height": 347
+  }, 
+  "340": {
+    "timestamp": 1531491827, 
+    "bits": 453497982, 
+    "algo": "sha256d", 
+    "height": 340
+  }, 
+  "341": {
+    "timestamp": 1531491844, 
+    "bits": 453459173, 
+    "algo": "sha256d", 
+    "height": 341
+  }, 
+  "342": {
+    "timestamp": 1531491850, 
+    "bits": 453423306, 
+    "algo": "sha256d", 
+    "height": 342
+  }, 
+  "343": {
+    "timestamp": 1531491853, 
+    "bits": 453390161, 
+    "algo": "sha256d", 
+    "height": 343
+  }, 
+  "810": {
+    "timestamp": 1531501501, 
+    "bits": 486582178, 
+    "algo": "neoscrypt", 
+    "height": 810
+  }, 
+  "811": {
+    "timestamp": 1531501541, 
+    "bits": 405867919, 
+    "algo": "sha256d", 
+    "height": 811
+  }, 
+  "812": {
+    "timestamp": 1531501552, 
+    "bits": 486580431, 
+    "algo": "neoscrypt", 
+    "height": 812
+  }, 
+  "813": {
+    "timestamp": 1531501564, 
+    "bits": 486581950, 
+    "algo": "neoscrypt", 
+    "height": 813
+  }, 
+  "348": {
+    "timestamp": 1531491896, 
+    "bits": 486646181, 
+    "algo": "neoscrypt", 
+    "height": 348
+  }, 
+  "349": {
+    "timestamp": 1531491897, 
+    "bits": 453258554, 
+    "algo": "sha256d", 
+    "height": 349
+  }, 
+  "816": {
+    "timestamp": 1531501602, 
+    "bits": 405832746, 
+    "algo": "sha256d", 
+    "height": 816
+  }, 
+  "817": {
+    "timestamp": 1531501702, 
+    "bits": 405806752, 
+    "algo": "sha256d", 
+    "height": 817
+  }, 
+  "439947": {
+    "timestamp": 1545327248, 
+    "bits": 486616187, 
+    "algo": "neoscrypt", 
+    "height": 439947
+  }, 
+  "595": {
+    "timestamp": 1531495197, 
+    "bits": 486599663, 
+    "algo": "neoscrypt", 
+    "height": 595
+  }, 
+  "719": {
+    "timestamp": 1531498759, 
+    "bits": 486577767, 
+    "algo": "neoscrypt", 
+    "height": 719
+  }, 
+  "718": {
+    "timestamp": 1531498744, 
+    "bits": 486578681, 
+    "algo": "neoscrypt", 
+    "height": 718
+  }, 
+  "717": {
+    "timestamp": 1531498705, 
+    "bits": 407053273, 
+    "algo": "sha256d", 
+    "height": 717
+  }, 
+  "716": {
+    "timestamp": 1531498680, 
+    "bits": 407003070, 
+    "algo": "sha256d", 
+    "height": 716
+  }, 
+  "715": {
+    "timestamp": 1531498653, 
+    "bits": 486579329, 
+    "algo": "neoscrypt", 
+    "height": 715
+  }, 
+  "714": {
+    "timestamp": 1531498638, 
+    "bits": 407002503, 
+    "algo": "sha256d", 
+    "height": 714
+  }, 
+  "713": {
+    "timestamp": 1531498631, 
+    "bits": 486582199, 
+    "algo": "neoscrypt", 
+    "height": 713
+  }, 
+  "712": {
+    "timestamp": 1531498605, 
+    "bits": 407074491, 
+    "algo": "sha256d", 
+    "height": 712
+  }, 
+  "711": {
+    "timestamp": 1531498539, 
+    "bits": 407513576, 
+    "algo": "sha256d", 
+    "height": 711
+  }, 
+  "710": {
+    "timestamp": 1531498535, 
+    "bits": 486583930, 
+    "algo": "neoscrypt", 
+    "height": 710
+  }, 
+  "915": {
+    "timestamp": 1531504789, 
+    "bits": 405666979, 
+    "algo": "sha256d", 
+    "height": 915
+  }, 
+  "439944": {
+    "timestamp": 1545327144, 
+    "bits": 486615444, 
+    "algo": "neoscrypt", 
+    "height": 439944
+  }, 
+  "914": {
+    "timestamp": 1531504761, 
+    "bits": 405479659, 
+    "algo": "sha256d", 
+    "height": 914
+  }, 
+  "606": {
+    "timestamp": 1531495432, 
+    "bits": 486593769, 
+    "algo": "neoscrypt", 
+    "height": 606
+  }, 
+  "439943": {
+    "timestamp": 1545327109, 
+    "bits": 408613278, 
+    "algo": "sha256d", 
+    "height": 439943
+  }, 
+  "917": {
+    "timestamp": 1531504890, 
+    "bits": 405648532, 
+    "algo": "sha256d", 
+    "height": 917
+  }, 
+  "439942": {
+    "timestamp": 1545327042, 
+    "bits": 486617481, 
+    "algo": "neoscrypt", 
+    "height": 439942
+  }, 
+  "594": {
+    "timestamp": 1531495140, 
+    "bits": 409763709, 
+    "algo": "sha256d", 
+    "height": 594
+  }, 
+  "736": {
+    "timestamp": 1531499238, 
+    "bits": 486574635, 
+    "algo": "neoscrypt", 
+    "height": 736
+  }, 
+  "916": {
+    "timestamp": 1531504831, 
+    "bits": 486578918, 
+    "algo": "neoscrypt", 
+    "height": 916
+  }, 
+  "439941": {
+    "timestamp": 1545327028, 
+    "bits": 408711751, 
+    "algo": "sha256d", 
+    "height": 439941
+  }, 
+  "911": {
+    "timestamp": 1531504703, 
+    "bits": 486581702, 
+    "algo": "neoscrypt", 
+    "height": 911
+  }, 
+  "439940": {
+    "timestamp": 1545327016, 
+    "bits": 486616710, 
+    "algo": "neoscrypt", 
+    "height": 439940
+  }, 
+  "439907": {
+    "timestamp": 1545325820, 
+    "bits": 486601126, 
+    "algo": "neoscrypt", 
+    "height": 439907
+  }, 
+  "619": {
+    "timestamp": 1531495745, 
+    "bits": 486581866, 
+    "algo": "neoscrypt", 
+    "height": 619
+  }, 
+  "910": {
+    "timestamp": 1531504697, 
+    "bits": 486580587, 
+    "algo": "neoscrypt", 
+    "height": 910
+  }, 
+  "913": {
+    "timestamp": 1531504736, 
+    "bits": 486580577, 
+    "algo": "neoscrypt", 
+    "height": 913
+  }, 
+  "298": {
+    "timestamp": 1531491417, 
+    "bits": 469795792, 
+    "algo": "sha256d", 
+    "height": 298
+  }, 
+  "299": {
+    "timestamp": 1531491430, 
+    "bits": 460971100, 
+    "algo": "sha256d", 
+    "height": 299
+  }, 
+  "296": {
+    "timestamp": 1531491409, 
+    "bits": 469801559, 
+    "algo": "sha256d", 
+    "height": 296
+  }, 
+  "297": {
+    "timestamp": 1531491414, 
+    "bits": 469798557, 
+    "algo": "sha256d", 
+    "height": 297
+  }, 
+  "294": {
+    "timestamp": 1531491379, 
+    "bits": 469804817, 
+    "algo": "sha256d", 
+    "height": 294
+  }, 
+  "295": {
+    "timestamp": 1531491391, 
+    "bits": 486642231, 
+    "algo": "neoscrypt", 
+    "height": 295
+  }, 
+  "292": {
+    "timestamp": 1531491368, 
+    "bits": 469812185, 
+    "algo": "sha256d", 
+    "height": 292
+  }, 
+  "293": {
+    "timestamp": 1531491375, 
+    "bits": 469808352, 
+    "algo": "sha256d", 
+    "height": 293
+  }, 
+  "290": {
+    "timestamp": 1531491334, 
+    "bits": 469820832, 
+    "algo": "sha256d", 
+    "height": 290
+  }, 
+  "291": {
+    "timestamp": 1531491337, 
+    "bits": 469816337, 
+    "algo": "sha256d", 
+    "height": 291
+  }, 
+  "591": {
+    "timestamp": 1531495099, 
+    "bits": 486604017, 
+    "algo": "neoscrypt", 
+    "height": 591
+  }, 
+  "590": {
+    "timestamp": 1531495070, 
+    "bits": 409613799, 
+    "algo": "sha256d", 
+    "height": 590
+  }, 
+  "593": {
+    "timestamp": 1531495138, 
+    "bits": 486602105, 
+    "algo": "neoscrypt", 
+    "height": 593
+  }, 
+  "592": {
+    "timestamp": 1531495111, 
+    "bits": 486604048, 
+    "algo": "neoscrypt", 
+    "height": 592
+  }, 
+  "199": {
+    "timestamp": 1531490549, 
+    "bits": 486613900, 
+    "algo": "sha256d", 
+    "height": 199
+  }, 
+  "198": {
+    "timestamp": 1531490525, 
+    "bits": 486643574, 
+    "algo": "neoscrypt", 
+    "height": 198
+  }, 
+  "597": {
+    "timestamp": 1531495219, 
+    "bits": 409601893, 
+    "algo": "sha256d", 
+    "height": 597
+  }, 
+  "596": {
+    "timestamp": 1531495199, 
+    "bits": 409840711, 
+    "algo": "sha256d", 
+    "height": 596
+  }, 
+  "195": {
+    "timestamp": 1531490473, 
+    "bits": 486621322, 
+    "algo": "sha256d", 
+    "height": 195
+  }, 
+  "194": {
+    "timestamp": 1531490443, 
+    "bits": 486643180, 
+    "algo": "neoscrypt", 
+    "height": 194
+  }, 
+  "197": {
+    "timestamp": 1531490514, 
+    "bits": 486616400, 
+    "algo": "sha256d", 
+    "height": 197
+  }, 
+  "196": {
+    "timestamp": 1531490478, 
+    "bits": 486618867, 
+    "algo": "sha256d", 
+    "height": 196
+  }, 
+  "191": {
+    "timestamp": 1531490424, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 191
+  }, 
+  "190": {
+    "timestamp": 1531490403, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 190
+  }, 
+  "193": {
+    "timestamp": 1531490433, 
+    "bits": 486625387, 
+    "algo": "sha256d", 
+    "height": 193
+  }, 
+  "192": {
+    "timestamp": 1531490426, 
+    "bits": 486754257, 
+    "algo": "sha256d", 
+    "height": 192
+  }, 
+  "270": {
+    "timestamp": 1531491171, 
+    "bits": 486643591, 
+    "algo": "neoscrypt", 
+    "height": 270
+  }, 
+  "271": {
+    "timestamp": 1531491191, 
+    "bits": 469966823, 
+    "algo": "sha256d", 
+    "height": 271
+  }, 
+  "272": {
+    "timestamp": 1531491196, 
+    "bits": 469950974, 
+    "algo": "sha256d", 
+    "height": 272
+  }, 
+  "273": {
+    "timestamp": 1531491205, 
+    "bits": 469936481, 
+    "algo": "sha256d", 
+    "height": 273
+  }, 
+  "274": {
+    "timestamp": 1531491209, 
+    "bits": 469923242, 
+    "algo": "sha256d", 
+    "height": 274
+  }, 
+  "275": {
+    "timestamp": 1531491237, 
+    "bits": 469911151, 
+    "algo": "sha256d", 
+    "height": 275
+  }, 
+  "276": {
+    "timestamp": 1531491240, 
+    "bits": 469900098, 
+    "algo": "sha256d", 
+    "height": 276
+  }, 
+  "277": {
+    "timestamp": 1531491245, 
+    "bits": 469889964, 
+    "algo": "sha256d", 
+    "height": 277
+  }, 
+  "278": {
+    "timestamp": 1531491252, 
+    "bits": 486639433, 
+    "algo": "neoscrypt", 
+    "height": 278
+  }, 
+  "279": {
+    "timestamp": 1531491257, 
+    "bits": 486643160, 
+    "algo": "neoscrypt", 
+    "height": 279
+  }, 
+  "439948": {
+    "timestamp": 1545327291, 
+    "bits": 408288638, 
+    "algo": "sha256d", 
+    "height": 439948
+  }, 
+  "738": {
+    "timestamp": 1531499298, 
+    "bits": 406954061, 
+    "algo": "sha256d", 
+    "height": 738
+  }, 
+  "440018": {
+    "timestamp": 1545329353, 
+    "bits": 405144832, 
+    "algo": "sha256d", 
+    "height": 440018
+  }, 
+  "524": {
+    "timestamp": 1531493634, 
+    "bits": 419579509, 
+    "algo": "sha256d", 
+    "height": 524
+  }, 
+  "525": {
+    "timestamp": 1531493664, 
+    "bits": 419568250, 
+    "algo": "sha256d", 
+    "height": 525
+  }, 
+  "526": {
+    "timestamp": 1531493682, 
+    "bits": 486693466, 
+    "algo": "neoscrypt", 
+    "height": 526
+  }, 
+  "527": {
+    "timestamp": 1531493708, 
+    "bits": 486697070, 
+    "algo": "neoscrypt", 
+    "height": 527
+  }, 
+  "520": {
+    "timestamp": 1531493601, 
+    "bits": 419619110, 
+    "algo": "sha256d", 
+    "height": 520
+  }, 
+  "521": {
+    "timestamp": 1531493609, 
+    "bits": 486691731, 
+    "algo": "neoscrypt", 
+    "height": 521
+  }, 
+  "522": {
+    "timestamp": 1531493622, 
+    "bits": 419604861, 
+    "algo": "sha256d", 
+    "height": 522
+  }, 
+  "523": {
+    "timestamp": 1531493629, 
+    "bits": 419591687, 
+    "algo": "sha256d", 
+    "height": 523
+  }, 
+  "439997": {
+    "timestamp": 1545328719, 
+    "bits": 486609185, 
+    "algo": "neoscrypt", 
+    "height": 439997
+  }, 
+  "440087": {
+    "timestamp": 1545331417, 
+    "bits": 486627688, 
+    "algo": "neoscrypt", 
+    "height": 440087
+  }, 
+  "599": {
+    "timestamp": 1531495249, 
+    "bits": 486598091, 
+    "algo": "neoscrypt", 
+    "height": 599
+  }, 
+  "528": {
+    "timestamp": 1531493712, 
+    "bits": 419557841, 
+    "algo": "sha256d", 
+    "height": 528
+  }, 
+  "529": {
+    "timestamp": 1531493731, 
+    "bits": 486696224, 
+    "algo": "neoscrypt", 
+    "height": 529
+  }, 
+  "994": {
+    "timestamp": 1531507308, 
+    "bits": 405887454, 
+    "algo": "sha256d", 
+    "height": 994
+  }, 
+  "449": {
+    "timestamp": 1531492886, 
+    "bits": 436254895, 
+    "algo": "sha256d", 
+    "height": 449
+  }, 
+  "448": {
+    "timestamp": 1531492884, 
+    "bits": 436258757, 
+    "algo": "sha256d", 
+    "height": 448
+  }, 
+  "443": {
+    "timestamp": 1531492841, 
+    "bits": 436283343, 
+    "algo": "sha256d", 
+    "height": 443
+  }, 
+  "442": {
+    "timestamp": 1531492837, 
+    "bits": 436289528, 
+    "algo": "sha256d", 
+    "height": 442
+  }, 
+  "441": {
+    "timestamp": 1531492825, 
+    "bits": 436296218, 
+    "algo": "sha256d", 
+    "height": 441
+  }, 
+  "440": {
+    "timestamp": 1531492813, 
+    "bits": 436303455, 
+    "algo": "sha256d", 
+    "height": 440
+  }, 
+  "447": {
+    "timestamp": 1531492882, 
+    "bits": 436262934, 
+    "algo": "sha256d", 
+    "height": 447
+  }, 
+  "446": {
+    "timestamp": 1531492871, 
+    "bits": 436267452, 
+    "algo": "sha256d", 
+    "height": 446
+  }, 
+  "445": {
+    "timestamp": 1531492852, 
+    "bits": 436272339, 
+    "algo": "sha256d", 
+    "height": 445
+  }, 
+  "444": {
+    "timestamp": 1531492846, 
+    "bits": 436277625, 
+    "algo": "sha256d", 
+    "height": 444
+  }, 
+  "108": {
+    "timestamp": 1531488802, 
+    "bits": 490335814, 
+    "algo": "neoscrypt", 
+    "height": 108
+  }, 
+  "109": {
+    "timestamp": 1531488819, 
+    "bits": 490018031, 
+    "algo": "neoscrypt", 
+    "height": 109
+  }, 
+  "102": {
+    "timestamp": 1531488541, 
+    "bits": 490856805, 
+    "algo": "neoscrypt", 
+    "height": 102
+  }, 
+  "103": {
+    "timestamp": 1531488614, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 103
+  }, 
+  "100": {
+    "timestamp": 1531488515, 
+    "bits": 491697857, 
+    "algo": "neoscrypt", 
+    "height": 100
+  }, 
+  "101": {
+    "timestamp": 1531488530, 
+    "bits": 491259227, 
+    "algo": "neoscrypt", 
+    "height": 101
+  }, 
+  "106": {
+    "timestamp": 1531488721, 
+    "bits": 490164841, 
+    "algo": "neoscrypt", 
+    "height": 106
+  }, 
+  "107": {
+    "timestamp": 1531488792, 
+    "bits": 490169576, 
+    "algo": "neoscrypt", 
+    "height": 107
+  }, 
+  "104": {
+    "timestamp": 1531488648, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 104
+  }, 
+  "105": {
+    "timestamp": 1531488673, 
+    "bits": 490491648, 
+    "algo": "neoscrypt", 
+    "height": 105
+  }, 
+  "902": {
+    "timestamp": 1531504538, 
+    "bits": 405863993, 
+    "algo": "sha256d", 
+    "height": 902
+  }, 
+  "903": {
+    "timestamp": 1531504557, 
+    "bits": 405892670, 
+    "algo": "sha256d", 
+    "height": 903
+  }, 
+  "39": {
+    "timestamp": 1531488077, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 39
+  }, 
+  "38": {
+    "timestamp": 1531488077, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 38
+  }, 
+  "906": {
+    "timestamp": 1531504602, 
+    "bits": 405659480, 
+    "algo": "sha256d", 
+    "height": 906
+  }, 
+  "907": {
+    "timestamp": 1531504613, 
+    "bits": 486580372, 
+    "algo": "neoscrypt", 
+    "height": 907
+  }, 
+  "904": {
+    "timestamp": 1531504562, 
+    "bits": 486580003, 
+    "algo": "neoscrypt", 
+    "height": 904
+  }, 
+  "905": {
+    "timestamp": 1531504584, 
+    "bits": 486581103, 
+    "algo": "neoscrypt", 
+    "height": 905
+  }, 
+  "33": {
+    "timestamp": 1531488075, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 33
+  }, 
+  "32": {
+    "timestamp": 1531486385, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 32
+  }, 
+  "31": {
+    "timestamp": 1531486381, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 31
+  }, 
+  "30": {
+    "timestamp": 1531486379, 
+    "bits": 504346988, 
+    "algo": "neoscrypt", 
+    "height": 30
+  }, 
+  "37": {
+    "timestamp": 1531488077, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 37
+  }, 
+  "36": {
+    "timestamp": 1531488076, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 36
+  }, 
+  "35": {
+    "timestamp": 1531488076, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 35
+  }, 
+  "34": {
+    "timestamp": 1531488076, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 34
+  }, 
+  "641": {
+    "timestamp": 1531496425, 
+    "bits": 486587066, 
+    "algo": "neoscrypt", 
+    "height": 641
+  }, 
+  "640": {
+    "timestamp": 1531496423, 
+    "bits": 486589137, 
+    "algo": "neoscrypt", 
+    "height": 640
+  }, 
+  "643": {
+    "timestamp": 1531496468, 
+    "bits": 486584683, 
+    "algo": "neoscrypt", 
+    "height": 643
+  }, 
+  "642": {
+    "timestamp": 1531496434, 
+    "bits": 486586011, 
+    "algo": "neoscrypt", 
+    "height": 642
+  }, 
+  "645": {
+    "timestamp": 1531496486, 
+    "bits": 407305780, 
+    "algo": "sha256d", 
+    "height": 645
+  }, 
+  "644": {
+    "timestamp": 1531496471, 
+    "bits": 407134924, 
+    "algo": "sha256d", 
+    "height": 644
+  }, 
+  "438": {
+    "timestamp": 1531492802, 
+    "bits": 436319749, 
+    "algo": "sha256d", 
+    "height": 438
+  }, 
+  "439": {
+    "timestamp": 1531492805, 
+    "bits": 436311282, 
+    "algo": "sha256d", 
+    "height": 439
+  }, 
+  "436": {
+    "timestamp": 1531492770, 
+    "bits": 436338814, 
+    "algo": "sha256d", 
+    "height": 436
+  }, 
+  "437": {
+    "timestamp": 1531492791, 
+    "bits": 436328907, 
+    "algo": "sha256d", 
+    "height": 437
+  }, 
+  "434": {
+    "timestamp": 1531492749, 
+    "bits": 436361120, 
+    "algo": "sha256d", 
+    "height": 434
+  }, 
+  "435": {
+    "timestamp": 1531492759, 
+    "bits": 436349529, 
+    "algo": "sha256d", 
+    "height": 435
+  }, 
+  "432": {
+    "timestamp": 1531492737, 
+    "bits": 436387220, 
+    "algo": "sha256d", 
+    "height": 432
+  }, 
+  "433": {
+    "timestamp": 1531492742, 
+    "bits": 436373658, 
+    "algo": "sha256d", 
+    "height": 433
+  }, 
+  "430": {
+    "timestamp": 1531492730, 
+    "bits": 436417757, 
+    "algo": "sha256d", 
+    "height": 430
+  }, 
+  "431": {
+    "timestamp": 1531492733, 
+    "bits": 436401889, 
+    "algo": "sha256d", 
+    "height": 431
+  }, 
+  "439917": {
+    "timestamp": 1545326215, 
+    "bits": 486600549, 
+    "algo": "neoscrypt", 
+    "height": 439917
+  }, 
+  "339": {
+    "timestamp": 1531491819, 
+    "bits": 453539970, 
+    "algo": "sha256d", 
+    "height": 339
+  }, 
+  "338": {
+    "timestamp": 1531491816, 
+    "bits": 486641940, 
+    "algo": "neoscrypt", 
+    "height": 338
+  }, 
+  "439900": {
+    "timestamp": 1545325594, 
+    "bits": 486606632, 
+    "algo": "neoscrypt", 
+    "height": 439900
+  }, 
+  "335": {
+    "timestamp": 1531491786, 
+    "bits": 453687620, 
+    "algo": "sha256d", 
+    "height": 335
+  }, 
+  "334": {
+    "timestamp": 1531491763, 
+    "bits": 453745031, 
+    "algo": "sha256d", 
+    "height": 334
+  }, 
+  "337": {
+    "timestamp": 1531491802, 
+    "bits": 453585389, 
+    "algo": "sha256d", 
+    "height": 337
+  }, 
+  "336": {
+    "timestamp": 1531491798, 
+    "bits": 453634510, 
+    "algo": "sha256d", 
+    "height": 336
+  }, 
+  "331": {
+    "timestamp": 1531491747, 
+    "bits": 486640744, 
+    "algo": "neoscrypt", 
+    "height": 331
+  }, 
+  "330": {
+    "timestamp": 1531491726, 
+    "bits": 453946612, 
+    "algo": "sha256d", 
+    "height": 330
+  }, 
+  "333": {
+    "timestamp": 1531491759, 
+    "bits": 453807080, 
+    "algo": "sha256d", 
+    "height": 333
+  }, 
+  "332": {
+    "timestamp": 1531491756, 
+    "bits": 453874138, 
+    "algo": "sha256d", 
+    "height": 332
+  }, 
+  "744": {
+    "timestamp": 1531499418, 
+    "bits": 486575645, 
+    "algo": "neoscrypt", 
+    "height": 744
+  }, 
+  "745": {
+    "timestamp": 1531499438, 
+    "bits": 406365359, 
+    "algo": "sha256d", 
+    "height": 745
+  }, 
+  "854": {
+    "timestamp": 1531503070, 
+    "bits": 486582941, 
+    "algo": "neoscrypt", 
+    "height": 854
+  }, 
+  "818": {
+    "timestamp": 1531501746, 
+    "bits": 486576174, 
+    "algo": "neoscrypt", 
+    "height": 818
+  }, 
+  "856": {
+    "timestamp": 1531503117, 
+    "bits": 486582546, 
+    "algo": "neoscrypt", 
+    "height": 856
+  }, 
+  "857": {
+    "timestamp": 1531503139, 
+    "bits": 486583275, 
+    "algo": "neoscrypt", 
+    "height": 857
+  }, 
+  "850": {
+    "timestamp": 1531502925, 
+    "bits": 406159392, 
+    "algo": "sha256d", 
+    "height": 850
+  }, 
+  "851": {
+    "timestamp": 1531502968, 
+    "bits": 486580576, 
+    "algo": "neoscrypt", 
+    "height": 851
+  }, 
+  "852": {
+    "timestamp": 1531502993, 
+    "bits": 486581591, 
+    "algo": "neoscrypt", 
+    "height": 852
+  }, 
+  "345": {
+    "timestamp": 1531491883, 
+    "bits": 453331227, 
+    "algo": "sha256d", 
+    "height": 345
+  }, 
+  "858": {
+    "timestamp": 1531503147, 
+    "bits": 486582045, 
+    "algo": "neoscrypt", 
+    "height": 858
+  }, 
+  "859": {
+    "timestamp": 1531503172, 
+    "bits": 486581701, 
+    "algo": "neoscrypt", 
+    "height": 859
+  }, 
+  "440076": {
+    "timestamp": 1545331090, 
+    "bits": 486659491, 
+    "algo": "neoscrypt", 
+    "height": 440076
+  }, 
+  "748": {
+    "timestamp": 1531499539, 
+    "bits": 405901168, 
+    "algo": "sha256d", 
+    "height": 748
+  }, 
+  "6": {
+    "timestamp": 1531483961, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 6
+  }, 
+  "439919": {
+    "timestamp": 1545326288, 
+    "bits": 408261020, 
+    "algo": "sha256d", 
+    "height": 439919
+  }, 
+  "900": {
+    "timestamp": 1531504471, 
+    "bits": 406366726, 
+    "algo": "sha256d", 
+    "height": 900
+  }, 
+  "440084": {
+    "timestamp": 1545331341, 
+    "bits": 486649269, 
+    "algo": "neoscrypt", 
+    "height": 440084
+  }, 
+  "439990": {
+    "timestamp": 1545328589, 
+    "bits": 408667245, 
+    "algo": "sha256d", 
+    "height": 439990
+  }, 
+  "848": {
+    "timestamp": 1531502884, 
+    "bits": 406327192, 
+    "algo": "sha256d", 
+    "height": 848
+  }, 
+  "99": {
+    "timestamp": 1531488489, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 99
+  }, 
+  "98": {
+    "timestamp": 1531488458, 
+    "bits": 492171661, 
+    "algo": "neoscrypt", 
+    "height": 98
+  }, 
+  "844": {
+    "timestamp": 1531502812, 
+    "bits": 406921987, 
+    "algo": "sha256d", 
+    "height": 844
+  }, 
+  "91": {
+    "timestamp": 1531488351, 
+    "bits": 503354960, 
+    "algo": "neoscrypt", 
+    "height": 91
+  }, 
+  "90": {
+    "timestamp": 1531488317, 
+    "bits": 503357774, 
+    "algo": "neoscrypt", 
+    "height": 90
+  }, 
+  "93": {
+    "timestamp": 1531488368, 
+    "bits": 503349660, 
+    "algo": "neoscrypt", 
+    "height": 93
+  }, 
+  "92": {
+    "timestamp": 1531488358, 
+    "bits": 503352254, 
+    "algo": "neoscrypt", 
+    "height": 92
+  }, 
+  "95": {
+    "timestamp": 1531488403, 
+    "bits": 493794044, 
+    "algo": "neoscrypt", 
+    "height": 95
+  }, 
+  "94": {
+    "timestamp": 1531488401, 
+    "bits": 494398580, 
+    "algo": "neoscrypt", 
+    "height": 94
+  }, 
+  "97": {
+    "timestamp": 1531488410, 
+    "bits": 492679620, 
+    "algo": "neoscrypt", 
+    "height": 97
+  }, 
+  "96": {
+    "timestamp": 1531488409, 
+    "bits": 493220739, 
+    "algo": "neoscrypt", 
+    "height": 96
+  }, 
+  "440019": {
+    "timestamp": 1545329387, 
+    "bits": 486629066, 
+    "algo": "neoscrypt", 
+    "height": 440019
+  }, 
+  "439962": {
+    "timestamp": 1545327672, 
+    "bits": 408439318, 
+    "algo": "sha256d", 
+    "height": 439962
+  }, 
+  "440015": {
+    "timestamp": 1545329163, 
+    "bits": 486630062, 
+    "algo": "neoscrypt", 
+    "height": 440015
+  }, 
+  "814": {
+    "timestamp": 1531501581, 
+    "bits": 405949389, 
+    "algo": "sha256d", 
+    "height": 814
+  }, 
+  "440017": {
+    "timestamp": 1545329236, 
+    "bits": 486629138, 
+    "algo": "neoscrypt", 
+    "height": 440017
+  }, 
+  "440016": {
+    "timestamp": 1545329179, 
+    "bits": 486629054, 
+    "algo": "neoscrypt", 
+    "height": 440016
+  }, 
+  "440011": {
+    "timestamp": 1545329075, 
+    "bits": 486631937, 
+    "algo": "neoscrypt", 
+    "height": 440011
+  }, 
+  "440010": {
+    "timestamp": 1545329073, 
+    "bits": 486629759, 
+    "algo": "neoscrypt", 
+    "height": 440010
+  }, 
+  "440013": {
+    "timestamp": 1545329128, 
+    "bits": 486631820, 
+    "algo": "neoscrypt", 
+    "height": 440013
+  }, 
+  "815": {
+    "timestamp": 1531501594, 
+    "bits": 486580164, 
+    "algo": "neoscrypt", 
+    "height": 815
+  }, 
+  "439938": {
+    "timestamp": 1545326970, 
+    "bits": 408312158, 
+    "algo": "sha256d", 
+    "height": 439938
+  }, 
+  "740": {
+    "timestamp": 1531499341, 
+    "bits": 486573359, 
+    "algo": "neoscrypt", 
+    "height": 740
+  }, 
+  "741": {
+    "timestamp": 1531499354, 
+    "bits": 406619969, 
+    "algo": "sha256d", 
+    "height": 741
+  }, 
+  "742": {
+    "timestamp": 1531499388, 
+    "bits": 486575216, 
+    "algo": "neoscrypt", 
+    "height": 742
+  }, 
+  "743": {
+    "timestamp": 1531499393, 
+    "bits": 406349288, 
+    "algo": "sha256d", 
+    "height": 743
+  }, 
+  "559": {
+    "timestamp": 1531494306, 
+    "bits": 419477332, 
+    "algo": "sha256d", 
+    "height": 559
+  }, 
+  "558": {
+    "timestamp": 1531494292, 
+    "bits": 486619563, 
+    "algo": "neoscrypt", 
+    "height": 558
+  }, 
+  "746": {
+    "timestamp": 1531499442, 
+    "bits": 486573524, 
+    "algo": "neoscrypt", 
+    "height": 746
+  }, 
+  "747": {
+    "timestamp": 1531499465, 
+    "bits": 406130094, 
+    "algo": "sha256d", 
+    "height": 747
+  }, 
+  "555": {
+    "timestamp": 1531494238, 
+    "bits": 486616063, 
+    "algo": "neoscrypt", 
+    "height": 555
+  }, 
+  "554": {
+    "timestamp": 1531494165, 
+    "bits": 419477671, 
+    "algo": "sha256d", 
+    "height": 554
+  }, 
+  "557": {
+    "timestamp": 1531494266, 
+    "bits": 419474832, 
+    "algo": "sha256d", 
+    "height": 557
+  }, 
+  "556": {
+    "timestamp": 1531494261, 
+    "bits": 486620963, 
+    "algo": "neoscrypt", 
+    "height": 556
+  }, 
+  "551": {
+    "timestamp": 1531494113, 
+    "bits": 486616629, 
+    "algo": "neoscrypt", 
+    "height": 551
+  }, 
+  "550": {
+    "timestamp": 1531494085, 
+    "bits": 486620433, 
+    "algo": "neoscrypt", 
+    "height": 550
+  }, 
+  "553": {
+    "timestamp": 1531494146, 
+    "bits": 419480996, 
+    "algo": "sha256d", 
+    "height": 553
+  }, 
+  "552": {
+    "timestamp": 1531494120, 
+    "bits": 419480323, 
+    "algo": "sha256d", 
+    "height": 552
+  }, 
+  "238": {
+    "timestamp": 1531490906, 
+    "bits": 471395905, 
+    "algo": "sha256d", 
+    "height": 238
+  }, 
+  "239": {
+    "timestamp": 1531490909, 
+    "bits": 471262863, 
+    "algo": "sha256d", 
+    "height": 239
+  }, 
+  "234": {
+    "timestamp": 1531490880, 
+    "bits": 486662970, 
+    "algo": "neoscrypt", 
+    "height": 234
+  }, 
+  "235": {
+    "timestamp": 1531490896, 
+    "bits": 486657287, 
+    "algo": "neoscrypt", 
+    "height": 235
+  }, 
+  "236": {
+    "timestamp": 1531490899, 
+    "bits": 471686085, 
+    "algo": "sha256d", 
+    "height": 236
+  }, 
+  "237": {
+    "timestamp": 1531490904, 
+    "bits": 471537059, 
+    "algo": "sha256d", 
+    "height": 237
+  }, 
+  "230": {
+    "timestamp": 1531490832, 
+    "bits": 472178070, 
+    "algo": "sha256d", 
+    "height": 230
+  }, 
+  "231": {
+    "timestamp": 1531490850, 
+    "bits": 472006818, 
+    "algo": "sha256d", 
+    "height": 231
+  }, 
+  "232": {
+    "timestamp": 1531490863, 
+    "bits": 471842748, 
+    "algo": "sha256d", 
+    "height": 232
+  }, 
+  "233": {
+    "timestamp": 1531490871, 
+    "bits": 486656583, 
+    "algo": "neoscrypt", 
+    "height": 233
+  }, 
+  "992": {
+    "timestamp": 1531507224, 
+    "bits": 406398730, 
+    "algo": "sha256d", 
+    "height": 992
+  }, 
+  "439957": {
+    "timestamp": 1545327539, 
+    "bits": 408301002, 
+    "algo": "sha256d", 
+    "height": 439957
+  }, 
+  "1": {
+    "timestamp": 1531482939, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 1
+  }, 
+  "614": {
+    "timestamp": 1531495629, 
+    "bits": 486587782, 
+    "algo": "neoscrypt", 
+    "height": 614
+  }, 
+  "440094": {
+    "timestamp": 1545331604, 
+    "bits": 486625032, 
+    "algo": "neoscrypt", 
+    "height": 440094
+  }, 
+  "146": {
+    "timestamp": 1531489415, 
+    "bits": 486791644, 
+    "algo": "neoscrypt", 
+    "height": 146
+  }, 
+  "147": {
+    "timestamp": 1531489446, 
+    "bits": 486771490, 
+    "algo": "neoscrypt", 
+    "height": 147
+  }, 
+  "144": {
+    "timestamp": 1531489370, 
+    "bits": 486834639, 
+    "algo": "neoscrypt", 
+    "height": 144
+  }, 
+  "145": {
+    "timestamp": 1531489397, 
+    "bits": 486812700, 
+    "algo": "neoscrypt", 
+    "height": 145
+  }, 
+  "142": {
+    "timestamp": 1531489360, 
+    "bits": 486886013, 
+    "algo": "neoscrypt", 
+    "height": 142
+  }, 
+  "143": {
+    "timestamp": 1531489367, 
+    "bits": 486859402, 
+    "algo": "neoscrypt", 
+    "height": 143
+  }, 
+  "140": {
+    "timestamp": 1531489307, 
+    "bits": 486942988, 
+    "algo": "neoscrypt", 
+    "height": 140
+  }, 
+  "141": {
+    "timestamp": 1531489323, 
+    "bits": 486914063, 
+    "algo": "neoscrypt", 
+    "height": 141
+  }, 
+  "612": {
+    "timestamp": 1531495573, 
+    "bits": 408362433, 
+    "algo": "sha256d", 
+    "height": 612
+  }, 
+  "613": {
+    "timestamp": 1531495592, 
+    "bits": 408621224, 
+    "algo": "sha256d", 
+    "height": 613
+  }, 
+  "610": {
+    "timestamp": 1531495544, 
+    "bits": 486593131, 
+    "algo": "neoscrypt", 
+    "height": 610
+  }, 
+  "611": {
+    "timestamp": 1531495564, 
+    "bits": 486588602, 
+    "algo": "neoscrypt", 
+    "height": 611
+  }, 
+  "616": {
+    "timestamp": 1531495660, 
+    "bits": 408534139, 
+    "algo": "sha256d", 
+    "height": 616
+  }, 
+  "617": {
+    "timestamp": 1531495698, 
+    "bits": 408610433, 
+    "algo": "sha256d", 
+    "height": 617
+  }, 
+  "148": {
+    "timestamp": 1531489469, 
+    "bits": 486753697, 
+    "algo": "neoscrypt", 
+    "height": 148
+  }, 
+  "149": {
+    "timestamp": 1531489519, 
+    "bits": 486737149, 
+    "algo": "neoscrypt", 
+    "height": 149
+  }, 
+  "439916": {
+    "timestamp": 1545326155, 
+    "bits": 408134924, 
+    "algo": "sha256d", 
+    "height": 439916
+  }, 
+  "912": {
+    "timestamp": 1531504711, 
+    "bits": 486581359, 
+    "algo": "neoscrypt", 
+    "height": 912
+  }, 
+  "951": {
+    "timestamp": 1531505840, 
+    "bits": 477322800, 
+    "algo": "neoscrypt", 
+    "height": 951
+  }, 
+  "439921": {
+    "timestamp": 1545326390, 
+    "bits": 486608383, 
+    "algo": "neoscrypt", 
+    "height": 439921
+  }, 
+  "439920": {
+    "timestamp": 1545326337, 
+    "bits": 486605444, 
+    "algo": "neoscrypt", 
+    "height": 439920
+  }, 
+  "439923": {
+    "timestamp": 1545326418, 
+    "bits": 408663630, 
+    "algo": "sha256d", 
+    "height": 439923
+  }, 
+  "439922": {
+    "timestamp": 1545326406, 
+    "bits": 408484999, 
+    "algo": "sha256d", 
+    "height": 439922
+  }, 
+  "439925": {
+    "timestamp": 1545326528, 
+    "bits": 486607817, 
+    "algo": "neoscrypt", 
+    "height": 439925
+  }, 
+  "439924": {
+    "timestamp": 1545326459, 
+    "bits": 408442482, 
+    "algo": "sha256d", 
+    "height": 439924
+  }, 
+  "948": {
+    "timestamp": 1531505770, 
+    "bits": 477310154, 
+    "algo": "neoscrypt", 
+    "height": 948
+  }, 
+  "949": {
+    "timestamp": 1531505787, 
+    "bits": 406061487, 
+    "algo": "sha256d", 
+    "height": 949
+  }, 
+  "946": {
+    "timestamp": 1531505731, 
+    "bits": 405718113, 
+    "algo": "sha256d", 
+    "height": 946
+  }, 
+  "947": {
+    "timestamp": 1531505747, 
+    "bits": 477250923, 
+    "algo": "neoscrypt", 
+    "height": 947
+  }, 
+  "944": {
+    "timestamp": 1531505699, 
+    "bits": 477819660, 
+    "algo": "neoscrypt", 
+    "height": 944
+  }, 
+  "945": {
+    "timestamp": 1531505719, 
+    "bits": 477677574, 
+    "algo": "neoscrypt", 
+    "height": 945
+  }, 
+  "942": {
+    "timestamp": 1531505659, 
+    "bits": 477813877, 
+    "algo": "neoscrypt", 
+    "height": 942
+  }, 
+  "943": {
+    "timestamp": 1531505691, 
+    "bits": 477873099, 
+    "algo": "neoscrypt", 
+    "height": 943
+  }, 
+  "940": {
+    "timestamp": 1531505587, 
+    "bits": 486581012, 
+    "algo": "neoscrypt", 
+    "height": 940
+  }, 
+  "941": {
+    "timestamp": 1531505619, 
+    "bits": 478045118, 
+    "algo": "neoscrypt", 
+    "height": 941
+  }, 
+  "768": {
+    "timestamp": 1531500141, 
+    "bits": 406024109, 
+    "algo": "sha256d", 
+    "height": 768
+  }, 
+  "689": {
+    "timestamp": 1531497950, 
+    "bits": 486587017, 
+    "algo": "neoscrypt", 
+    "height": 689
+  }, 
+  "688": {
+    "timestamp": 1531497940, 
+    "bits": 486586536, 
+    "algo": "neoscrypt", 
+    "height": 688
+  }, 
+  "685": {
+    "timestamp": 1531497844, 
+    "bits": 486588645, 
+    "algo": "neoscrypt", 
+    "height": 685
+  }, 
+  "684": {
+    "timestamp": 1531497840, 
+    "bits": 486591837, 
+    "algo": "neoscrypt", 
+    "height": 684
+  }, 
+  "687": {
+    "timestamp": 1531497900, 
+    "bits": 486585133, 
+    "algo": "neoscrypt", 
+    "height": 687
+  }, 
+  "686": {
+    "timestamp": 1531497852, 
+    "bits": 406571211, 
+    "algo": "sha256d", 
+    "height": 686
+  }, 
+  "681": {
+    "timestamp": 1531497717, 
+    "bits": 406689519, 
+    "algo": "sha256d", 
+    "height": 681
+  }, 
+  "680": {
+    "timestamp": 1531497682, 
+    "bits": 406712596, 
+    "algo": "sha256d", 
+    "height": 680
+  }, 
+  "683": {
+    "timestamp": 1531497811, 
+    "bits": 406609842, 
+    "algo": "sha256d", 
+    "height": 683
+  }, 
+  "682": {
+    "timestamp": 1531497790, 
+    "bits": 486586461, 
+    "algo": "neoscrypt", 
+    "height": 682
+  }, 
+  "623": {
+    "timestamp": 1531495900, 
+    "bits": 408004625, 
+    "algo": "sha256d", 
+    "height": 623
+  }, 
+  "819": {
+    "timestamp": 1531501786, 
+    "bits": 486578766, 
+    "algo": "neoscrypt", 
+    "height": 819
+  }, 
+  "622": {
+    "timestamp": 1531495865, 
+    "bits": 486579255, 
+    "algo": "neoscrypt", 
+    "height": 622
+  }, 
+  "439976": {
+    "timestamp": 1545328142, 
+    "bits": 486627022, 
+    "algo": "neoscrypt", 
+    "height": 439976
+  }, 
+  "133": {
+    "timestamp": 1531489120, 
+    "bits": 487157882, 
+    "algo": "neoscrypt", 
+    "height": 133
+  }, 
+  "132": {
+    "timestamp": 1531489106, 
+    "bits": 487198031, 
+    "algo": "neoscrypt", 
+    "height": 132
+  }, 
+  "131": {
+    "timestamp": 1531489105, 
+    "bits": 487237657, 
+    "algo": "neoscrypt", 
+    "height": 131
+  }, 
+  "130": {
+    "timestamp": 1531489099, 
+    "bits": 487282403, 
+    "algo": "neoscrypt", 
+    "height": 130
+  }, 
+  "137": {
+    "timestamp": 1531489243, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 137
+  }, 
+  "136": {
+    "timestamp": 1531489229, 
+    "bits": 487038401, 
+    "algo": "neoscrypt", 
+    "height": 136
+  }, 
+  "135": {
+    "timestamp": 1531489179, 
+    "bits": 487075695, 
+    "algo": "neoscrypt", 
+    "height": 135
+  }, 
+  "134": {
+    "timestamp": 1531489174, 
+    "bits": 487114974, 
+    "algo": "neoscrypt", 
+    "height": 134
+  }, 
+  "494": {
+    "timestamp": 1531493278, 
+    "bits": 486701638, 
+    "algo": "neoscrypt", 
+    "height": 494
+  }, 
+  "495": {
+    "timestamp": 1531493280, 
+    "bits": 420043093, 
+    "algo": "sha256d", 
+    "height": 495
+  }, 
+  "139": {
+    "timestamp": 1531489303, 
+    "bits": 486974092, 
+    "algo": "neoscrypt", 
+    "height": 139
+  }, 
+  "138": {
+    "timestamp": 1531489284, 
+    "bits": 487005318, 
+    "algo": "neoscrypt", 
+    "height": 138
+  }, 
+  "490": {
+    "timestamp": 1531493237, 
+    "bits": 420205812, 
+    "algo": "sha256d", 
+    "height": 490
+  }, 
+  "491": {
+    "timestamp": 1531493264, 
+    "bits": 486694118, 
+    "algo": "neoscrypt", 
+    "height": 491
+  }, 
+  "492": {
+    "timestamp": 1531493266, 
+    "bits": 420147263, 
+    "algo": "sha256d", 
+    "height": 492
+  }, 
+  "493": {
+    "timestamp": 1531493267, 
+    "bits": 420093135, 
+    "algo": "sha256d", 
+    "height": 493
+  }, 
+  "24": {
+    "timestamp": 1531485129, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 24
+  }, 
+  "25": {
+    "timestamp": 1531485223, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 25
+  }, 
+  "26": {
+    "timestamp": 1531485234, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 26
+  }, 
+  "27": {
+    "timestamp": 1531485377, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 27
+  }, 
+  "20": {
+    "timestamp": 1531485039, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 20
+  }, 
+  "21": {
+    "timestamp": 1531485040, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 21
+  }, 
+  "22": {
+    "timestamp": 1531485123, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 22
+  }, 
+  "23": {
+    "timestamp": 1531485124, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 23
+  }, 
+  "439977": {
+    "timestamp": 1545328161, 
+    "bits": 486632458, 
+    "algo": "neoscrypt", 
+    "height": 439977
+  }, 
+  "927": {
+    "timestamp": 1531505329, 
+    "bits": 486587674, 
+    "algo": "neoscrypt", 
+    "height": 927
+  }, 
+  "28": {
+    "timestamp": 1531485377, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 28
+  }, 
+  "29": {
+    "timestamp": 1531485378, 
+    "bits": 504348306, 
+    "algo": "neoscrypt", 
+    "height": 29
+  }, 
+  "407": {
+    "timestamp": 1531492540, 
+    "bits": 437389681, 
+    "algo": "sha256d", 
+    "height": 407
+  }, 
+  "406": {
+    "timestamp": 1531492531, 
+    "bits": 437486228, 
+    "algo": "sha256d", 
+    "height": 406
+  }, 
+  "405": {
+    "timestamp": 1531492520, 
+    "bits": 437590658, 
+    "algo": "sha256d", 
+    "height": 405
+  }, 
+  "404": {
+    "timestamp": 1531492515, 
+    "bits": 437703617, 
+    "algo": "sha256d", 
+    "height": 404
+  }, 
+  "403": {
+    "timestamp": 1531492505, 
+    "bits": 437825798, 
+    "algo": "sha256d", 
+    "height": 403
+  }, 
+  "402": {
+    "timestamp": 1531492493, 
+    "bits": 437957953, 
+    "algo": "sha256d", 
+    "height": 402
+  }, 
+  "401": {
+    "timestamp": 1531492487, 
+    "bits": 438100898, 
+    "algo": "sha256d", 
+    "height": 401
+  }, 
+  "400": {
+    "timestamp": 1531492477, 
+    "bits": 438255514, 
+    "algo": "sha256d", 
+    "height": 400
+  }, 
+  "933": {
+    "timestamp": 1531505465, 
+    "bits": 486585666, 
+    "algo": "neoscrypt", 
+    "height": 933
+  }, 
+  "932": {
+    "timestamp": 1531505416, 
+    "bits": 486586533, 
+    "algo": "neoscrypt", 
+    "height": 932
+  }, 
+  "931": {
+    "timestamp": 1531505409, 
+    "bits": 486586033, 
+    "algo": "neoscrypt", 
+    "height": 931
+  }, 
+  "930": {
+    "timestamp": 1531505382, 
+    "bits": 405769460, 
+    "algo": "sha256d", 
+    "height": 930
+  }, 
+  "937": {
+    "timestamp": 1531505550, 
+    "bits": 486586245, 
+    "algo": "neoscrypt", 
+    "height": 937
+  }, 
+  "629": {
+    "timestamp": 1531496076, 
+    "bits": 408031380, 
+    "algo": "sha256d", 
+    "height": 629
+  }, 
+  "409": {
+    "timestamp": 1531492555, 
+    "bits": 437217901, 
+    "algo": "sha256d", 
+    "height": 409
+  }, 
+  "408": {
+    "timestamp": 1531492548, 
+    "bits": 437300421, 
+    "algo": "sha256d", 
+    "height": 408
+  }, 
+  "628": {
+    "timestamp": 1531496039, 
+    "bits": 408060335, 
+    "algo": "sha256d", 
+    "height": 628
+  }, 
+  "439974": {
+    "timestamp": 1545328038, 
+    "bits": 486633387, 
+    "algo": "neoscrypt", 
+    "height": 439974
+  }, 
+  "758": {
+    "timestamp": 1531499828, 
+    "bits": 405869661, 
+    "algo": "sha256d", 
+    "height": 758
+  }, 
+  "440081": {
+    "timestamp": 1545331263, 
+    "bits": 486653263, 
+    "algo": "neoscrypt", 
+    "height": 440081
+  }, 
+  "440051": {
+    "timestamp": 1545330420, 
+    "bits": 405260638, 
+    "algo": "sha256d", 
+    "height": 440051
+  }, 
+  "440050": {
+    "timestamp": 1545330397, 
+    "bits": 486667768, 
+    "algo": "neoscrypt", 
+    "height": 440050
+  }, 
+  "440053": {
+    "timestamp": 1545330451, 
+    "bits": 405205216, 
+    "algo": "sha256d", 
+    "height": 440053
+  }, 
+  "440052": {
+    "timestamp": 1545330450, 
+    "bits": 486672732, 
+    "algo": "neoscrypt", 
+    "height": 440052
+  }, 
+  "440055": {
+    "timestamp": 1545330539, 
+    "bits": 405081462, 
+    "algo": "sha256d", 
+    "height": 440055
+  }, 
+  "440054": {
+    "timestamp": 1545330464, 
+    "bits": 486663617, 
+    "algo": "neoscrypt", 
+    "height": 440054
+  }, 
+  "440057": {
+    "timestamp": 1545330609, 
+    "bits": 486660140, 
+    "algo": "neoscrypt", 
+    "height": 440057
+  }, 
+  "440056": {
+    "timestamp": 1545330581, 
+    "bits": 404937073, 
+    "algo": "sha256d", 
+    "height": 440056
+  }, 
+  "440059": {
+    "timestamp": 1545330664, 
+    "bits": 486666323, 
+    "algo": "neoscrypt", 
+    "height": 440059
+  }, 
+  "440058": {
+    "timestamp": 1545330618, 
+    "bits": 404863425, 
+    "algo": "sha256d", 
+    "height": 440058
+  }, 
+  "440014": {
+    "timestamp": 1545329154, 
+    "bits": 486635761, 
+    "algo": "neoscrypt", 
+    "height": 440014
+  }, 
+  "439975": {
+    "timestamp": 1545328046, 
+    "bits": 486626794, 
+    "algo": "neoscrypt", 
+    "height": 439975
+  }, 
+  "379": {
+    "timestamp": 1531492227, 
+    "bits": 453023292, 
+    "algo": "sha256d", 
+    "height": 379
+  }, 
+  "378": {
+    "timestamp": 1531492208, 
+    "bits": 453026432, 
+    "algo": "sha256d", 
+    "height": 378
+  }, 
+  "829": {
+    "timestamp": 1531502094, 
+    "bits": 476004910, 
+    "algo": "neoscrypt", 
+    "height": 829
+  }, 
+  "828": {
+    "timestamp": 1531502087, 
+    "bits": 476091694, 
+    "algo": "neoscrypt", 
+    "height": 828
+  }, 
+  "371": {
+    "timestamp": 1531492136, 
+    "bits": 453051456, 
+    "algo": "sha256d", 
+    "height": 371
+  }, 
+  "370": {
+    "timestamp": 1531492127, 
+    "bits": 453056898, 
+    "algo": "sha256d", 
+    "height": 370
+  }, 
+  "373": {
+    "timestamp": 1531492152, 
+    "bits": 453041775, 
+    "algo": "sha256d", 
+    "height": 373
+  }, 
+  "372": {
+    "timestamp": 1531492142, 
+    "bits": 453046425, 
+    "algo": "sha256d", 
+    "height": 372
+  }, 
+  "375": {
+    "timestamp": 1531492175, 
+    "bits": 453033502, 
+    "algo": "sha256d", 
+    "height": 375
+  }, 
+  "374": {
+    "timestamp": 1531492164, 
+    "bits": 453037476, 
+    "algo": "sha256d", 
+    "height": 374
+  }, 
+  "377": {
+    "timestamp": 1531492188, 
+    "bits": 486629769, 
+    "algo": "neoscrypt", 
+    "height": 377
+  }, 
+  "376": {
+    "timestamp": 1531492178, 
+    "bits": 453029828, 
+    "algo": "sha256d", 
+    "height": 376
+  }, 
+  "439972": {
+    "timestamp": 1545328009, 
+    "bits": 407891588, 
+    "algo": "sha256d", 
+    "height": 439972
+  }, 
+  "708": {
+    "timestamp": 1531498479, 
+    "bits": 486583690, 
+    "algo": "neoscrypt", 
+    "height": 708
+  }, 
+  "709": {
+    "timestamp": 1531498524, 
+    "bits": 407525764, 
+    "algo": "sha256d", 
+    "height": 709
+  }, 
+  "704": {
+    "timestamp": 1531498353, 
+    "bits": 407100648, 
+    "algo": "sha256d", 
+    "height": 704
+  }, 
+  "705": {
+    "timestamp": 1531498394, 
+    "bits": 486583544, 
+    "algo": "neoscrypt", 
+    "height": 705
+  }, 
+  "706": {
+    "timestamp": 1531498446, 
+    "bits": 486584607, 
+    "algo": "neoscrypt", 
+    "height": 706
+  }, 
+  "707": {
+    "timestamp": 1531498464, 
+    "bits": 407198321, 
+    "algo": "sha256d", 
+    "height": 707
+  }, 
+  "700": {
+    "timestamp": 1531498241, 
+    "bits": 486587902, 
+    "algo": "neoscrypt", 
+    "height": 700
+  }, 
+  "618": {
+    "timestamp": 1531495734, 
+    "bits": 408387592, 
+    "algo": "sha256d", 
+    "height": 618
+  }, 
+  "702": {
+    "timestamp": 1531498308, 
+    "bits": 486588783, 
+    "algo": "neoscrypt", 
+    "height": 702
+  }, 
+  "703": {
+    "timestamp": 1531498316, 
+    "bits": 486586512, 
+    "algo": "neoscrypt", 
+    "height": 703
+  }, 
+  "393": {
+    "timestamp": 1531492412, 
+    "bits": 439487606, 
+    "algo": "sha256d", 
+    "height": 393
+  }, 
+  "392": {
+    "timestamp": 1531492397, 
+    "bits": 439755509, 
+    "algo": "sha256d", 
+    "height": 392
+  }, 
+  "88": {
+    "timestamp": 1531488299, 
+    "bits": 503363712, 
+    "algo": "neoscrypt", 
+    "height": 88
+  }, 
+  "89": {
+    "timestamp": 1531488303, 
+    "bits": 503360692, 
+    "algo": "neoscrypt", 
+    "height": 89
+  }, 
+  "397": {
+    "timestamp": 1531492432, 
+    "bits": 438799331, 
+    "algo": "sha256d", 
+    "height": 397
+  }, 
+  "396": {
+    "timestamp": 1531492425, 
+    "bits": 439010991, 
+    "algo": "sha256d", 
+    "height": 396
+  }, 
+  "395": {
+    "timestamp": 1531492424, 
+    "bits": 486632237, 
+    "algo": "neoscrypt", 
+    "height": 395
+  }, 
+  "394": {
+    "timestamp": 1531492413, 
+    "bits": 439239945, 
+    "algo": "sha256d", 
+    "height": 394
+  }, 
+  "82": {
+    "timestamp": 1531488228, 
+    "bits": 503383783, 
+    "algo": "neoscrypt", 
+    "height": 82
+  }, 
+  "83": {
+    "timestamp": 1531488238, 
+    "bits": 503380217, 
+    "algo": "neoscrypt", 
+    "height": 83
+  }, 
+  "80": {
+    "timestamp": 1531488199, 
+    "bits": 503400697, 
+    "algo": "neoscrypt", 
+    "height": 80
+  }, 
+  "81": {
+    "timestamp": 1531488204, 
+    "bits": 503387668, 
+    "algo": "neoscrypt", 
+    "height": 81
+  }, 
+  "86": {
+    "timestamp": 1531488269, 
+    "bits": 503370041, 
+    "algo": "neoscrypt", 
+    "height": 86
+  }, 
+  "87": {
+    "timestamp": 1531488276, 
+    "bits": 503366829, 
+    "algo": "neoscrypt", 
+    "height": 87
+  }, 
+  "84": {
+    "timestamp": 1531488266, 
+    "bits": 503376738, 
+    "algo": "neoscrypt", 
+    "height": 84
+  }, 
+  "85": {
+    "timestamp": 1531488268, 
+    "bits": 503373345, 
+    "algo": "neoscrypt", 
+    "height": 85
+  }, 
+  "797": {
+    "timestamp": 1531501205, 
+    "bits": 486585178, 
+    "algo": "neoscrypt", 
+    "height": 797
+  }, 
+  "796": {
+    "timestamp": 1531501177, 
+    "bits": 486585470, 
+    "algo": "neoscrypt", 
+    "height": 796
+  }, 
+  "795": {
+    "timestamp": 1531501162, 
+    "bits": 486587123, 
+    "algo": "neoscrypt", 
+    "height": 795
+  }, 
+  "794": {
+    "timestamp": 1531501152, 
+    "bits": 486586311, 
+    "algo": "neoscrypt", 
+    "height": 794
+  }, 
+  "793": {
+    "timestamp": 1531501130, 
+    "bits": 486585950, 
+    "algo": "neoscrypt", 
+    "height": 793
+  }, 
+  "792": {
+    "timestamp": 1531501121, 
+    "bits": 486585211, 
+    "algo": "neoscrypt", 
+    "height": 792
+  }, 
+  "791": {
+    "timestamp": 1531501079, 
+    "bits": 405366288, 
+    "algo": "sha256d", 
+    "height": 791
+  }, 
+  "790": {
+    "timestamp": 1531501072, 
+    "bits": 486577805, 
+    "algo": "neoscrypt", 
+    "height": 790
+  }, 
+  "439981": {
+    "timestamp": 1545328291, 
+    "bits": 486619023, 
+    "algo": "neoscrypt", 
+    "height": 439981
+  }, 
+  "799": {
+    "timestamp": 1531501267, 
+    "bits": 486586253, 
+    "algo": "neoscrypt", 
+    "height": 799
+  }, 
+  "798": {
+    "timestamp": 1531501234, 
+    "bits": 486585607, 
+    "algo": "neoscrypt", 
+    "height": 798
+  }, 
+  "439980": {
+    "timestamp": 1545328230, 
+    "bits": 486628987, 
+    "algo": "neoscrypt", 
+    "height": 439980
+  }, 
+  "7": {
+    "timestamp": 1531483962, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 7
+  }, 
+  "601": {
+    "timestamp": 1531495284, 
+    "bits": 409287762, 
+    "algo": "sha256d", 
+    "height": 601
+  }, 
+  "439987": {
+    "timestamp": 1545328423, 
+    "bits": 408859942, 
+    "algo": "sha256d", 
+    "height": 439987
+  }, 
+  "607": {
+    "timestamp": 1531495461, 
+    "bits": 486594828, 
+    "algo": "neoscrypt", 
+    "height": 607
+  }, 
+  "439970": {
+    "timestamp": 1545327955, 
+    "bits": 407991484, 
+    "algo": "sha256d", 
+    "height": 439970
+  }, 
+  "586": {
+    "timestamp": 1531494978, 
+    "bits": 486614483, 
+    "algo": "neoscrypt", 
+    "height": 586
+  }, 
+  "587": {
+    "timestamp": 1531495001, 
+    "bits": 409399625, 
+    "algo": "sha256d", 
+    "height": 587
+  }, 
+  "584": {
+    "timestamp": 1531494954, 
+    "bits": 486618626, 
+    "algo": "neoscrypt", 
+    "height": 584
+  }, 
+  "585": {
+    "timestamp": 1531494973, 
+    "bits": 486617517, 
+    "algo": "neoscrypt", 
+    "height": 585
+  }, 
+  "582": {
+    "timestamp": 1531494902, 
+    "bits": 486624678, 
+    "algo": "neoscrypt", 
+    "height": 582
+  }, 
+  "583": {
+    "timestamp": 1531494919, 
+    "bits": 409403852, 
+    "algo": "sha256d", 
+    "height": 583
+  }, 
+  "580": {
+    "timestamp": 1531494827, 
+    "bits": 409598055, 
+    "algo": "sha256d", 
+    "height": 580
+  }, 
+  "581": {
+    "timestamp": 1531494886, 
+    "bits": 486623708, 
+    "algo": "neoscrypt", 
+    "height": 581
+  }, 
+  "439905": {
+    "timestamp": 1545325733, 
+    "bits": 407799507, 
+    "algo": "sha256d", 
+    "height": 439905
+  }, 
+  "439984": {
+    "timestamp": 1545328380, 
+    "bits": 486621763, 
+    "algo": "neoscrypt", 
+    "height": 439984
+  }, 
+  "588": {
+    "timestamp": 1531495030, 
+    "bits": 486608415, 
+    "algo": "neoscrypt", 
+    "height": 588
+  }, 
+  "589": {
+    "timestamp": 1531495039, 
+    "bits": 486606750, 
+    "algo": "neoscrypt", 
+    "height": 589
+  }, 
+  "245": {
+    "timestamp": 1531490938, 
+    "bits": 470728098, 
+    "algo": "sha256d", 
+    "height": 245
+  }, 
+  "244": {
+    "timestamp": 1531490935, 
+    "bits": 486654114, 
+    "algo": "neoscrypt", 
+    "height": 244
+  }, 
+  "247": {
+    "timestamp": 1531490952, 
+    "bits": 470579954, 
+    "algo": "sha256d", 
+    "height": 247
+  }, 
+  "246": {
+    "timestamp": 1531490950, 
+    "bits": 470649057, 
+    "algo": "sha256d", 
+    "height": 246
+  }, 
+  "241": {
+    "timestamp": 1531490916, 
+    "bits": 471022105, 
+    "algo": "sha256d", 
+    "height": 241
+  }, 
+  "240": {
+    "timestamp": 1531490912, 
+    "bits": 471138181, 
+    "algo": "sha256d", 
+    "height": 240
+  }, 
+  "243": {
+    "timestamp": 1531490930, 
+    "bits": 470816801, 
+    "algo": "sha256d", 
+    "height": 243
+  }, 
+  "242": {
+    "timestamp": 1531490927, 
+    "bits": 470914891, 
+    "algo": "sha256d", 
+    "height": 242
+  }, 
+  "615": {
+    "timestamp": 1531495654, 
+    "bits": 486585798, 
+    "algo": "neoscrypt", 
+    "height": 615
+  }, 
+  "249": {
+    "timestamp": 1531490980, 
+    "bits": 486651072, 
+    "algo": "neoscrypt", 
+    "height": 249
+  }, 
+  "248": {
+    "timestamp": 1531490959, 
+    "bits": 486654133, 
+    "algo": "neoscrypt", 
+    "height": 248
+  }, 
+  "440090": {
+    "timestamp": 1545331473, 
+    "bits": 404830532, 
+    "algo": "sha256d", 
+    "height": 440090
+  }, 
+  "439988": {
+    "timestamp": 1545328471, 
+    "bits": 408930500, 
+    "algo": "sha256d", 
+    "height": 439988
+  }, 
+  "440036": {
+    "timestamp": 1545329895, 
+    "bits": 486653332, 
+    "algo": "neoscrypt", 
+    "height": 440036
+  }, 
+  "924": {
+    "timestamp": 1531505260, 
+    "bits": 486584700, 
+    "algo": "neoscrypt", 
+    "height": 924
+  }, 
+  "970": {
+    "timestamp": 1531506551, 
+    "bits": 406748205, 
+    "algo": "sha256d", 
+    "height": 970
+  }, 
+  "439965": {
+    "timestamp": 1545327816, 
+    "bits": 407855669, 
+    "algo": "sha256d", 
+    "height": 439965
+  }, 
+  "925": {
+    "timestamp": 1531505274, 
+    "bits": 405690544, 
+    "algo": "sha256d", 
+    "height": 925
+  }, 
+  "519": {
+    "timestamp": 1531493589, 
+    "bits": 419634522, 
+    "algo": "sha256d", 
+    "height": 519
+  }, 
+  "518": {
+    "timestamp": 1531493586, 
+    "bits": 486694296, 
+    "algo": "neoscrypt", 
+    "height": 518
+  }, 
+  "440034": {
+    "timestamp": 1545329832, 
+    "bits": 486646748, 
+    "algo": "neoscrypt", 
+    "height": 440034
+  }, 
+  "926": {
+    "timestamp": 1531505281, 
+    "bits": 405797292, 
+    "algo": "sha256d", 
+    "height": 926
+  }, 
+  "440007": {
+    "timestamp": 1545328936, 
+    "bits": 405314572, 
+    "algo": "sha256d", 
+    "height": 440007
+  }, 
+  "511": {
+    "timestamp": 1531493490, 
+    "bits": 419732655, 
+    "algo": "sha256d", 
+    "height": 511
+  }, 
+  "510": {
+    "timestamp": 1531493484, 
+    "bits": 486698279, 
+    "algo": "neoscrypt", 
+    "height": 510
+  }, 
+  "513": {
+    "timestamp": 1531493522, 
+    "bits": 486696639, 
+    "algo": "neoscrypt", 
+    "height": 513
+  }, 
+  "512": {
+    "timestamp": 1531493511, 
+    "bits": 419709833, 
+    "algo": "sha256d", 
+    "height": 512
+  }, 
+  "515": {
+    "timestamp": 1531493553, 
+    "bits": 419669227, 
+    "algo": "sha256d", 
+    "height": 515
+  }, 
+  "514": {
+    "timestamp": 1531493528, 
+    "bits": 419688733, 
+    "algo": "sha256d", 
+    "height": 514
+  }, 
+  "517": {
+    "timestamp": 1531493567, 
+    "bits": 419651194, 
+    "algo": "sha256d", 
+    "height": 517
+  }, 
+  "516": {
+    "timestamp": 1531493565, 
+    "bits": 486695073, 
+    "algo": "neoscrypt", 
+    "height": 516
+  }, 
+  "458": {
+    "timestamp": 1531492964, 
+    "bits": 425889016, 
+    "algo": "sha256d", 
+    "height": 458
+  }, 
+  "459": {
+    "timestamp": 1531492979, 
+    "bits": 425401341, 
+    "algo": "sha256d", 
+    "height": 459
+  }, 
+  "621": {
+    "timestamp": 1531495797, 
+    "bits": 408015159, 
+    "algo": "sha256d", 
+    "height": 621
+  }, 
+  "620": {
+    "timestamp": 1531495765, 
+    "bits": 408334374, 
+    "algo": "sha256d", 
+    "height": 620
+  }, 
+  "627": {
+    "timestamp": 1531496036, 
+    "bits": 486585239, 
+    "algo": "neoscrypt", 
+    "height": 627
+  }, 
+  "626": {
+    "timestamp": 1531496033, 
+    "bits": 486580216, 
+    "algo": "neoscrypt", 
+    "height": 626
+  }, 
+  "625": {
+    "timestamp": 1531495995, 
+    "bits": 408229397, 
+    "algo": "sha256d", 
+    "height": 625
+  }, 
+  "624": {
+    "timestamp": 1531495970, 
+    "bits": 408187124, 
+    "algo": "sha256d", 
+    "height": 624
+  }, 
+  "450": {
+    "timestamp": 1531492891, 
+    "bits": 486663964, 
+    "algo": "neoscrypt", 
+    "height": 450
+  }, 
+  "451": {
+    "timestamp": 1531492895, 
+    "bits": 436251325, 
+    "algo": "sha256d", 
+    "height": 451
+  }, 
+  "452": {
+    "timestamp": 1531492910, 
+    "bits": 436248025, 
+    "algo": "sha256d", 
+    "height": 452
+  }, 
+  "453": {
+    "timestamp": 1531492915, 
+    "bits": 436244974, 
+    "algo": "sha256d", 
+    "height": 453
+  }, 
+  "454": {
+    "timestamp": 1531492929, 
+    "bits": 436242153, 
+    "algo": "sha256d", 
+    "height": 454
+  }, 
+  "455": {
+    "timestamp": 1531492943, 
+    "bits": 427604312, 
+    "algo": "sha256d", 
+    "height": 455
+  }, 
+  "456": {
+    "timestamp": 1531492949, 
+    "bits": 426987116, 
+    "algo": "sha256d", 
+    "height": 456
+  }, 
+  "457": {
+    "timestamp": 1531492960, 
+    "bits": 426416524, 
+    "algo": "sha256d", 
+    "height": 457
+  }, 
+  "439993": {
+    "timestamp": 1545328664, 
+    "bits": 486619599, 
+    "algo": "neoscrypt", 
+    "height": 439993
+  }, 
+  "440012": {
+    "timestamp": 1545329085, 
+    "bits": 405253910, 
+    "algo": "sha256d", 
+    "height": 440012
+  }, 
+  "979": {
+    "timestamp": 1531506792, 
+    "bits": 475507583, 
+    "algo": "neoscrypt", 
+    "height": 979
+  }, 
+  "179": {
+    "timestamp": 1531490300, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 179
+  }, 
+  "178": {
+    "timestamp": 1531490297, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 178
+  }, 
+  "177": {
+    "timestamp": 1531490275, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 177
+  }, 
+  "176": {
+    "timestamp": 1531490265, 
+    "bits": 486647264, 
+    "algo": "neoscrypt", 
+    "height": 176
+  }, 
+  "175": {
+    "timestamp": 1531490248, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 175
+  }, 
+  "174": {
+    "timestamp": 1531490243, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 174
+  }, 
+  "173": {
+    "timestamp": 1531490236, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 173
+  }, 
+  "172": {
+    "timestamp": 1531490234, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 172
+  }, 
+  "171": {
+    "timestamp": 1531490233, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 171
+  }, 
+  "170": {
+    "timestamp": 1531490230, 
+    "bits": 486651464, 
+    "algo": "neoscrypt", 
+    "height": 170
+  }, 
+  "977": {
+    "timestamp": 1531506717, 
+    "bits": 406742215, 
+    "algo": "sha256d", 
+    "height": 977
+  }, 
+  "656": {
+    "timestamp": 1531496787, 
+    "bits": 406744254, 
+    "algo": "sha256d", 
+    "height": 656
+  }, 
+  "975": {
+    "timestamp": 1531506672, 
+    "bits": 475941042, 
+    "algo": "neoscrypt", 
+    "height": 975
+  }, 
+  "974": {
+    "timestamp": 1531506625, 
+    "bits": 406720896, 
+    "algo": "sha256d", 
+    "height": 974
+  }, 
+  "973": {
+    "timestamp": 1531506618, 
+    "bits": 475291712, 
+    "algo": "neoscrypt", 
+    "height": 973
+  }, 
+  "972": {
+    "timestamp": 1531506574, 
+    "bits": 406743714, 
+    "algo": "sha256d", 
+    "height": 972
+  }, 
+  "971": {
+    "timestamp": 1531506563, 
+    "bits": 406894118, 
+    "algo": "sha256d", 
+    "height": 971
+  }, 
+  "657": {
+    "timestamp": 1531496794, 
+    "bits": 406845939, 
+    "algo": "sha256d", 
+    "height": 657
+  }, 
+  "654": {
+    "timestamp": 1531496720, 
+    "bits": 486580490, 
+    "algo": "neoscrypt", 
+    "height": 654
+  }, 
+  "253": {
+    "timestamp": 1531491006, 
+    "bits": 470422719, 
+    "algo": "sha256d", 
+    "height": 253
+  }, 
+  "978": {
+    "timestamp": 1531506753, 
+    "bits": 406543400, 
+    "algo": "sha256d", 
+    "height": 978
+  }, 
+  "182": {
+    "timestamp": 1531490339, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 182
+  }, 
+  "183": {
+    "timestamp": 1531490343, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 183
+  }, 
+  "180": {
+    "timestamp": 1531490310, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 180
+  }, 
+  "181": {
+    "timestamp": 1531490327, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 181
+  }, 
+  "186": {
+    "timestamp": 1531490374, 
+    "bits": 486649837, 
+    "algo": "neoscrypt", 
+    "height": 186
+  }, 
+  "187": {
+    "timestamp": 1531490379, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 187
+  }, 
+  "184": {
+    "timestamp": 1531490350, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 184
+  }, 
+  "185": {
+    "timestamp": 1531490363, 
+    "bits": 486644679, 
+    "algo": "neoscrypt", 
+    "height": 185
+  }, 
+  "886": {
+    "timestamp": 1531503991, 
+    "bits": 406642485, 
+    "algo": "sha256d", 
+    "height": 886
+  }, 
+  "652": {
+    "timestamp": 1531496666, 
+    "bits": 486579385, 
+    "algo": "neoscrypt", 
+    "height": 652
+  }, 
+  "188": {
+    "timestamp": 1531490385, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 188
+  }, 
+  "189": {
+    "timestamp": 1531490400, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 189
+  }, 
+  "439954": {
+    "timestamp": 1545327462, 
+    "bits": 408669796, 
+    "algo": "sha256d", 
+    "height": 439954
+  }, 
+  "439955": {
+    "timestamp": 1545327487, 
+    "bits": 408492048, 
+    "algo": "sha256d", 
+    "height": 439955
+  }, 
+  "658": {
+    "timestamp": 1531496868, 
+    "bits": 486579370, 
+    "algo": "neoscrypt", 
+    "height": 658
+  }, 
+  "653": {
+    "timestamp": 1531496710, 
+    "bits": 486581695, 
+    "algo": "neoscrypt", 
+    "height": 653
+  }, 
+  "650": {
+    "timestamp": 1531496570, 
+    "bits": 407043803, 
+    "algo": "sha256d", 
+    "height": 650
+  }, 
+  "651": {
+    "timestamp": 1531496643, 
+    "bits": 406951837, 
+    "algo": "sha256d", 
+    "height": 651
+  }, 
+  "439950": {
+    "timestamp": 1545327378, 
+    "bits": 408394442, 
+    "algo": "sha256d", 
+    "height": 439950
+  }, 
+  "439951": {
+    "timestamp": 1545327390, 
+    "bits": 486623421, 
+    "algo": "neoscrypt", 
+    "height": 439951
+  }, 
+  "764": {
+    "timestamp": 1531500017, 
+    "bits": 405974120, 
+    "algo": "sha256d", 
+    "height": 764
+  }, 
+  "439952": {
+    "timestamp": 1545327424, 
+    "bits": 408550008, 
+    "algo": "sha256d", 
+    "height": 439952
+  }, 
+  "11": {
+    "timestamp": 1531483965, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 11
+  }, 
+  "10": {
+    "timestamp": 1531483965, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 10
+  }, 
+  "13": {
+    "timestamp": 1531484195, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 13
+  }, 
+  "12": {
+    "timestamp": 1531483966, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 12
+  }, 
+  "15": {
+    "timestamp": 1531484387, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 15
+  }, 
+  "14": {
+    "timestamp": 1531484206, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 14
+  }, 
+  "17": {
+    "timestamp": 1531484768, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 17
+  }, 
+  "16": {
+    "timestamp": 1531484718, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 16
+  }, 
+  "19": {
+    "timestamp": 1531485039, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 19
+  }, 
+  "18": {
+    "timestamp": 1531485038, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 18
+  }, 
+  "863": {
+    "timestamp": 1531503310, 
+    "bits": 486581495, 
+    "algo": "neoscrypt", 
+    "height": 863
+  }, 
+  "862": {
+    "timestamp": 1531503288, 
+    "bits": 406528753, 
+    "algo": "sha256d", 
+    "height": 862
+  }, 
+  "865": {
+    "timestamp": 1531503369, 
+    "bits": 486582846, 
+    "algo": "neoscrypt", 
+    "height": 865
+  }, 
+  "864": {
+    "timestamp": 1531503330, 
+    "bits": 406855753, 
+    "algo": "sha256d", 
+    "height": 864
+  }, 
+  "867": {
+    "timestamp": 1531503417, 
+    "bits": 486580105, 
+    "algo": "neoscrypt", 
+    "height": 867
+  }, 
+  "866": {
+    "timestamp": 1531503383, 
+    "bits": 486580666, 
+    "algo": "neoscrypt", 
+    "height": 866
+  }, 
+  "439929": {
+    "timestamp": 1545326587, 
+    "bits": 408383166, 
+    "algo": "sha256d", 
+    "height": 439929
+  }, 
+  "884": {
+    "timestamp": 1531503932, 
+    "bits": 406556080, 
+    "algo": "sha256d", 
+    "height": 884
+  }, 
+  "439956": {
+    "timestamp": 1545327538, 
+    "bits": 486628891, 
+    "algo": "neoscrypt", 
+    "height": 439956
+  }, 
+  "439928": {
+    "timestamp": 1545326583, 
+    "bits": 486610439, 
+    "algo": "neoscrypt", 
+    "height": 439928
+  }, 
+  "938": {
+    "timestamp": 1531505569, 
+    "bits": 486583386, 
+    "algo": "neoscrypt", 
+    "height": 938
+  }, 
+  "659": {
+    "timestamp": 1531496874, 
+    "bits": 406579198, 
+    "algo": "sha256d", 
+    "height": 659
+  }, 
+  "883": {
+    "timestamp": 1531503881, 
+    "bits": 406094529, 
+    "algo": "sha256d", 
+    "height": 883
+  }, 
+  "753": {
+    "timestamp": 1531499696, 
+    "bits": 486575083, 
+    "algo": "neoscrypt", 
+    "height": 753
+  }, 
+  "881": {
+    "timestamp": 1531503875, 
+    "bits": 486587960, 
+    "algo": "neoscrypt", 
+    "height": 881
+  }, 
+  "880": {
+    "timestamp": 1531503810, 
+    "bits": 486585906, 
+    "algo": "neoscrypt", 
+    "height": 880
+  }, 
+  "887": {
+    "timestamp": 1531504025, 
+    "bits": 406597576, 
+    "algo": "sha256d", 
+    "height": 887
+  }, 
+  "831": {
+    "timestamp": 1531502277, 
+    "bits": 406291674, 
+    "algo": "sha256d", 
+    "height": 831
+  }, 
+  "885": {
+    "timestamp": 1531503978, 
+    "bits": 406611818, 
+    "algo": "sha256d", 
+    "height": 885
+  }, 
+  "752": {
+    "timestamp": 1531499683, 
+    "bits": 405628950, 
+    "algo": "sha256d", 
+    "height": 752
+  }, 
+  "928": {
+    "timestamp": 1531505334, 
+    "bits": 405757374, 
+    "algo": "sha256d", 
+    "height": 928
+  }, 
+  "62": {
+    "timestamp": 1531488105, 
+    "bits": 503607655, 
+    "algo": "neoscrypt", 
+    "height": 62
+  }, 
+  "888": {
+    "timestamp": 1531504041, 
+    "bits": 477382091, 
+    "algo": "neoscrypt", 
+    "height": 888
+  }, 
+  "439932": {
+    "timestamp": 1545326681, 
+    "bits": 486609809, 
+    "algo": "neoscrypt", 
+    "height": 439932
+  }, 
+  "440030": {
+    "timestamp": 1545329730, 
+    "bits": 405397223, 
+    "algo": "sha256d", 
+    "height": 440030
+  }, 
+  "950": {
+    "timestamp": 1531505813, 
+    "bits": 406149128, 
+    "algo": "sha256d", 
+    "height": 950
+  }, 
+  "756": {
+    "timestamp": 1531499757, 
+    "bits": 486572500, 
+    "algo": "neoscrypt", 
+    "height": 756
+  }, 
+  "440028": {
+    "timestamp": 1545329659, 
+    "bits": 405488204, 
+    "algo": "sha256d", 
+    "height": 440028
+  }, 
+  "440029": {
+    "timestamp": 1545329701, 
+    "bits": 405505428, 
+    "algo": "sha256d", 
+    "height": 440029
+  }, 
+  "929": {
+    "timestamp": 1531505359, 
+    "bits": 486586513, 
+    "algo": "neoscrypt", 
+    "height": 929
+  }, 
+  "440020": {
+    "timestamp": 1545329412, 
+    "bits": 405477997, 
+    "algo": "sha256d", 
+    "height": 440020
+  }, 
+  "440021": {
+    "timestamp": 1545329440, 
+    "bits": 486637100, 
+    "algo": "neoscrypt", 
+    "height": 440021
+  }, 
+  "440022": {
+    "timestamp": 1545329488, 
+    "bits": 405483400, 
+    "algo": "sha256d", 
+    "height": 440022
+  }, 
+  "440023": {
+    "timestamp": 1545329540, 
+    "bits": 486638022, 
+    "algo": "neoscrypt", 
+    "height": 440023
+  }, 
+  "439992": {
+    "timestamp": 1545328650, 
+    "bits": 486620153, 
+    "algo": "neoscrypt", 
+    "height": 439992
+  }, 
+  "809": {
+    "timestamp": 1531501480, 
+    "bits": 486582889, 
+    "algo": "neoscrypt", 
+    "height": 809
+  }, 
+  "440026": {
+    "timestamp": 1545329646, 
+    "bits": 486653559, 
+    "algo": "neoscrypt", 
+    "height": 440026
+  }, 
+  "440027": {
+    "timestamp": 1545329647, 
+    "bits": 486641055, 
+    "algo": "neoscrypt", 
+    "height": 440027
+  }, 
+  "322": {
+    "timestamp": 1531491635, 
+    "bits": 454785133, 
+    "algo": "sha256d", 
+    "height": 322
+  }, 
+  "323": {
+    "timestamp": 1531491657, 
+    "bits": 454649122, 
+    "algo": "sha256d", 
+    "height": 323
+  }, 
+  "320": {
+    "timestamp": 1531491616, 
+    "bits": 454932426, 
+    "algo": "sha256d", 
+    "height": 320
+  }, 
+  "321": {
+    "timestamp": 1531491629, 
+    "bits": 486641816, 
+    "algo": "neoscrypt", 
+    "height": 321
+  }, 
+  "326": {
+    "timestamp": 1531491683, 
+    "bits": 454300295, 
+    "algo": "sha256d", 
+    "height": 326
+  }, 
+  "327": {
+    "timestamp": 1531491692, 
+    "bits": 454201226, 
+    "algo": "sha256d", 
+    "height": 327
+  }, 
+  "324": {
+    "timestamp": 1531491659, 
+    "bits": 454523514, 
+    "algo": "sha256d", 
+    "height": 324
+  }, 
+  "325": {
+    "timestamp": 1531491670, 
+    "bits": 454407491, 
+    "algo": "sha256d", 
+    "height": 325
+  }, 
+  "328": {
+    "timestamp": 1531491717, 
+    "bits": 454109640, 
+    "algo": "sha256d", 
+    "height": 328
+  }, 
+  "329": {
+    "timestamp": 1531491722, 
+    "bits": 454024949, 
+    "algo": "sha256d", 
+    "height": 329
+  }, 
+  "759": {
+    "timestamp": 1531499842, 
+    "bits": 478127878, 
+    "algo": "neoscrypt", 
+    "height": 759
+  }, 
+  "201": {
+    "timestamp": 1531490569, 
+    "bits": 486608799, 
+    "algo": "sha256d", 
+    "height": 201
+  }, 
+  "200": {
+    "timestamp": 1531490568, 
+    "bits": 486611367, 
+    "algo": "sha256d", 
+    "height": 200
+  }, 
+  "203": {
+    "timestamp": 1531490591, 
+    "bits": 486603559, 
+    "algo": "sha256d", 
+    "height": 203
+  }, 
+  "202": {
+    "timestamp": 1531490570, 
+    "bits": 486606197, 
+    "algo": "sha256d", 
+    "height": 202
+  }, 
+  "205": {
+    "timestamp": 1531490596, 
+    "bits": 486598177, 
+    "algo": "sha256d", 
+    "height": 205
+  }, 
+  "204": {
+    "timestamp": 1531490593, 
+    "bits": 486600886, 
+    "algo": "sha256d", 
+    "height": 204
+  }, 
+  "207": {
+    "timestamp": 1531490600, 
+    "bits": 486592648, 
+    "algo": "sha256d", 
+    "height": 207
+  }, 
+  "206": {
+    "timestamp": 1531490598, 
+    "bits": 486595431, 
+    "algo": "sha256d", 
+    "height": 206
+  }, 
+  "209": {
+    "timestamp": 1531490628, 
+    "bits": 486586969, 
+    "algo": "sha256d", 
+    "height": 209
+  }, 
+  "208": {
+    "timestamp": 1531490607, 
+    "bits": 486589828, 
+    "algo": "sha256d", 
+    "height": 208
+  }, 
+  "779": {
+    "timestamp": 1531500534, 
+    "bits": 405652254, 
+    "algo": "sha256d", 
+    "height": 779
+  }, 
+  "778": {
+    "timestamp": 1531500502, 
+    "bits": 405909640, 
+    "algo": "sha256d", 
+    "height": 778
+  }, 
+  "889": {
+    "timestamp": 1531504074, 
+    "bits": 406549360, 
+    "algo": "sha256d", 
+    "height": 889
+  }, 
+  "77": {
+    "timestamp": 1531488180, 
+    "bits": 503438753, 
+    "algo": "neoscrypt", 
+    "height": 77
+  }, 
+  "76": {
+    "timestamp": 1531488164, 
+    "bits": 503451101, 
+    "algo": "neoscrypt", 
+    "height": 76
+  }, 
+  "75": {
+    "timestamp": 1531488160, 
+    "bits": 503463285, 
+    "algo": "neoscrypt", 
+    "height": 75
+  }, 
+  "74": {
+    "timestamp": 1531488149, 
+    "bits": 503475307, 
+    "algo": "neoscrypt", 
+    "height": 74
+  }, 
+  "73": {
+    "timestamp": 1531488136, 
+    "bits": 503487168, 
+    "algo": "neoscrypt", 
+    "height": 73
+  }, 
+  "72": {
+    "timestamp": 1531488135, 
+    "bits": 503498871, 
+    "algo": "neoscrypt", 
+    "height": 72
+  }, 
+  "71": {
+    "timestamp": 1531488130, 
+    "bits": 503510418, 
+    "algo": "neoscrypt", 
+    "height": 71
+  }, 
+  "70": {
+    "timestamp": 1531488130, 
+    "bits": 503521811, 
+    "algo": "neoscrypt", 
+    "height": 70
+  }, 
+  "655": {
+    "timestamp": 1531496723, 
+    "bits": 406885411, 
+    "algo": "sha256d", 
+    "height": 655
+  }, 
+  "79": {
+    "timestamp": 1531488199, 
+    "bits": 503413553, 
+    "algo": "neoscrypt", 
+    "height": 79
+  }, 
+  "78": {
+    "timestamp": 1531488181, 
+    "bits": 503426237, 
+    "algo": "neoscrypt", 
+    "height": 78
+  }, 
+  "2": {
+    "timestamp": 1531483010, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 2
+  }, 
+  "439973": {
+    "timestamp": 1545328034, 
+    "bits": 486632679, 
+    "algo": "neoscrypt", 
+    "height": 439973
+  }, 
+  "439926": {
+    "timestamp": 1545326541, 
+    "bits": 486612395, 
+    "algo": "neoscrypt", 
+    "height": 439926
+  }, 
+  "805": {
+    "timestamp": 1531501392, 
+    "bits": 486584122, 
+    "algo": "neoscrypt", 
+    "height": 805
+  }, 
+  "440095": {
+    "timestamp": 1545331628, 
+    "bits": 404925691, 
+    "algo": "sha256d", 
+    "height": 440095
+  }, 
+  "804": {
+    "timestamp": 1531501376, 
+    "bits": 486583463, 
+    "algo": "neoscrypt", 
+    "height": 804
+  }, 
+  "669": {
+    "timestamp": 1531497267, 
+    "bits": 406887357, 
+    "algo": "sha256d", 
+    "height": 669
+  }, 
+  "668": {
+    "timestamp": 1531497231, 
+    "bits": 486584519, 
+    "algo": "neoscrypt", 
+    "height": 668
+  }, 
+  "667": {
+    "timestamp": 1531497194, 
+    "bits": 407185595, 
+    "algo": "sha256d", 
+    "height": 667
+  }, 
+  "666": {
+    "timestamp": 1531497172, 
+    "bits": 407225077, 
+    "algo": "sha256d", 
+    "height": 666
+  }, 
+  "665": {
+    "timestamp": 1531497141, 
+    "bits": 407062504, 
+    "algo": "sha256d", 
+    "height": 665
+  }, 
+  "664": {
+    "timestamp": 1531497123, 
+    "bits": 486584662, 
+    "algo": "neoscrypt", 
+    "height": 664
+  }, 
+  "663": {
+    "timestamp": 1531497099, 
+    "bits": 486584291, 
+    "algo": "neoscrypt", 
+    "height": 663
+  }, 
+  "662": {
+    "timestamp": 1531497051, 
+    "bits": 406652031, 
+    "algo": "sha256d", 
+    "height": 662
+  }, 
+  "661": {
+    "timestamp": 1531497017, 
+    "bits": 486583784, 
+    "algo": "neoscrypt", 
+    "height": 661
+  }, 
+  "660": {
+    "timestamp": 1531496972, 
+    "bits": 486581208, 
+    "algo": "neoscrypt", 
+    "height": 660
+  }, 
+  "769": {
+    "timestamp": 1531500173, 
+    "bits": 477970684, 
+    "algo": "neoscrypt", 
+    "height": 769
+  }, 
+  "439986": {
+    "timestamp": 1545328400, 
+    "bits": 486621263, 
+    "algo": "neoscrypt", 
+    "height": 439986
+  }, 
+  "692": {
+    "timestamp": 1531498035, 
+    "bits": 486587402, 
+    "algo": "neoscrypt", 
+    "height": 692
+  }, 
+  "693": {
+    "timestamp": 1531498073, 
+    "bits": 486588603, 
+    "algo": "neoscrypt", 
+    "height": 693
+  }, 
+  "690": {
+    "timestamp": 1531497965, 
+    "bits": 486587200, 
+    "algo": "neoscrypt", 
+    "height": 690
+  }, 
+  "691": {
+    "timestamp": 1531497995, 
+    "bits": 406624377, 
+    "algo": "sha256d", 
+    "height": 691
+  }, 
+  "696": {
+    "timestamp": 1531498119, 
+    "bits": 406823047, 
+    "algo": "sha256d", 
+    "height": 696
+  }, 
+  "697": {
+    "timestamp": 1531498144, 
+    "bits": 407122340, 
+    "algo": "sha256d", 
+    "height": 697
+  }, 
+  "694": {
+    "timestamp": 1531498093, 
+    "bits": 486588541, 
+    "algo": "neoscrypt", 
+    "height": 694
+  }, 
+  "695": {
+    "timestamp": 1531498111, 
+    "bits": 486589058, 
+    "algo": "neoscrypt", 
+    "height": 695
+  }, 
+  "439914": {
+    "timestamp": 1545326073, 
+    "bits": 407984421, 
+    "algo": "sha256d", 
+    "height": 439914
+  }, 
+  "439915": {
+    "timestamp": 1545326123, 
+    "bits": 408140200, 
+    "algo": "sha256d", 
+    "height": 439915
+  }, 
+  "698": {
+    "timestamp": 1531498200, 
+    "bits": 486589376, 
+    "algo": "neoscrypt", 
+    "height": 698
+  }, 
+  "699": {
+    "timestamp": 1531498211, 
+    "bits": 486588611, 
+    "algo": "neoscrypt", 
+    "height": 699
+  }, 
+  "439910": {
+    "timestamp": 1545325882, 
+    "bits": 408015244, 
+    "algo": "sha256d", 
+    "height": 439910
+  }, 
+  "439911": {
+    "timestamp": 1545325905, 
+    "bits": 407999357, 
+    "algo": "sha256d", 
+    "height": 439911
+  }, 
+  "439912": {
+    "timestamp": 1545325996, 
+    "bits": 407905365, 
+    "algo": "sha256d", 
+    "height": 439912
+  }, 
+  "439913": {
+    "timestamp": 1545326061, 
+    "bits": 486591564, 
+    "algo": "neoscrypt", 
+    "height": 439913
+  }, 
+  "542": {
+    "timestamp": 1531493938, 
+    "bits": 419510818, 
+    "algo": "sha256d", 
+    "height": 542
+  }, 
+  "543": {
+    "timestamp": 1531493960, 
+    "bits": 419506107, 
+    "algo": "sha256d", 
+    "height": 543
+  }, 
+  "540": {
+    "timestamp": 1531493922, 
+    "bits": 419514320, 
+    "algo": "sha256d", 
+    "height": 540
+  }, 
+  "541": {
+    "timestamp": 1531493931, 
+    "bits": 486623319, 
+    "algo": "neoscrypt", 
+    "height": 541
+  }, 
+  "546": {
+    "timestamp": 1531494024, 
+    "bits": 419498847, 
+    "algo": "sha256d", 
+    "height": 546
+  }, 
+  "547": {
+    "timestamp": 1531494030, 
+    "bits": 419489515, 
+    "algo": "sha256d", 
+    "height": 547
+  }, 
+  "544": {
+    "timestamp": 1531493990, 
+    "bits": 486619085, 
+    "algo": "neoscrypt", 
+    "height": 544
+  }, 
+  "545": {
+    "timestamp": 1531494011, 
+    "bits": 419499701, 
+    "algo": "sha256d", 
+    "height": 545
+  }, 
+  "8": {
+    "timestamp": 1531483963, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 8
+  }, 
+  "548": {
+    "timestamp": 1531494045, 
+    "bits": 486619647, 
+    "algo": "neoscrypt", 
+    "height": 548
+  }, 
+  "549": {
+    "timestamp": 1531494054, 
+    "bits": 419483864, 
+    "algo": "sha256d", 
+    "height": 549
+  }, 
+  "439985": {
+    "timestamp": 1545328387, 
+    "bits": 486622197, 
+    "algo": "neoscrypt", 
+    "height": 439985
+  }, 
+  "68": {
+    "timestamp": 1531488123, 
+    "bits": 503544144, 
+    "algo": "neoscrypt", 
+    "height": 68
+  }, 
+  "598": {
+    "timestamp": 1531495229, 
+    "bits": 486599174, 
+    "algo": "neoscrypt", 
+    "height": 598
+  }, 
+  "995": {
+    "timestamp": 1531507394, 
+    "bits": 405923642, 
+    "algo": "sha256d", 
+    "height": 995
+  }, 
+  "869": {
+    "timestamp": 1531503475, 
+    "bits": 406967094, 
+    "algo": "sha256d", 
+    "height": 869
+  }, 
+  "997": {
+    "timestamp": 1531507476, 
+    "bits": 476866131, 
+    "algo": "neoscrypt", 
+    "height": 997
+  }, 
+  "996": {
+    "timestamp": 1531507424, 
+    "bits": 406114321, 
+    "algo": "sha256d", 
+    "height": 996
+  }, 
+  "991": {
+    "timestamp": 1531507191, 
+    "bits": 406243713, 
+    "algo": "sha256d", 
+    "height": 991
+  }, 
+  "990": {
+    "timestamp": 1531507157, 
+    "bits": 476585357, 
+    "algo": "neoscrypt", 
+    "height": 990
+  }, 
+  "993": {
+    "timestamp": 1531507298, 
+    "bits": 476446915, 
+    "algo": "neoscrypt", 
+    "height": 993
+  }, 
+  "868": {
+    "timestamp": 1531503425, 
+    "bits": 406773909, 
+    "algo": "sha256d", 
+    "height": 868
+  }, 
+  "999": {
+    "timestamp": 1531507530, 
+    "bits": 477588640, 
+    "algo": "neoscrypt", 
+    "height": 999
+  }, 
+  "998": {
+    "timestamp": 1531507506, 
+    "bits": 406026884, 
+    "algo": "sha256d", 
+    "height": 998
+  }, 
+  "120": {
+    "timestamp": 1531488986, 
+    "bits": 488370022, 
+    "algo": "neoscrypt", 
+    "height": 120
+  }, 
+  "121": {
+    "timestamp": 1531488989, 
+    "bits": 488282110, 
+    "algo": "neoscrypt", 
+    "height": 121
+  }, 
+  "122": {
+    "timestamp": 1531488990, 
+    "bits": 488085800, 
+    "algo": "neoscrypt", 
+    "height": 122
+  }, 
+  "123": {
+    "timestamp": 1531489000, 
+    "bits": 487977036, 
+    "algo": "neoscrypt", 
+    "height": 123
+  }, 
+  "124": {
+    "timestamp": 1531489033, 
+    "bits": 487889552, 
+    "algo": "neoscrypt", 
+    "height": 124
+  }, 
+  "125": {
+    "timestamp": 1531489039, 
+    "bits": 487868891, 
+    "algo": "neoscrypt", 
+    "height": 125
+  }, 
+  "126": {
+    "timestamp": 1531489053, 
+    "bits": 487701280, 
+    "algo": "neoscrypt", 
+    "height": 126
+  }, 
+  "127": {
+    "timestamp": 1531489069, 
+    "bits": 487545966, 
+    "algo": "neoscrypt", 
+    "height": 127
+  }, 
+  "128": {
+    "timestamp": 1531489082, 
+    "bits": 487483349, 
+    "algo": "neoscrypt", 
+    "height": 128
+  }, 
+  "129": {
+    "timestamp": 1531489086, 
+    "bits": 487429168, 
+    "algo": "neoscrypt", 
+    "height": 129
+  }, 
+  "439902": {
+    "timestamp": 1545325644, 
+    "bits": 486603329, 
+    "algo": "neoscrypt", 
+    "height": 439902
+  }, 
+  "765": {
+    "timestamp": 1531500076, 
+    "bits": 478115169, 
+    "algo": "neoscrypt", 
+    "height": 765
+  }, 
+  "439959": {
+    "timestamp": 1545327619, 
+    "bits": 486633489, 
+    "algo": "neoscrypt", 
+    "height": 439959
+  }, 
+  "440061": {
+    "timestamp": 1545330705, 
+    "bits": 486668614, 
+    "algo": "neoscrypt", 
+    "height": 440061
+  }, 
+  "440088": {
+    "timestamp": 1545331439, 
+    "bits": 486626505, 
+    "algo": "neoscrypt", 
+    "height": 440088
+  }, 
+  "414": {
+    "timestamp": 1531492607, 
+    "bits": 436889880, 
+    "algo": "sha256d", 
+    "height": 414
+  }, 
+  "415": {
+    "timestamp": 1531492608, 
+    "bits": 436838364, 
+    "algo": "sha256d", 
+    "height": 415
+  }, 
+  "416": {
+    "timestamp": 1531492615, 
+    "bits": 436790738, 
+    "algo": "sha256d", 
+    "height": 416
+  }, 
+  "417": {
+    "timestamp": 1531492624, 
+    "bits": 436746708, 
+    "algo": "sha256d", 
+    "height": 417
+  }, 
+  "410": {
+    "timestamp": 1531492564, 
+    "bits": 437141612, 
+    "algo": "sha256d", 
+    "height": 410
+  }, 
+  "411": {
+    "timestamp": 1531492577, 
+    "bits": 437071084, 
+    "algo": "sha256d", 
+    "height": 411
+  }, 
+  "412": {
+    "timestamp": 1531492591, 
+    "bits": 437005883, 
+    "algo": "sha256d", 
+    "height": 412
+  }, 
+  "413": {
+    "timestamp": 1531492599, 
+    "bits": 436945605, 
+    "algo": "sha256d", 
+    "height": 413
+  }, 
+  "920": {
+    "timestamp": 1531504987, 
+    "bits": 405751241, 
+    "algo": "sha256d", 
+    "height": 920
+  }, 
+  "498": {
+    "timestamp": 1531493326, 
+    "bits": 486701842, 
+    "algo": "neoscrypt", 
+    "height": 498
+  }, 
+  "922": {
+    "timestamp": 1531505150, 
+    "bits": 486587148, 
+    "algo": "neoscrypt", 
+    "height": 922
+  }, 
+  "923": {
+    "timestamp": 1531505176, 
+    "bits": 405386557, 
+    "algo": "sha256d", 
+    "height": 923
+  }, 
+  "418": {
+    "timestamp": 1531492639, 
+    "bits": 436706004, 
+    "algo": "sha256d", 
+    "height": 418
+  }, 
+  "419": {
+    "timestamp": 1531492646, 
+    "bits": 436668373, 
+    "algo": "sha256d", 
+    "height": 419
+  }, 
+  "776": {
+    "timestamp": 1531500441, 
+    "bits": 406031209, 
+    "algo": "sha256d", 
+    "height": 776
+  }, 
+  "499": {
+    "timestamp": 1531493343, 
+    "bits": 486702719, 
+    "algo": "neoscrypt", 
+    "height": 499
+  }, 
+  "319": {
+    "timestamp": 1531491607, 
+    "bits": 455091941, 
+    "algo": "sha256d", 
+    "height": 319
+  }, 
+  "318": {
+    "timestamp": 1531491605, 
+    "bits": 486638806, 
+    "algo": "neoscrypt", 
+    "height": 318
+  }, 
+  "313": {
+    "timestamp": 1531491548, 
+    "bits": 456110384, 
+    "algo": "sha256d", 
+    "height": 313
+  }, 
+  "312": {
+    "timestamp": 1531491542, 
+    "bits": 456366676, 
+    "algo": "sha256d", 
+    "height": 312
+  }, 
+  "311": {
+    "timestamp": 1531491521, 
+    "bits": 456643624, 
+    "algo": "sha256d", 
+    "height": 311
+  }, 
+  "310": {
+    "timestamp": 1531491517, 
+    "bits": 456942704, 
+    "algo": "sha256d", 
+    "height": 310
+  }, 
+  "317": {
+    "timestamp": 1531491576, 
+    "bits": 455264686, 
+    "algo": "sha256d", 
+    "height": 317
+  }, 
+  "316": {
+    "timestamp": 1531491569, 
+    "bits": 455451732, 
+    "algo": "sha256d", 
+    "height": 316
+  }, 
+  "315": {
+    "timestamp": 1531491562, 
+    "bits": 455654217, 
+    "algo": "sha256d", 
+    "height": 315
+  }, 
+  "314": {
+    "timestamp": 1531491557, 
+    "bits": 455873345, 
+    "algo": "sha256d", 
+    "height": 314
+  }, 
+  "440068": {
+    "timestamp": 1545330920, 
+    "bits": 486667786, 
+    "algo": "neoscrypt", 
+    "height": 440068
+  }, 
+  "440069": {
+    "timestamp": 1545330929, 
+    "bits": 486674520, 
+    "algo": "neoscrypt", 
+    "height": 440069
+  }, 
+  "861": {
+    "timestamp": 1531503227, 
+    "bits": 486580925, 
+    "algo": "neoscrypt", 
+    "height": 861
+  }, 
+  "921": {
+    "timestamp": 1531505142, 
+    "bits": 486582583, 
+    "algo": "neoscrypt", 
+    "height": 921
+  }, 
+  "440064": {
+    "timestamp": 1545330765, 
+    "bits": 486657562, 
+    "algo": "neoscrypt", 
+    "height": 440064
+  }, 
+  "440065": {
+    "timestamp": 1545330831, 
+    "bits": 404716263, 
+    "algo": "sha256d", 
+    "height": 440065
+  }, 
+  "440066": {
+    "timestamp": 1545330855, 
+    "bits": 486661684, 
+    "algo": "neoscrypt", 
+    "height": 440066
+  }, 
+  "440067": {
+    "timestamp": 1545330872, 
+    "bits": 404753145, 
+    "algo": "sha256d", 
+    "height": 440067
+  }, 
+  "440060": {
+    "timestamp": 1545330685, 
+    "bits": 486672310, 
+    "algo": "neoscrypt", 
+    "height": 440060
+  }, 
+  "496": {
+    "timestamp": 1531493292, 
+    "bits": 419996830, 
+    "algo": "sha256d", 
+    "height": 496
+  }, 
+  "440062": {
+    "timestamp": 1545330717, 
+    "bits": 486668898, 
+    "algo": "neoscrypt", 
+    "height": 440062
+  }, 
+  "440063": {
+    "timestamp": 1545330723, 
+    "bits": 486670942, 
+    "algo": "neoscrypt", 
+    "height": 440063
+  }, 
+  "832": {
+    "timestamp": 1531502294, 
+    "bits": 406561186, 
+    "algo": "sha256d", 
+    "height": 832
+  }, 
+  "833": {
+    "timestamp": 1531502332, 
+    "bits": 406565660, 
+    "algo": "sha256d", 
+    "height": 833
+  }, 
+  "830": {
+    "timestamp": 1531502140, 
+    "bits": 405876685, 
+    "algo": "sha256d", 
+    "height": 830
+  }, 
+  "497": {
+    "timestamp": 1531493300, 
+    "bits": 419954061, 
+    "algo": "sha256d", 
+    "height": 497
+  }, 
+  "836": {
+    "timestamp": 1531502491, 
+    "bits": 406724516, 
+    "algo": "sha256d", 
+    "height": 836
+  }, 
+  "837": {
+    "timestamp": 1531502525, 
+    "bits": 406766406, 
+    "algo": "sha256d", 
+    "height": 837
+  }, 
+  "834": {
+    "timestamp": 1531502434, 
+    "bits": 406611748, 
+    "algo": "sha256d", 
+    "height": 834
+  }, 
+  "835": {
+    "timestamp": 1531502456, 
+    "bits": 406719940, 
+    "algo": "sha256d", 
+    "height": 835
+  }, 
+  "838": {
+    "timestamp": 1531502553, 
+    "bits": 406731568, 
+    "algo": "sha256d", 
+    "height": 838
+  }, 
+  "839": {
+    "timestamp": 1531502602, 
+    "bits": 406739937, 
+    "algo": "sha256d", 
+    "height": 839
+  }, 
+  "440097": {
+    "timestamp": 1545331715, 
+    "bits": 486617470, 
+    "algo": "neoscrypt", 
+    "height": 440097
+  }, 
+  "808": {
+    "timestamp": 1531501462, 
+    "bits": 486582739, 
+    "algo": "neoscrypt", 
+    "height": 808
+  }, 
+  "3": {
+    "timestamp": 1531483312, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 3
+  }, 
+  "725": {
+    "timestamp": 1531498934, 
+    "bits": 406863210, 
+    "algo": "sha256d", 
+    "height": 725
+  }, 
+  "439989": {
+    "timestamp": 1545328576, 
+    "bits": 486615936, 
+    "algo": "neoscrypt", 
+    "height": 439989
+  }, 
+  "368": {
+    "timestamp": 1531492108, 
+    "bits": 453062786, 
+    "algo": "sha256d", 
+    "height": 368
+  }, 
+  "369": {
+    "timestamp": 1531492123, 
+    "bits": 486627213, 
+    "algo": "neoscrypt", 
+    "height": 369
+  }, 
+  "366": {
+    "timestamp": 1531492088, 
+    "bits": 453076046, 
+    "algo": "sha256d", 
+    "height": 366
+  }, 
+  "367": {
+    "timestamp": 1531492092, 
+    "bits": 453069155, 
+    "algo": "sha256d", 
+    "height": 367
+  }, 
+  "364": {
+    "timestamp": 1531492062, 
+    "bits": 453091564, 
+    "algo": "sha256d", 
+    "height": 364
+  }, 
+  "365": {
+    "timestamp": 1531492072, 
+    "bits": 453083500, 
+    "algo": "sha256d", 
+    "height": 365
+  }, 
+  "362": {
+    "timestamp": 1531492038, 
+    "bits": 453100286, 
+    "algo": "sha256d", 
+    "height": 362
+  }, 
+  "363": {
+    "timestamp": 1531492061, 
+    "bits": 486637271, 
+    "algo": "neoscrypt", 
+    "height": 363
+  }, 
+  "360": {
+    "timestamp": 1531492013, 
+    "bits": 453109720, 
+    "algo": "sha256d", 
+    "height": 360
+  }, 
+  "361": {
+    "timestamp": 1531492037, 
+    "bits": 486646541, 
+    "algo": "neoscrypt", 
+    "height": 361
+  }, 
+  "959": {
+    "timestamp": 1531506102, 
+    "bits": 406392837, 
+    "algo": "sha256d", 
+    "height": 959
+  }, 
+  "440093": {
+    "timestamp": 1545331594, 
+    "bits": 486629753, 
+    "algo": "neoscrypt", 
+    "height": 440093
+  }, 
+  "952": {
+    "timestamp": 1531505858, 
+    "bits": 477545855, 
+    "algo": "neoscrypt", 
+    "height": 952
+  }, 
+  "440092": {
+    "timestamp": 1545331538, 
+    "bits": 486625981, 
+    "algo": "neoscrypt", 
+    "height": 440092
+  }, 
+  "882": {
+    "timestamp": 1531503877, 
+    "bits": 477743313, 
+    "algo": "neoscrypt", 
+    "height": 882
+  }, 
+  "380": {
+    "timestamp": 1531492230, 
+    "bits": 453020388, 
+    "algo": "sha256d", 
+    "height": 380
+  }, 
+  "381": {
+    "timestamp": 1531492249, 
+    "bits": 453017704, 
+    "algo": "sha256d", 
+    "height": 381
+  }, 
+  "382": {
+    "timestamp": 1531492273, 
+    "bits": 443987599, 
+    "algo": "sha256d", 
+    "height": 382
+  }, 
+  "383": {
+    "timestamp": 1531492284, 
+    "bits": 443400171, 
+    "algo": "sha256d", 
+    "height": 383
+  }, 
+  "384": {
+    "timestamp": 1531492286, 
+    "bits": 442857056, 
+    "algo": "sha256d", 
+    "height": 384
+  }, 
+  "385": {
+    "timestamp": 1531492293, 
+    "bits": 442354920, 
+    "algo": "sha256d", 
+    "height": 385
+  }, 
+  "386": {
+    "timestamp": 1531492330, 
+    "bits": 441890681, 
+    "algo": "sha256d", 
+    "height": 386
+  }, 
+  "387": {
+    "timestamp": 1531492331, 
+    "bits": 441461489, 
+    "algo": "sha256d", 
+    "height": 387
+  }, 
+  "388": {
+    "timestamp": 1531492336, 
+    "bits": 441064707, 
+    "algo": "sha256d", 
+    "height": 388
+  }, 
+  "389": {
+    "timestamp": 1531492357, 
+    "bits": 440697894, 
+    "algo": "sha256d", 
+    "height": 389
+  }, 
+  "784": {
+    "timestamp": 1531500772, 
+    "bits": 405605265, 
+    "algo": "sha256d", 
+    "height": 784
+  }, 
+  "785": {
+    "timestamp": 1531500819, 
+    "bits": 405642035, 
+    "algo": "sha256d", 
+    "height": 785
+  }, 
+  "786": {
+    "timestamp": 1531500847, 
+    "bits": 405661023, 
+    "algo": "sha256d", 
+    "height": 786
+  }, 
+  "787": {
+    "timestamp": 1531500899, 
+    "bits": 405542484, 
+    "algo": "sha256d", 
+    "height": 787
+  }, 
+  "780": {
+    "timestamp": 1531500610, 
+    "bits": 405575839, 
+    "algo": "sha256d", 
+    "height": 780
+  }, 
+  "781": {
+    "timestamp": 1531500658, 
+    "bits": 405660700, 
+    "algo": "sha256d", 
+    "height": 781
+  }, 
+  "782": {
+    "timestamp": 1531500698, 
+    "bits": 405639300, 
+    "algo": "sha256d", 
+    "height": 782
+  }, 
+  "783": {
+    "timestamp": 1531500766, 
+    "bits": 477709375, 
+    "algo": "neoscrypt", 
+    "height": 783
+  }, 
+  "788": {
+    "timestamp": 1531500986, 
+    "bits": 405564667, 
+    "algo": "sha256d", 
+    "height": 788
+  }, 
+  "789": {
+    "timestamp": 1531501020, 
+    "bits": 405508245, 
+    "algo": "sha256d", 
+    "height": 789
+  }, 
+  "860": {
+    "timestamp": 1531503192, 
+    "bits": 486581732, 
+    "algo": "neoscrypt", 
+    "height": 860
+  }, 
+  "605": {
+    "timestamp": 1531495395, 
+    "bits": 408784579, 
+    "algo": "sha256d", 
+    "height": 605
+  }, 
+  "579": {
+    "timestamp": 1531494815, 
+    "bits": 486618767, 
+    "algo": "neoscrypt", 
+    "height": 579
+  }, 
+  "578": {
+    "timestamp": 1531494788, 
+    "bits": 409787045, 
+    "algo": "sha256d", 
+    "height": 578
+  }, 
+  "604": {
+    "timestamp": 1531495368, 
+    "bits": 408697942, 
+    "algo": "sha256d", 
+    "height": 604
+  }, 
+  "573": {
+    "timestamp": 1531494623, 
+    "bits": 419464178, 
+    "algo": "sha256d", 
+    "height": 573
+  }, 
+  "572": {
+    "timestamp": 1531494615, 
+    "bits": 419464764, 
+    "algo": "sha256d", 
+    "height": 572
+  }, 
+  "571": {
+    "timestamp": 1531494595, 
+    "bits": 486616313, 
+    "algo": "neoscrypt", 
+    "height": 571
+  }, 
+  "570": {
+    "timestamp": 1531494540, 
+    "bits": 419465818, 
+    "algo": "sha256d", 
+    "height": 570
+  }, 
+  "577": {
+    "timestamp": 1531494754, 
+    "bits": 409978349, 
+    "algo": "sha256d", 
+    "height": 577
+  }, 
+  "576": {
+    "timestamp": 1531494705, 
+    "bits": 410106996, 
+    "algo": "sha256d", 
+    "height": 576
+  }, 
+  "575": {
+    "timestamp": 1531494688, 
+    "bits": 486617548, 
+    "algo": "neoscrypt", 
+    "height": 575
+  }, 
+  "574": {
+    "timestamp": 1531494661, 
+    "bits": 410471423, 
+    "algo": "sha256d", 
+    "height": 574
+  }, 
+  "60": {
+    "timestamp": 1531488099, 
+    "bits": 503627714, 
+    "algo": "neoscrypt", 
+    "height": 60
+  }, 
+  "61": {
+    "timestamp": 1531488103, 
+    "bits": 503617752, 
+    "algo": "neoscrypt", 
+    "height": 61
+  }, 
+  "258": {
+    "timestamp": 1531491066, 
+    "bits": 470255131, 
+    "algo": "sha256d", 
+    "height": 258
+  }, 
+  "259": {
+    "timestamp": 1531491069, 
+    "bits": 470218946, 
+    "algo": "sha256d", 
+    "height": 259
+  }, 
+  "64": {
+    "timestamp": 1531488113, 
+    "bits": 503587050, 
+    "algo": "neoscrypt", 
+    "height": 64
+  }, 
+  "65": {
+    "timestamp": 1531488114, 
+    "bits": 503576539, 
+    "algo": "neoscrypt", 
+    "height": 65
+  }, 
+  "66": {
+    "timestamp": 1531488115, 
+    "bits": 503565885, 
+    "algo": "neoscrypt", 
+    "height": 66
+  }, 
+  "67": {
+    "timestamp": 1531488116, 
+    "bits": 503555087, 
+    "algo": "neoscrypt", 
+    "height": 67
+  }, 
+  "252": {
+    "timestamp": 1531491002, 
+    "bits": 470470556, 
+    "algo": "sha256d", 
+    "height": 252
+  }, 
+  "69": {
+    "timestamp": 1531488125, 
+    "bits": 503533052, 
+    "algo": "neoscrypt", 
+    "height": 69
+  }, 
+  "250": {
+    "timestamp": 1531490991, 
+    "bits": 486643800, 
+    "algo": "neoscrypt", 
+    "height": 250
+  }, 
+  "251": {
+    "timestamp": 1531490996, 
+    "bits": 470521073, 
+    "algo": "sha256d", 
+    "height": 251
+  }, 
+  "256": {
+    "timestamp": 1531491040, 
+    "bits": 486641047, 
+    "algo": "neoscrypt", 
+    "height": 256
+  }, 
+  "257": {
+    "timestamp": 1531491053, 
+    "bits": 470293553, 
+    "algo": "sha256d", 
+    "height": 257
+  }, 
+  "254": {
+    "timestamp": 1531491027, 
+    "bits": 470377303, 
+    "algo": "sha256d", 
+    "height": 254
+  }, 
+  "255": {
+    "timestamp": 1531491031, 
+    "bits": 470334262, 
+    "algo": "sha256d", 
+    "height": 255
+  }, 
+  "439994": {
+    "timestamp": 1545328672, 
+    "bits": 408661446, 
+    "algo": "sha256d", 
+    "height": 439994
+  }, 
+  "603": {
+    "timestamp": 1531495362, 
+    "bits": 486594125, 
+    "algo": "neoscrypt", 
+    "height": 603
+  }, 
+  "439995": {
+    "timestamp": 1545328682, 
+    "bits": 486617158, 
+    "algo": "neoscrypt", 
+    "height": 439995
+  }, 
+  "602": {
+    "timestamp": 1531495331, 
+    "bits": 486596941, 
+    "algo": "neoscrypt", 
+    "height": 602
+  }, 
+  "939": {
+    "timestamp": 1531505576, 
+    "bits": 486582124, 
+    "algo": "neoscrypt", 
+    "height": 939
+  }, 
+  "731": {
+    "timestamp": 1531499129, 
+    "bits": 406787455, 
+    "algo": "sha256d", 
+    "height": 731
+  }, 
+  "730": {
+    "timestamp": 1531499115, 
+    "bits": 486577161, 
+    "algo": "neoscrypt", 
+    "height": 730
+  }, 
+  "733": {
+    "timestamp": 1531499154, 
+    "bits": 486575994, 
+    "algo": "neoscrypt", 
+    "height": 733
+  }, 
+  "732": {
+    "timestamp": 1531499141, 
+    "bits": 486576721, 
+    "algo": "neoscrypt", 
+    "height": 732
+  }, 
+  "735": {
+    "timestamp": 1531499227, 
+    "bits": 486576519, 
+    "algo": "neoscrypt", 
+    "height": 735
+  }, 
+  "734": {
+    "timestamp": 1531499209, 
+    "bits": 486575709, 
+    "algo": "neoscrypt", 
+    "height": 734
+  }, 
+  "508": {
+    "timestamp": 1531493458, 
+    "bits": 486704957, 
+    "algo": "neoscrypt", 
+    "height": 508
+  }, 
+  "509": {
+    "timestamp": 1531493470, 
+    "bits": 419757342, 
+    "algo": "sha256d", 
+    "height": 509
+  }, 
+  "506": {
+    "timestamp": 1531493440, 
+    "bits": 486707672, 
+    "algo": "neoscrypt", 
+    "height": 506
+  }, 
+  "507": {
+    "timestamp": 1531493447, 
+    "bits": 486703429, 
+    "algo": "neoscrypt", 
+    "height": 507
+  }, 
+  "504": {
+    "timestamp": 1531493414, 
+    "bits": 419784044, 
+    "algo": "sha256d", 
+    "height": 504
+  }, 
+  "505": {
+    "timestamp": 1531493433, 
+    "bits": 486700847, 
+    "algo": "neoscrypt", 
+    "height": 505
+  }, 
+  "502": {
+    "timestamp": 1531493369, 
+    "bits": 419844171, 
+    "algo": "sha256d", 
+    "height": 502
+  }, 
+  "503": {
+    "timestamp": 1531493399, 
+    "bits": 419812928, 
+    "algo": "sha256d", 
+    "height": 503
+  }, 
+  "500": {
+    "timestamp": 1531493355, 
+    "bits": 419914520, 
+    "algo": "sha256d", 
+    "height": 500
+  }, 
+  "501": {
+    "timestamp": 1531493361, 
+    "bits": 419877966, 
+    "algo": "sha256d", 
+    "height": 501
+  }, 
+  "630": {
+    "timestamp": 1531496107, 
+    "bits": 486582212, 
+    "algo": "neoscrypt", 
+    "height": 630
+  }, 
+  "631": {
+    "timestamp": 1531496183, 
+    "bits": 407960866, 
+    "algo": "sha256d", 
+    "height": 631
+  }, 
+  "632": {
+    "timestamp": 1531496239, 
+    "bits": 407964650, 
+    "algo": "sha256d", 
+    "height": 632
+  }, 
+  "633": {
+    "timestamp": 1531496250, 
+    "bits": 407806032, 
+    "algo": "sha256d", 
+    "height": 633
+  }, 
+  "469": {
+    "timestamp": 1531493060, 
+    "bits": 486677330, 
+    "algo": "neoscrypt", 
+    "height": 469
+  }, 
+  "468": {
+    "timestamp": 1531493053, 
+    "bits": 422376002, 
+    "algo": "sha256d", 
+    "height": 468
+  }, 
+  "636": {
+    "timestamp": 1531496317, 
+    "bits": 407294801, 
+    "algo": "sha256d", 
+    "height": 636
+  }, 
+  "637": {
+    "timestamp": 1531496371, 
+    "bits": 407094176, 
+    "algo": "sha256d", 
+    "height": 637
+  }, 
+  "465": {
+    "timestamp": 1531493035, 
+    "bits": 423158296, 
+    "algo": "sha256d", 
+    "height": 465
+  }, 
+  "464": {
+    "timestamp": 1531493027, 
+    "bits": 423462769, 
+    "algo": "sha256d", 
+    "height": 464
+  }, 
+  "467": {
+    "timestamp": 1531493048, 
+    "bits": 422616582, 
+    "algo": "sha256d", 
+    "height": 467
+  }, 
+  "466": {
+    "timestamp": 1531493038, 
+    "bits": 422876811, 
+    "algo": "sha256d", 
+    "height": 466
+  }, 
+  "461": {
+    "timestamp": 1531492983, 
+    "bits": 424533684, 
+    "algo": "sha256d", 
+    "height": 461
+  }, 
+  "460": {
+    "timestamp": 1531492981, 
+    "bits": 424950491, 
+    "algo": "sha256d", 
+    "height": 460
+  }, 
+  "463": {
+    "timestamp": 1531493014, 
+    "bits": 423792110, 
+    "algo": "sha256d", 
+    "height": 463
+  }, 
+  "462": {
+    "timestamp": 1531493012, 
+    "bits": 424148348, 
+    "algo": "sha256d", 
+    "height": 462
+  }, 
+  "901": {
+    "timestamp": 1531504510, 
+    "bits": 486572528, 
+    "algo": "neoscrypt", 
+    "height": 901
+  }, 
+  "168": {
+    "timestamp": 1531490212, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 168
+  }, 
+  "169": {
+    "timestamp": 1531490214, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 169
+  }, 
+  "164": {
+    "timestamp": 1531490136, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 164
+  }, 
+  "165": {
+    "timestamp": 1531490140, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 165
+  }, 
+  "166": {
+    "timestamp": 1531490175, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 166
+  }, 
+  "167": {
+    "timestamp": 1531490180, 
+    "bits": 486633103, 
+    "algo": "neoscrypt", 
+    "height": 167
+  }, 
+  "160": {
+    "timestamp": 1531489926, 
+    "bits": 486668339, 
+    "algo": "neoscrypt", 
+    "height": 160
+  }, 
+  "161": {
+    "timestamp": 1531489930, 
+    "bits": 486658112, 
+    "algo": "neoscrypt", 
+    "height": 161
+  }, 
+  "162": {
+    "timestamp": 1531489959, 
+    "bits": 486642408, 
+    "algo": "neoscrypt", 
+    "height": 162
+  }, 
+  "163": {
+    "timestamp": 1531489979, 
+    "bits": 486637106, 
+    "algo": "neoscrypt", 
+    "height": 163
+  }, 
+  "964": {
+    "timestamp": 1531506270, 
+    "bits": 406479413, 
+    "algo": "sha256d", 
+    "height": 964
+  }, 
+  "965": {
+    "timestamp": 1531506370, 
+    "bits": 406557852, 
+    "algo": "sha256d", 
+    "height": 965
+  }, 
+  "966": {
+    "timestamp": 1531506380, 
+    "bits": 406779355, 
+    "algo": "sha256d", 
+    "height": 966
+  }, 
+  "967": {
+    "timestamp": 1531506418, 
+    "bits": 474465006, 
+    "algo": "neoscrypt", 
+    "height": 967
+  }, 
+  "960": {
+    "timestamp": 1531506112, 
+    "bits": 406490257, 
+    "algo": "sha256d", 
+    "height": 960
+  }, 
+  "961": {
+    "timestamp": 1531506158, 
+    "bits": 474341470, 
+    "algo": "neoscrypt", 
+    "height": 961
+  }, 
+  "962": {
+    "timestamp": 1531506172, 
+    "bits": 406411100, 
+    "algo": "sha256d", 
+    "height": 962
+  }, 
+  "963": {
+    "timestamp": 1531506231, 
+    "bits": 474493487, 
+    "algo": "neoscrypt", 
+    "height": 963
+  }, 
+  "439998": {
+    "timestamp": 1545328738, 
+    "bits": 408745430, 
+    "algo": "sha256d", 
+    "height": 439998
+  }, 
+  "968": {
+    "timestamp": 1531506453, 
+    "bits": 406754431, 
+    "algo": "sha256d", 
+    "height": 968
+  }, 
+  "969": {
+    "timestamp": 1531506485, 
+    "bits": 406879707, 
+    "algo": "sha256d", 
+    "height": 969
+  }, 
+  "439949": {
+    "timestamp": 1545327336, 
+    "bits": 486618922, 
+    "algo": "neoscrypt", 
+    "height": 439949
+  }, 
+  "936": {
+    "timestamp": 1531505530, 
+    "bits": 405800148, 
+    "algo": "sha256d", 
+    "height": 936
+  }, 
+  "935": {
+    "timestamp": 1531505510, 
+    "bits": 486585155, 
+    "algo": "neoscrypt", 
+    "height": 935
+  }, 
+  "934": {
+    "timestamp": 1531505469, 
+    "bits": 405737430, 
+    "algo": "sha256d", 
+    "height": 934
+  }, 
+  "908": {
+    "timestamp": 1531504630, 
+    "bits": 486580449, 
+    "algo": "neoscrypt", 
+    "height": 908
+  }, 
+  "909": {
+    "timestamp": 1531504644, 
+    "bits": 405604013, 
+    "algo": "sha256d", 
+    "height": 909
+  }, 
+  "439953": {
+    "timestamp": 1545327453, 
+    "bits": 486625967, 
+    "algo": "neoscrypt", 
+    "height": 439953
+  }, 
+  "439958": {
+    "timestamp": 1545327588, 
+    "bits": 486631279, 
+    "algo": "neoscrypt", 
+    "height": 439958
+  }, 
+  "439933": {
+    "timestamp": 1545326691, 
+    "bits": 408416234, 
+    "algo": "sha256d", 
+    "height": 439933
+  }, 
+  "440096": {
+    "timestamp": 1545331643, 
+    "bits": 404994865, 
+    "algo": "sha256d", 
+    "height": 440096
+  }, 
+  "600": {
+    "timestamp": 1531495254, 
+    "bits": 409382322, 
+    "algo": "sha256d", 
+    "height": 600
+  }, 
+  "878": {
+    "timestamp": 1531503732, 
+    "bits": 486582770, 
+    "algo": "neoscrypt", 
+    "height": 878
+  }, 
+  "879": {
+    "timestamp": 1531503769, 
+    "bits": 486584515, 
+    "algo": "neoscrypt", 
+    "height": 879
+  }, 
+  "876": {
+    "timestamp": 1531503675, 
+    "bits": 486578906, 
+    "algo": "neoscrypt", 
+    "height": 876
+  }, 
+  "877": {
+    "timestamp": 1531503682, 
+    "bits": 406247410, 
+    "algo": "sha256d", 
+    "height": 877
+  }, 
+  "874": {
+    "timestamp": 1531503597, 
+    "bits": 406256006, 
+    "algo": "sha256d", 
+    "height": 874
+  }, 
+  "875": {
+    "timestamp": 1531503631, 
+    "bits": 406268611, 
+    "algo": "sha256d", 
+    "height": 875
+  }, 
+  "872": {
+    "timestamp": 1531503548, 
+    "bits": 407022074, 
+    "algo": "sha256d", 
+    "height": 872
+  }, 
+  "873": {
+    "timestamp": 1531503571, 
+    "bits": 406564413, 
+    "algo": "sha256d", 
+    "height": 873
+  }, 
+  "870": {
+    "timestamp": 1531503532, 
+    "bits": 486576403, 
+    "algo": "neoscrypt", 
+    "height": 870
+  }, 
+  "871": {
+    "timestamp": 1531503546, 
+    "bits": 486579034, 
+    "algo": "neoscrypt", 
+    "height": 871
+  }, 
+  "9": {
+    "timestamp": 1531483963, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 9
+  }, 
+  "439969": {
+    "timestamp": 1545327949, 
+    "bits": 486636742, 
+    "algo": "neoscrypt", 
+    "height": 439969
+  }, 
+  "439991": {
+    "timestamp": 1545328603, 
+    "bits": 408911629, 
+    "algo": "sha256d", 
+    "height": 439991
+  }, 
+  "439968": {
+    "timestamp": 1545327924, 
+    "bits": 408364733, 
+    "algo": "sha256d", 
+    "height": 439968
+  }, 
+  "890": {
+    "timestamp": 1531504119, 
+    "bits": 478004261, 
+    "algo": "neoscrypt", 
+    "height": 890
+  }, 
+  "891": {
+    "timestamp": 1531504121, 
+    "bits": 406569966, 
+    "algo": "sha256d", 
+    "height": 891
+  }, 
+  "892": {
+    "timestamp": 1531504176, 
+    "bits": 478114865, 
+    "algo": "neoscrypt", 
+    "height": 892
+  }, 
+  "893": {
+    "timestamp": 1531504206, 
+    "bits": 406513583, 
+    "algo": "sha256d", 
+    "height": 893
+  }, 
+  "894": {
+    "timestamp": 1531504243, 
+    "bits": 406660020, 
+    "algo": "sha256d", 
+    "height": 894
+  }, 
+  "647": {
+    "timestamp": 1531496526, 
+    "bits": 486583018, 
+    "algo": "neoscrypt", 
+    "height": 647
+  }, 
+  "896": {
+    "timestamp": 1531504339, 
+    "bits": 406525171, 
+    "algo": "sha256d", 
+    "height": 896
+  }, 
+  "897": {
+    "timestamp": 1531504382, 
+    "bits": 406627226, 
+    "algo": "sha256d", 
+    "height": 897
+  }, 
+  "898": {
+    "timestamp": 1531504405, 
+    "bits": 406685921, 
+    "algo": "sha256d", 
+    "height": 898
+  }, 
+  "899": {
+    "timestamp": 1531504448, 
+    "bits": 406654625, 
+    "algo": "sha256d", 
+    "height": 899
+  }, 
+  "646": {
+    "timestamp": 1531496515, 
+    "bits": 486583145, 
+    "algo": "neoscrypt", 
+    "height": 646
+  }, 
+  "440037": {
+    "timestamp": 1545329931, 
+    "bits": 486653650, 
+    "algo": "neoscrypt", 
+    "height": 440037
+  }, 
+  "649": {
+    "timestamp": 1531496552, 
+    "bits": 407184807, 
+    "algo": "sha256d", 
+    "height": 649
+  }, 
+  "440035": {
+    "timestamp": 1545329853, 
+    "bits": 486651716, 
+    "algo": "neoscrypt", 
+    "height": 440035
+  }, 
+  "439931": {
+    "timestamp": 1545326660, 
+    "bits": 408418379, 
+    "algo": "sha256d", 
+    "height": 439931
+  }, 
+  "440033": {
+    "timestamp": 1545329793, 
+    "bits": 405315753, 
+    "algo": "sha256d", 
+    "height": 440033
+  }, 
+  "440032": {
+    "timestamp": 1545329784, 
+    "bits": 486645624, 
+    "algo": "neoscrypt", 
+    "height": 440032
+  }, 
+  "440031": {
+    "timestamp": 1545329772, 
+    "bits": 486634634, 
+    "algo": "neoscrypt", 
+    "height": 440031
+  }, 
+  "648": {
+    "timestamp": 1531496543, 
+    "bits": 486582134, 
+    "algo": "neoscrypt", 
+    "height": 648
+  }, 
+  "439967": {
+    "timestamp": 1545327890, 
+    "bits": 408234939, 
+    "algo": "sha256d", 
+    "height": 439967
+  }, 
+  "440039": {
+    "timestamp": 1545330018, 
+    "bits": 486651819, 
+    "algo": "neoscrypt", 
+    "height": 440039
+  }, 
+  "440038": {
+    "timestamp": 1545329975, 
+    "bits": 486653122, 
+    "algo": "neoscrypt", 
+    "height": 440038
+  }, 
+  "439966": {
+    "timestamp": 1545327851, 
+    "bits": 486639638, 
+    "algo": "neoscrypt", 
+    "height": 439966
+  }, 
+  "439934": {
+    "timestamp": 1545326753, 
+    "bits": 408227116, 
+    "algo": "sha256d", 
+    "height": 439934
+  }, 
+  "439961": {
+    "timestamp": 1545327656, 
+    "bits": 408549434, 
+    "algo": "sha256d", 
+    "height": 439961
+  }, 
+  "439935": {
+    "timestamp": 1545326848, 
+    "bits": 408241253, 
+    "algo": "sha256d", 
+    "height": 439935
+  }, 
+  "439960": {
+    "timestamp": 1545327628, 
+    "bits": 408313928, 
+    "algo": "sha256d", 
+    "height": 439960
+  }, 
+  "357": {
+    "timestamp": 1531491969, 
+    "bits": 486647020, 
+    "algo": "neoscrypt", 
+    "height": 357
+  }, 
+  "356": {
+    "timestamp": 1531491955, 
+    "bits": 453142891, 
+    "algo": "sha256d", 
+    "height": 356
+  }, 
+  "355": {
+    "timestamp": 1531491938, 
+    "bits": 453155795, 
+    "algo": "sha256d", 
+    "height": 355
+  }, 
+  "354": {
+    "timestamp": 1531491930, 
+    "bits": 453169749, 
+    "algo": "sha256d", 
+    "height": 354
+  }, 
+  "353": {
+    "timestamp": 1531491924, 
+    "bits": 453184839, 
+    "algo": "sha256d", 
+    "height": 353
+  }, 
+  "352": {
+    "timestamp": 1531491922, 
+    "bits": 453201159, 
+    "algo": "sha256d", 
+    "height": 352
+  }, 
+  "351": {
+    "timestamp": 1531491904, 
+    "bits": 453218810, 
+    "algo": "sha256d", 
+    "height": 351
+  }, 
+  "350": {
+    "timestamp": 1531491901, 
+    "bits": 453237901, 
+    "algo": "sha256d", 
+    "height": 350
+  }, 
+  "803": {
+    "timestamp": 1531501338, 
+    "bits": 486583258, 
+    "algo": "neoscrypt", 
+    "height": 803
+  }, 
+  "802": {
+    "timestamp": 1531501329, 
+    "bits": 486582997, 
+    "algo": "neoscrypt", 
+    "height": 802
+  }, 
+  "801": {
+    "timestamp": 1531501314, 
+    "bits": 486583899, 
+    "algo": "neoscrypt", 
+    "height": 801
+  }, 
+  "800": {
+    "timestamp": 1531501302, 
+    "bits": 486583622, 
+    "algo": "neoscrypt", 
+    "height": 800
+  }, 
+  "807": {
+    "timestamp": 1531501442, 
+    "bits": 405791352, 
+    "algo": "sha256d", 
+    "height": 807
+  }, 
+  "806": {
+    "timestamp": 1531501392, 
+    "bits": 405366954, 
+    "algo": "sha256d", 
+    "height": 806
+  }, 
+  "359": {
+    "timestamp": 1531491992, 
+    "bits": 453119923, 
+    "algo": "sha256d", 
+    "height": 359
+  }, 
+  "358": {
+    "timestamp": 1531491971, 
+    "bits": 453130958, 
+    "algo": "sha256d", 
+    "height": 358
+  }, 
+  "216": {
+    "timestamp": 1531490690, 
+    "bits": 476567479, 
+    "algo": "sha256d", 
+    "height": 216
+  }, 
+  "217": {
+    "timestamp": 1531490704, 
+    "bits": 475752718, 
+    "algo": "sha256d", 
+    "height": 217
+  }, 
+  "214": {
+    "timestamp": 1531490669, 
+    "bits": 486572086, 
+    "algo": "sha256d", 
+    "height": 214
+  }, 
+  "215": {
+    "timestamp": 1531490682, 
+    "bits": 477371378, 
+    "algo": "sha256d", 
+    "height": 215
+  }, 
+  "212": {
+    "timestamp": 1531490663, 
+    "bits": 486578159, 
+    "algo": "sha256d", 
+    "height": 212
+  }, 
+  "213": {
+    "timestamp": 1531490665, 
+    "bits": 486575143, 
+    "algo": "sha256d", 
+    "height": 213
+  }, 
+  "210": {
+    "timestamp": 1531490633, 
+    "bits": 486584072, 
+    "algo": "sha256d", 
+    "height": 210
+  }, 
+  "211": {
+    "timestamp": 1531490660, 
+    "bits": 486581135, 
+    "algo": "sha256d", 
+    "height": 211
+  }, 
+  "762": {
+    "timestamp": 1531499957, 
+    "bits": 406014357, 
+    "algo": "sha256d", 
+    "height": 762
+  }, 
+  "763": {
+    "timestamp": 1531499980, 
+    "bits": 477988995, 
+    "algo": "neoscrypt", 
+    "height": 763
+  }, 
+  "760": {
+    "timestamp": 1531499921, 
+    "bits": 486572237, 
+    "algo": "neoscrypt", 
+    "height": 760
+  }, 
+  "761": {
+    "timestamp": 1531499936, 
+    "bits": 405874839, 
+    "algo": "sha256d", 
+    "height": 761
+  }, 
+  "766": {
+    "timestamp": 1531500084, 
+    "bits": 478080880, 
+    "algo": "neoscrypt", 
+    "height": 766
+  }, 
+  "767": {
+    "timestamp": 1531500112, 
+    "bits": 405929947, 
+    "algo": "sha256d", 
+    "height": 767
+  }, 
+  "218": {
+    "timestamp": 1531490710, 
+    "bits": 474926949, 
+    "algo": "sha256d", 
+    "height": 218
+  }, 
+  "219": {
+    "timestamp": 1531490719, 
+    "bits": 486644323, 
+    "algo": "neoscrypt", 
+    "height": 219
+  }, 
+  "957": {
+    "timestamp": 1531506039, 
+    "bits": 406006873, 
+    "algo": "sha256d", 
+    "height": 957
+  }, 
+  "956": {
+    "timestamp": 1531505980, 
+    "bits": 475066245, 
+    "algo": "neoscrypt", 
+    "height": 956
+  }, 
+  "439918": {
+    "timestamp": 1545326217, 
+    "bits": 408099888, 
+    "algo": "sha256d", 
+    "height": 439918
+  }, 
+  "439963": {
+    "timestamp": 1545327700, 
+    "bits": 408226983, 
+    "algo": "sha256d", 
+    "height": 439963
+  }, 
+  "289": {
+    "timestamp": 1531491329, 
+    "bits": 469825692, 
+    "algo": "sha256d", 
+    "height": 289
+  }, 
+  "288": {
+    "timestamp": 1531491319, 
+    "bits": 469830941, 
+    "algo": "sha256d", 
+    "height": 288
+  }, 
+  "439996": {
+    "timestamp": 1545328694, 
+    "bits": 486614109, 
+    "algo": "neoscrypt", 
+    "height": 439996
+  }, 
+  "4": {
+    "timestamp": 1531483459, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 4
+  }, 
+  "281": {
+    "timestamp": 1531491282, 
+    "bits": 469871965, 
+    "algo": "sha256d", 
+    "height": 281
+  }, 
+  "280": {
+    "timestamp": 1531491262, 
+    "bits": 469880629, 
+    "algo": "sha256d", 
+    "height": 280
+  }, 
+  "283": {
+    "timestamp": 1531491288, 
+    "bits": 469856309, 
+    "algo": "sha256d", 
+    "height": 283
+  }, 
+  "282": {
+    "timestamp": 1531491285, 
+    "bits": 469863869, 
+    "algo": "sha256d", 
+    "height": 282
+  }, 
+  "285": {
+    "timestamp": 1531491297, 
+    "bits": 469842701, 
+    "algo": "sha256d", 
+    "height": 285
+  }, 
+  "284": {
+    "timestamp": 1531491295, 
+    "bits": 469849262, 
+    "algo": "sha256d", 
+    "height": 284
+  }, 
+  "287": {
+    "timestamp": 1531491314, 
+    "bits": 469836603, 
+    "algo": "sha256d", 
+    "height": 287
+  }, 
+  "286": {
+    "timestamp": 1531491313, 
+    "bits": 486639556, 
+    "algo": "neoscrypt", 
+    "height": 286
+  }, 
+  "678": {
+    "timestamp": 1531497591, 
+    "bits": 406545157, 
+    "algo": "sha256d", 
+    "height": 678
+  }, 
+  "679": {
+    "timestamp": 1531497650, 
+    "bits": 406683718, 
+    "algo": "sha256d", 
+    "height": 679
+  }, 
+  "674": {
+    "timestamp": 1531497447, 
+    "bits": 406764040, 
+    "algo": "sha256d", 
+    "height": 674
+  }, 
+  "675": {
+    "timestamp": 1531497473, 
+    "bits": 406928499, 
+    "algo": "sha256d", 
+    "height": 675
+  }, 
+  "676": {
+    "timestamp": 1531497516, 
+    "bits": 406642283, 
+    "algo": "sha256d", 
+    "height": 676
+  }, 
+  "677": {
+    "timestamp": 1531497553, 
+    "bits": 486583165, 
+    "algo": "neoscrypt", 
+    "height": 677
+  }, 
+  "670": {
+    "timestamp": 1531497315, 
+    "bits": 406846176, 
+    "algo": "sha256d", 
+    "height": 670
+  }, 
+  "671": {
+    "timestamp": 1531497341, 
+    "bits": 406869854, 
+    "algo": "sha256d", 
+    "height": 671
+  }, 
+  "672": {
+    "timestamp": 1531497410, 
+    "bits": 486584984, 
+    "algo": "neoscrypt", 
+    "height": 672
+  }, 
+  "673": {
+    "timestamp": 1531497443, 
+    "bits": 486586953, 
+    "algo": "neoscrypt", 
+    "height": 673
+  }, 
+  "263": {
+    "timestamp": 1531491126, 
+    "bits": 470095481, 
+    "algo": "sha256d", 
+    "height": 263
+  }, 
+  "262": {
+    "timestamp": 1531491097, 
+    "bits": 470123275, 
+    "algo": "sha256d", 
+    "height": 262
+  }, 
+  "261": {
+    "timestamp": 1531491090, 
+    "bits": 470153076, 
+    "algo": "sha256d", 
+    "height": 261
+  }, 
+  "260": {
+    "timestamp": 1531491071, 
+    "bits": 470184947, 
+    "algo": "sha256d", 
+    "height": 260
+  }, 
+  "267": {
+    "timestamp": 1531491155, 
+    "bits": 470023447, 
+    "algo": "sha256d", 
+    "height": 267
+  }, 
+  "266": {
+    "timestamp": 1531491144, 
+    "bits": 486640518, 
+    "algo": "neoscrypt", 
+    "height": 266
+  }, 
+  "265": {
+    "timestamp": 1531491133, 
+    "bits": 470045639, 
+    "algo": "sha256d", 
+    "height": 265
+  }, 
+  "264": {
+    "timestamp": 1531491130, 
+    "bits": 470069625, 
+    "algo": "sha256d", 
+    "height": 264
+  }, 
+  "269": {
+    "timestamp": 1531491163, 
+    "bits": 469984124, 
+    "algo": "sha256d", 
+    "height": 269
+  }, 
+  "268": {
+    "timestamp": 1531491158, 
+    "bits": 470002969, 
+    "algo": "sha256d", 
+    "height": 268
+  }, 
+  "701": {
+    "timestamp": 1531498260, 
+    "bits": 406999604, 
+    "algo": "sha256d", 
+    "height": 701
+  }, 
+  "439909": {
+    "timestamp": 1545325865, 
+    "bits": 486593635, 
+    "algo": "neoscrypt", 
+    "height": 439909
+  }, 
+  "439908": {
+    "timestamp": 1545325828, 
+    "bits": 407873039, 
+    "algo": "sha256d", 
+    "height": 439908
+  }, 
+  "59": {
+    "timestamp": 1531488096, 
+    "bits": 503637545, 
+    "algo": "neoscrypt", 
+    "height": 59
+  }, 
+  "58": {
+    "timestamp": 1531488094, 
+    "bits": 503647363, 
+    "algo": "neoscrypt", 
+    "height": 58
+  }, 
+  "55": {
+    "timestamp": 1531488092, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 55
+  }, 
+  "54": {
+    "timestamp": 1531488091, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 54
+  }, 
+  "57": {
+    "timestamp": 1531488093, 
+    "bits": 503666005, 
+    "algo": "neoscrypt", 
+    "height": 57
+  }, 
+  "56": {
+    "timestamp": 1531488093, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 56
+  }, 
+  "51": {
+    "timestamp": 1531488086, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 51
+  }, 
+  "50": {
+    "timestamp": 1531488086, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 50
+  }, 
+  "53": {
+    "timestamp": 1531488090, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 53
+  }, 
+  "52": {
+    "timestamp": 1531488087, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 52
+  }, 
+  "537": {
+    "timestamp": 1531493883, 
+    "bits": 419530506, 
+    "algo": "sha256d", 
+    "height": 537
+  }, 
+  "536": {
+    "timestamp": 1531493857, 
+    "bits": 486638014, 
+    "algo": "neoscrypt", 
+    "height": 536
+  }, 
+  "535": {
+    "timestamp": 1531493849, 
+    "bits": 419530876, 
+    "algo": "sha256d", 
+    "height": 535
+  }, 
+  "63": {
+    "timestamp": 1531488109, 
+    "bits": 503597422, 
+    "algo": "neoscrypt", 
+    "height": 63
+  }, 
+  "533": {
+    "timestamp": 1531493798, 
+    "bits": 419531517, 
+    "algo": "sha256d", 
+    "height": 533
+  }, 
+  "532": {
+    "timestamp": 1531493790, 
+    "bits": 486676611, 
+    "algo": "neoscrypt", 
+    "height": 532
+  }, 
+  "531": {
+    "timestamp": 1531493749, 
+    "bits": 419539322, 
+    "algo": "sha256d", 
+    "height": 531
+  }, 
+  "530": {
+    "timestamp": 1531493745, 
+    "bits": 419548219, 
+    "algo": "sha256d", 
+    "height": 530
+  }, 
+  "439901": {
+    "timestamp": 1545325617, 
+    "bits": 486605363, 
+    "algo": "neoscrypt", 
+    "height": 439901
+  }, 
+  "539": {
+    "timestamp": 1531493897, 
+    "bits": 419527621, 
+    "algo": "sha256d", 
+    "height": 539
+  }, 
+  "538": {
+    "timestamp": 1531493894, 
+    "bits": 486622328, 
+    "algo": "neoscrypt", 
+    "height": 538
+  }, 
+  "987": {
+    "timestamp": 1531507067, 
+    "bits": 406744537, 
+    "algo": "sha256d", 
+    "height": 987
+  }, 
+  "775": {
+    "timestamp": 1531500414, 
+    "bits": 477621699, 
+    "algo": "neoscrypt", 
+    "height": 775
+  }, 
+  "988": {
+    "timestamp": 1531507110, 
+    "bits": 406275700, 
+    "algo": "sha256d", 
+    "height": 988
+  }, 
+  "989": {
+    "timestamp": 1531507135, 
+    "bits": 476505672, 
+    "algo": "neoscrypt", 
+    "height": 989
+  }, 
+  "774": {
+    "timestamp": 1531500382, 
+    "bits": 405988532, 
+    "algo": "sha256d", 
+    "height": 774
+  }, 
+  "982": {
+    "timestamp": 1531506900, 
+    "bits": 406703344, 
+    "algo": "sha256d", 
+    "height": 982
+  }, 
+  "983": {
+    "timestamp": 1531506936, 
+    "bits": 406726560, 
+    "algo": "sha256d", 
+    "height": 983
+  }, 
+  "980": {
+    "timestamp": 1531506803, 
+    "bits": 475723376, 
+    "algo": "neoscrypt", 
+    "height": 980
+  }, 
+  "981": {
+    "timestamp": 1531506858, 
+    "bits": 406426242, 
+    "algo": "sha256d", 
+    "height": 981
+  }, 
+  "986": {
+    "timestamp": 1531507058, 
+    "bits": 475568431, 
+    "algo": "neoscrypt", 
+    "height": 986
+  }, 
+  "777": {
+    "timestamp": 1531500468, 
+    "bits": 406003021, 
+    "algo": "sha256d", 
+    "height": 777
+  }, 
+  "984": {
+    "timestamp": 1531507025, 
+    "bits": 406738185, 
+    "algo": "sha256d", 
+    "height": 984
+  }, 
+  "985": {
+    "timestamp": 1531507053, 
+    "bits": 406785816, 
+    "algo": "sha256d", 
+    "height": 985
+  }, 
+  "115": {
+    "timestamp": 1531488921, 
+    "bits": 488988831, 
+    "algo": "neoscrypt", 
+    "height": 115
+  }, 
+  "114": {
+    "timestamp": 1531488909, 
+    "bits": 489081284, 
+    "algo": "neoscrypt", 
+    "height": 114
+  }, 
+  "117": {
+    "timestamp": 1531488940, 
+    "bits": 488689988, 
+    "algo": "neoscrypt", 
+    "height": 117
+  }, 
+  "116": {
+    "timestamp": 1531488933, 
+    "bits": 488853851, 
+    "algo": "neoscrypt", 
+    "height": 116
+  }, 
+  "111": {
+    "timestamp": 1531488829, 
+    "bits": 489482379, 
+    "algo": "neoscrypt", 
+    "height": 111
+  }, 
+  "110": {
+    "timestamp": 1531488821, 
+    "bits": 489833403, 
+    "algo": "neoscrypt", 
+    "height": 110
+  }, 
+  "113": {
+    "timestamp": 1531488866, 
+    "bits": 489275631, 
+    "algo": "neoscrypt", 
+    "height": 113
+  }, 
+  "112": {
+    "timestamp": 1531488862, 
+    "bits": 489314200, 
+    "algo": "neoscrypt", 
+    "height": 112
+  }, 
+  "771": {
+    "timestamp": 1531500279, 
+    "bits": 406010692, 
+    "algo": "sha256d", 
+    "height": 771
+  }, 
+  "439904": {
+    "timestamp": 1545325710, 
+    "bits": 486601237, 
+    "algo": "neoscrypt", 
+    "height": 439904
+  }, 
+  "119": {
+    "timestamp": 1531488963, 
+    "bits": 488455269, 
+    "algo": "neoscrypt", 
+    "height": 119
+  }, 
+  "118": {
+    "timestamp": 1531488947, 
+    "bits": 486801407, 
+    "algo": "sha256d", 
+    "height": 118
+  }, 
+  "770": {
+    "timestamp": 1531500217, 
+    "bits": 405968581, 
+    "algo": "sha256d", 
+    "height": 770
+  }, 
+  "439983": {
+    "timestamp": 1545328347, 
+    "bits": 486620568, 
+    "algo": "neoscrypt", 
+    "height": 439983
+  }, 
+  "773": {
+    "timestamp": 1531500347, 
+    "bits": 477660114, 
+    "algo": "neoscrypt", 
+    "height": 773
+  }, 
+  "772": {
+    "timestamp": 1531500309, 
+    "bits": 406040616, 
+    "algo": "sha256d", 
+    "height": 772
+  }, 
+  "953": {
+    "timestamp": 1531505877, 
+    "bits": 476929667, 
+    "algo": "neoscrypt", 
+    "height": 953
+  }, 
+  "429": {
+    "timestamp": 1531492720, 
+    "bits": 436434920, 
+    "algo": "sha256d", 
+    "height": 429
+  }, 
+  "428": {
+    "timestamp": 1531492708, 
+    "bits": 436453486, 
+    "algo": "sha256d", 
+    "height": 428
+  }, 
+  "534": {
+    "timestamp": 1531493828, 
+    "bits": 486654134, 
+    "algo": "neoscrypt", 
+    "height": 534
+  }, 
+  "919": {
+    "timestamp": 1531504951, 
+    "bits": 486579747, 
+    "algo": "neoscrypt", 
+    "height": 919
+  }, 
+  "918": {
+    "timestamp": 1531504928, 
+    "bits": 405795005, 
+    "algo": "sha256d", 
+    "height": 918
+  }, 
+  "439978": {
+    "timestamp": 1545328174, 
+    "bits": 486633076, 
+    "algo": "neoscrypt", 
+    "height": 439978
+  }, 
+  "439979": {
+    "timestamp": 1545328178, 
+    "bits": 407982450, 
+    "algo": "sha256d", 
+    "height": 439979
+  }, 
+  "421": {
+    "timestamp": 1531492663, 
+    "bits": 436601421, 
+    "algo": "sha256d", 
+    "height": 421
+  }, 
+  "420": {
+    "timestamp": 1531492653, 
+    "bits": 436633584, 
+    "algo": "sha256d", 
+    "height": 420
+  }, 
+  "423": {
+    "timestamp": 1531492670, 
+    "bits": 436544198, 
+    "algo": "sha256d", 
+    "height": 423
+  }, 
+  "422": {
+    "timestamp": 1531492667, 
+    "bits": 436571687, 
+    "algo": "sha256d", 
+    "height": 422
+  }, 
+  "425": {
+    "timestamp": 1531492686, 
+    "bits": 436495288, 
+    "algo": "sha256d", 
+    "height": 425
+  }, 
+  "424": {
+    "timestamp": 1531492682, 
+    "bits": 436518784, 
+    "algo": "sha256d", 
+    "height": 424
+  }, 
+  "427": {
+    "timestamp": 1531492704, 
+    "bits": 486645479, 
+    "algo": "neoscrypt", 
+    "height": 427
+  }, 
+  "426": {
+    "timestamp": 1531492692, 
+    "bits": 436473567, 
+    "algo": "sha256d", 
+    "height": 426
+  }, 
+  "308": {
+    "timestamp": 1531491509, 
+    "bits": 457265453, 
+    "algo": "sha256d", 
+    "height": 308
+  }, 
+  "309": {
+    "timestamp": 1531491512, 
+    "bits": 486649827, 
+    "algo": "neoscrypt", 
+    "height": 309
+  }, 
+  "439927": {
+    "timestamp": 1545326555, 
+    "bits": 486611736, 
+    "algo": "neoscrypt", 
+    "height": 439927
+  }, 
+  "855": {
+    "timestamp": 1531503081, 
+    "bits": 406166620, 
+    "algo": "sha256d", 
+    "height": 855
+  }, 
+  "300": {
+    "timestamp": 1531491444, 
+    "bits": 460369922, 
+    "algo": "sha256d", 
+    "height": 300
+  }, 
+  "301": {
+    "timestamp": 1531491461, 
+    "bits": 459815507, 
+    "algo": "sha256d", 
+    "height": 301
+  }, 
+  "302": {
+    "timestamp": 1531491468, 
+    "bits": 486645353, 
+    "algo": "neoscrypt", 
+    "height": 302
+  }, 
+  "303": {
+    "timestamp": 1531491472, 
+    "bits": 459303792, 
+    "algo": "sha256d", 
+    "height": 303
+  }, 
+  "304": {
+    "timestamp": 1531491475, 
+    "bits": 458831013, 
+    "algo": "sha256d", 
+    "height": 304
+  }, 
+  "305": {
+    "timestamp": 1531491493, 
+    "bits": 458393720, 
+    "algo": "sha256d", 
+    "height": 305
+  }, 
+  "306": {
+    "timestamp": 1531491499, 
+    "bits": 457988798, 
+    "algo": "sha256d", 
+    "height": 306
+  }, 
+  "307": {
+    "timestamp": 1531491503, 
+    "bits": 457613498, 
+    "algo": "sha256d", 
+    "height": 307
+  }, 
+  "895": {
+    "timestamp": 1531504256, 
+    "bits": 406532259, 
+    "algo": "sha256d", 
+    "height": 895
+  }, 
+  "825": {
+    "timestamp": 1531502028, 
+    "bits": 476220656, 
+    "algo": "neoscrypt", 
+    "height": 825
+  }, 
+  "440079": {
+    "timestamp": 1545331182, 
+    "bits": 486653976, 
+    "algo": "neoscrypt", 
+    "height": 440079
+  }, 
+  "440078": {
+    "timestamp": 1545331181, 
+    "bits": 486654966, 
+    "algo": "neoscrypt", 
+    "height": 440078
+  }, 
+  "439939": {
+    "timestamp": 1545326986, 
+    "bits": 486616313, 
+    "algo": "neoscrypt", 
+    "height": 439939
+  }, 
+  "824": {
+    "timestamp": 1531501983, 
+    "bits": 476562063, 
+    "algo": "neoscrypt", 
+    "height": 824
+  }, 
+  "440073": {
+    "timestamp": 1545331046, 
+    "bits": 486664687, 
+    "algo": "neoscrypt", 
+    "height": 440073
+  }, 
+  "440072": {
+    "timestamp": 1545330984, 
+    "bits": 486668196, 
+    "algo": "neoscrypt", 
+    "height": 440072
+  }, 
+  "440071": {
+    "timestamp": 1545330972, 
+    "bits": 486670857, 
+    "algo": "neoscrypt", 
+    "height": 440071
+  }, 
+  "440070": {
+    "timestamp": 1545330954, 
+    "bits": 486671610, 
+    "algo": "neoscrypt", 
+    "height": 440070
+  }, 
+  "440077": {
+    "timestamp": 1545331142, 
+    "bits": 486649854, 
+    "algo": "neoscrypt", 
+    "height": 440077
+  }, 
+  "827": {
+    "timestamp": 1531502063, 
+    "bits": 476103937, 
+    "algo": "neoscrypt", 
+    "height": 827
+  }, 
+  "440075": {
+    "timestamp": 1545331071, 
+    "bits": 486671483, 
+    "algo": "neoscrypt", 
+    "height": 440075
+  }, 
+  "440074": {
+    "timestamp": 1545331054, 
+    "bits": 486670923, 
+    "algo": "neoscrypt", 
+    "height": 440074
+  }, 
+  "847": {
+    "timestamp": 1531502857, 
+    "bits": 406349811, 
+    "algo": "sha256d", 
+    "height": 847
+  }, 
+  "846": {
+    "timestamp": 1531502845, 
+    "bits": 486579334, 
+    "algo": "neoscrypt", 
+    "height": 846
+  }, 
+  "845": {
+    "timestamp": 1531502820, 
+    "bits": 407051954, 
+    "algo": "sha256d", 
+    "height": 845
+  }, 
+  "826": {
+    "timestamp": 1531502034, 
+    "bits": 476349572, 
+    "algo": "neoscrypt", 
+    "height": 826
+  }, 
+  "843": {
+    "timestamp": 1531502804, 
+    "bits": 475720760, 
+    "algo": "neoscrypt", 
+    "height": 843
+  }, 
+  "842": {
+    "timestamp": 1531502729, 
+    "bits": 406881206, 
+    "algo": "sha256d", 
+    "height": 842
+  }, 
+  "841": {
+    "timestamp": 1531502704, 
+    "bits": 406872116, 
+    "algo": "sha256d", 
+    "height": 841
+  }, 
+  "840": {
+    "timestamp": 1531502640, 
+    "bits": 406843361, 
+    "algo": "sha256d", 
+    "height": 840
+  }, 
+  "821": {
+    "timestamp": 1531501834, 
+    "bits": 405916224, 
+    "algo": "sha256d", 
+    "height": 821
+  }, 
+  "853": {
+    "timestamp": 1531503049, 
+    "bits": 486581788, 
+    "algo": "neoscrypt", 
+    "height": 853
+  }, 
+  "849": {
+    "timestamp": 1531502912, 
+    "bits": 486580000, 
+    "algo": "neoscrypt", 
+    "height": 849
+  }, 
+  "820": {
+    "timestamp": 1531501797, 
+    "bits": 405848518, 
+    "algo": "sha256d", 
+    "height": 820
+  }, 
+  "823": {
+    "timestamp": 1531501966, 
+    "bits": 477588643, 
+    "algo": "neoscrypt", 
+    "height": 823
+  }, 
+  "822": {
+    "timestamp": 1531501884, 
+    "bits": 405930137, 
+    "algo": "sha256d", 
+    "height": 822
+  }, 
+  "954": {
+    "timestamp": 1531505887, 
+    "bits": 476132170, 
+    "algo": "neoscrypt", 
+    "height": 954
+  }, 
+  "439971": {
+    "timestamp": 1545327988, 
+    "bits": 486635729, 
+    "algo": "neoscrypt", 
+    "height": 439971
+  }, 
+  "440091": {
+    "timestamp": 1545331500, 
+    "bits": 404990989, 
+    "algo": "sha256d", 
+    "height": 440091
+  }, 
+  "440025": {
+    "timestamp": 1545329622, 
+    "bits": 486647437, 
+    "algo": "neoscrypt", 
+    "height": 440025
+  }, 
+  "440086": {
+    "timestamp": 1545331396, 
+    "bits": 486627130, 
+    "algo": "neoscrypt", 
+    "height": 440086
+  }, 
+  "440008": {
+    "timestamp": 1545329001, 
+    "bits": 486627133, 
+    "algo": "neoscrypt", 
+    "height": 440008
+  }, 
+  "440009": {
+    "timestamp": 1545329023, 
+    "bits": 405258765, 
+    "algo": "sha256d", 
+    "height": 440009
+  }, 
+  "440006": {
+    "timestamp": 1545328925, 
+    "bits": 486634246, 
+    "algo": "neoscrypt", 
+    "height": 440006
+  }, 
+  "439903": {
+    "timestamp": 1545325659, 
+    "bits": 407711184, 
+    "algo": "sha256d", 
+    "height": 439903
+  }, 
+  "440004": {
+    "timestamp": 1545328902, 
+    "bits": 486637088, 
+    "algo": "neoscrypt", 
+    "height": 440004
+  }, 
+  "440005": {
+    "timestamp": 1545328905, 
+    "bits": 405282219, 
+    "algo": "sha256d", 
+    "height": 440005
+  }, 
+  "440002": {
+    "timestamp": 1545328814, 
+    "bits": 405401958, 
+    "algo": "sha256d", 
+    "height": 440002
+  }, 
+  "440003": {
+    "timestamp": 1545328841, 
+    "bits": 486642029, 
+    "algo": "neoscrypt", 
+    "height": 440003
+  }, 
+  "440000": {
+    "timestamp": 1545328779, 
+    "bits": 486606899, 
+    "algo": "neoscrypt", 
+    "height": 440000
+  }, 
+  "440001": {
+    "timestamp": 1545328798, 
+    "bits": 405603695, 
+    "algo": "sha256d", 
+    "height": 440001
+  }, 
+  "440085": {
+    "timestamp": 1545331360, 
+    "bits": 486632998, 
+    "algo": "neoscrypt", 
+    "height": 440085
+  }, 
+  "439982": {
+    "timestamp": 1545328321, 
+    "bits": 408513370, 
+    "algo": "sha256d", 
+    "height": 439982
+  }, 
+  "440082": {
+    "timestamp": 1545331271, 
+    "bits": 486652344, 
+    "algo": "neoscrypt", 
+    "height": 440082
+  }, 
+  "440083": {
+    "timestamp": 1545331320, 
+    "bits": 486645909, 
+    "algo": "neoscrypt", 
+    "height": 440083
+  }, 
+  "568": {
+    "timestamp": 1531494507, 
+    "bits": 486619253, 
+    "algo": "neoscrypt", 
+    "height": 568
+  }, 
+  "569": {
+    "timestamp": 1531494519, 
+    "bits": 419466790, 
+    "algo": "sha256d", 
+    "height": 569
+  }, 
+  "751": {
+    "timestamp": 1531499637, 
+    "bits": 486576196, 
+    "algo": "neoscrypt", 
+    "height": 751
+  }, 
+  "750": {
+    "timestamp": 1531499599, 
+    "bits": 486573275, 
+    "algo": "neoscrypt", 
+    "height": 750
+  }, 
+  "757": {
+    "timestamp": 1531499779, 
+    "bits": 405834306, 
+    "algo": "sha256d", 
+    "height": 757
+  }, 
+  "737": {
+    "timestamp": 1531499255, 
+    "bits": 406850003, 
+    "algo": "sha256d", 
+    "height": 737
+  }, 
+  "755": {
+    "timestamp": 1531499727, 
+    "bits": 486573912, 
+    "algo": "neoscrypt", 
+    "height": 755
+  }, 
+  "754": {
+    "timestamp": 1531499713, 
+    "bits": 486575890, 
+    "algo": "neoscrypt", 
+    "height": 754
+  }, 
+  "560": {
+    "timestamp": 1531494348, 
+    "bits": 419476244, 
+    "algo": "sha256d", 
+    "height": 560
+  }, 
+  "561": {
+    "timestamp": 1531494387, 
+    "bits": 486612384, 
+    "algo": "neoscrypt", 
+    "height": 561
+  }, 
+  "562": {
+    "timestamp": 1531494395, 
+    "bits": 486617359, 
+    "algo": "neoscrypt", 
+    "height": 562
+  }, 
+  "563": {
+    "timestamp": 1531494420, 
+    "bits": 419474706, 
+    "algo": "sha256d", 
+    "height": 563
+  }, 
+  "564": {
+    "timestamp": 1531494443, 
+    "bits": 419475779, 
+    "algo": "sha256d", 
+    "height": 564
+  }, 
+  "565": {
+    "timestamp": 1531494446, 
+    "bits": 419474231, 
+    "algo": "sha256d", 
+    "height": 565
+  }, 
+  "566": {
+    "timestamp": 1531494464, 
+    "bits": 419470448, 
+    "algo": "sha256d", 
+    "height": 566
+  }, 
+  "567": {
+    "timestamp": 1531494489, 
+    "bits": 486615194, 
+    "algo": "neoscrypt", 
+    "height": 567
+  }, 
+  "739": {
+    "timestamp": 1531499316, 
+    "bits": 406978024, 
+    "algo": "sha256d", 
+    "height": 739
+  }, 
+  "229": {
+    "timestamp": 1531490804, 
+    "bits": 472356283, 
+    "algo": "sha256d", 
+    "height": 229
+  }, 
+  "228": {
+    "timestamp": 1531490800, 
+    "bits": 472541240, 
+    "algo": "sha256d", 
+    "height": 228
+  }, 
+  "227": {
+    "timestamp": 1531490799, 
+    "bits": 472732733, 
+    "algo": "sha256d", 
+    "height": 227
+  }, 
+  "226": {
+    "timestamp": 1531490788, 
+    "bits": 472930552, 
+    "algo": "sha256d", 
+    "height": 226
+  }, 
+  "225": {
+    "timestamp": 1531490784, 
+    "bits": 473134496, 
+    "algo": "sha256d", 
+    "height": 225
+  }, 
+  "224": {
+    "timestamp": 1531490767, 
+    "bits": 473344364, 
+    "algo": "sha256d", 
+    "height": 224
+  }, 
+  "223": {
+    "timestamp": 1531490765, 
+    "bits": 473559964, 
+    "algo": "sha256d", 
+    "height": 223
+  }, 
+  "222": {
+    "timestamp": 1531490745, 
+    "bits": 473781111, 
+    "algo": "sha256d", 
+    "height": 222
+  }, 
+  "221": {
+    "timestamp": 1531490734, 
+    "bits": 474007834, 
+    "algo": "sha256d", 
+    "height": 221
+  }, 
+  "220": {
+    "timestamp": 1531490722, 
+    "bits": 474250961, 
+    "algo": "sha256d", 
+    "height": 220
+  }, 
+  "440080": {
+    "timestamp": 1545331251, 
+    "bits": 404663770, 
+    "algo": "sha256d", 
+    "height": 440080
+  }, 
+  "440024": {
+    "timestamp": 1545329558, 
+    "bits": 486644964, 
+    "algo": "neoscrypt", 
+    "height": 440024
+  }, 
+  "391": {
+    "timestamp": 1531492375, 
+    "bits": 440045306, 
+    "algo": "sha256d", 
+    "height": 391
+  }, 
+  "726": {
+    "timestamp": 1531498973, 
+    "bits": 406850681, 
+    "algo": "sha256d", 
+    "height": 726
+  }, 
+  "727": {
+    "timestamp": 1531499015, 
+    "bits": 406751634, 
+    "algo": "sha256d", 
+    "height": 727
+  }, 
+  "724": {
+    "timestamp": 1531498895, 
+    "bits": 406815348, 
+    "algo": "sha256d", 
+    "height": 724
+  }, 
+  "390": {
+    "timestamp": 1531492371, 
+    "bits": 440358790, 
+    "algo": "sha256d", 
+    "height": 390
+  }, 
+  "722": {
+    "timestamp": 1531498851, 
+    "bits": 407005893, 
+    "algo": "sha256d", 
+    "height": 722
+  }, 
+  "723": {
+    "timestamp": 1531498888, 
+    "bits": 477738208, 
+    "algo": "neoscrypt", 
+    "height": 723
+  }, 
+  "720": {
+    "timestamp": 1531498767, 
+    "bits": 406907864, 
+    "algo": "sha256d", 
+    "height": 720
+  }, 
+  "721": {
+    "timestamp": 1531498812, 
+    "bits": 406944248, 
+    "algo": "sha256d", 
+    "height": 721
+  }, 
+  "440089": {
+    "timestamp": 1545331452, 
+    "bits": 486626428, 
+    "algo": "neoscrypt", 
+    "height": 440089
+  }, 
+  "440099": {
+    "timestamp": 1545331761, 
+    "bits": 404923118, 
+    "algo": "sha256d", 
+    "height": 440099
+  }, 
+  "439999": {
+    "timestamp": 1545328752, 
+    "bits": 408949326, 
+    "algo": "sha256d", 
+    "height": 439999
+  }, 
+  "728": {
+    "timestamp": 1531499066, 
+    "bits": 486572280, 
+    "algo": "neoscrypt", 
+    "height": 728
+  }, 
+  "729": {
+    "timestamp": 1531499075, 
+    "bits": 406705293, 
+    "algo": "sha256d", 
+    "height": 729
+  }, 
+  "151": {
+    "timestamp": 1531489586, 
+    "bits": 486716482, 
+    "algo": "neoscrypt", 
+    "height": 151
+  }, 
+  "150": {
+    "timestamp": 1531489563, 
+    "bits": 486721563, 
+    "algo": "neoscrypt", 
+    "height": 150
+  }, 
+  "153": {
+    "timestamp": 1531489635, 
+    "bits": 486691855, 
+    "algo": "neoscrypt", 
+    "height": 153
+  }, 
+  "152": {
+    "timestamp": 1531489597, 
+    "bits": 486704698, 
+    "algo": "neoscrypt", 
+    "height": 152
+  }, 
+  "155": {
+    "timestamp": 1531489746, 
+    "bits": 486697607, 
+    "algo": "neoscrypt", 
+    "height": 155
+  }, 
+  "154": {
+    "timestamp": 1531489724, 
+    "bits": 486689663, 
+    "algo": "neoscrypt", 
+    "height": 154
+  }, 
+  "157": {
+    "timestamp": 1531489818, 
+    "bits": 486687989, 
+    "algo": "neoscrypt", 
+    "height": 157
+  }, 
+  "156": {
+    "timestamp": 1531489776, 
+    "bits": 486691389, 
+    "algo": "neoscrypt", 
+    "height": 156
+  }, 
+  "159": {
+    "timestamp": 1531489888, 
+    "bits": 486676355, 
+    "algo": "neoscrypt", 
+    "height": 159
+  }, 
+  "158": {
+    "timestamp": 1531489879, 
+    "bits": 486684249, 
+    "algo": "neoscrypt", 
+    "height": 158
+  }, 
+  "609": {
+    "timestamp": 1531495532, 
+    "bits": 486590905, 
+    "algo": "neoscrypt", 
+    "height": 609
+  }, 
+  "608": {
+    "timestamp": 1531495469, 
+    "bits": 408529394, 
+    "algo": "sha256d", 
+    "height": 608
+  }, 
+  "976": {
+    "timestamp": 1531506686, 
+    "bits": 475826251, 
+    "algo": "neoscrypt", 
+    "height": 976
+  }, 
+  "634": {
+    "timestamp": 1531496280, 
+    "bits": 486583034, 
+    "algo": "neoscrypt", 
+    "height": 634
+  }, 
+  "399": {
+    "timestamp": 1531492467, 
+    "bits": 438422756, 
+    "algo": "sha256d", 
+    "height": 399
+  }, 
+  "635": {
+    "timestamp": 1531496287, 
+    "bits": 407507189, 
+    "algo": "sha256d", 
+    "height": 635
+  }, 
+  "749": {
+    "timestamp": 1531499573, 
+    "bits": 405750442, 
+    "algo": "sha256d", 
+    "height": 749
+  }, 
+  "958": {
+    "timestamp": 1531506075, 
+    "bits": 474337561, 
+    "algo": "neoscrypt", 
+    "height": 958
+  }, 
+  "439930": {
+    "timestamp": 1545326636, 
+    "bits": 408546458, 
+    "algo": "sha256d", 
+    "height": 439930
+  }, 
+  "398": {
+    "timestamp": 1531492461, 
+    "bits": 438603655, 
+    "algo": "sha256d", 
+    "height": 398
+  }, 
+  "439936": {
+    "timestamp": 1545326912, 
+    "bits": 486609825, 
+    "algo": "neoscrypt", 
+    "height": 439936
+  }, 
+  "439937": {
+    "timestamp": 1545326947, 
+    "bits": 486617693, 
+    "algo": "neoscrypt", 
+    "height": 439937
+  }, 
+  "48": {
+    "timestamp": 1531488085, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 48
+  }, 
+  "49": {
+    "timestamp": 1531488086, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 49
+  }, 
+  "46": {
+    "timestamp": 1531488081, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 46
+  }, 
+  "47": {
+    "timestamp": 1531488082, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 47
+  }, 
+  "44": {
+    "timestamp": 1531488081, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 44
+  }, 
+  "45": {
+    "timestamp": 1531488081, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 45
+  }, 
+  "42": {
+    "timestamp": 1531488079, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 42
+  }, 
+  "43": {
+    "timestamp": 1531488080, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 43
+  }, 
+  "40": {
+    "timestamp": 1531488078, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 40
+  }, 
+  "41": {
+    "timestamp": 1531488078, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 41
+  }, 
+  "638": {
+    "timestamp": 1531496398, 
+    "bits": 486588301, 
+    "algo": "neoscrypt", 
+    "height": 638
+  }, 
+  "5": {
+    "timestamp": 1531483960, 
+    "bits": 504365055, 
+    "algo": "neoscrypt", 
+    "height": 5
+  }, 
+  "639": {
+    "timestamp": 1531496401, 
+    "bits": 486589992, 
+    "algo": "neoscrypt", 
+    "height": 639
+  }, 
+  "439964": {
+    "timestamp": 1545327759, 
+    "bits": 486633032, 
+    "algo": "neoscrypt", 
+    "height": 439964
+  }, 
+  "439906": {
+    "timestamp": 1545325749, 
+    "bits": 486603835, 
+    "algo": "neoscrypt", 
+    "height": 439906
+  }, 
+  "489": {
+    "timestamp": 1531493233, 
+    "bits": 420269144, 
+    "algo": "sha256d", 
+    "height": 489
+  }, 
+  "488": {
+    "timestamp": 1531493232, 
+    "bits": 420337648, 
+    "algo": "sha256d", 
+    "height": 488
+  }, 
+  "487": {
+    "timestamp": 1531493229, 
+    "bits": 420411747, 
+    "algo": "sha256d", 
+    "height": 487
+  }, 
+  "486": {
+    "timestamp": 1531493226, 
+    "bits": 420491898, 
+    "algo": "sha256d", 
+    "height": 486
+  }, 
+  "485": {
+    "timestamp": 1531493202, 
+    "bits": 486695109, 
+    "algo": "neoscrypt", 
+    "height": 485
+  }, 
+  "484": {
+    "timestamp": 1531493198, 
+    "bits": 420578595, 
+    "algo": "sha256d", 
+    "height": 484
+  }, 
+  "483": {
+    "timestamp": 1531493194, 
+    "bits": 420672373, 
+    "algo": "sha256d", 
+    "height": 483
+  }, 
+  "482": {
+    "timestamp": 1531493176, 
+    "bits": 420773810, 
+    "algo": "sha256d", 
+    "height": 482
+  }, 
+  "481": {
+    "timestamp": 1531493172, 
+    "bits": 486691590, 
+    "algo": "neoscrypt", 
+    "height": 481
+  }, 
+  "480": {
+    "timestamp": 1531493161, 
+    "bits": 420883533, 
+    "algo": "sha256d", 
+    "height": 480
+  }, 
+  "955": {
+    "timestamp": 1531505961, 
+    "bits": 474787891, 
+    "algo": "neoscrypt", 
+    "height": 955
+  }, 
+  "472": {
+    "timestamp": 1531493083, 
+    "bits": 421947967, 
+    "algo": "sha256d", 
+    "height": 472
+  }, 
+  "473": {
+    "timestamp": 1531493088, 
+    "bits": 421757871, 
+    "algo": "sha256d", 
+    "height": 473
+  }, 
+  "470": {
+    "timestamp": 1531493072, 
+    "bits": 486691022, 
+    "algo": "neoscrypt", 
+    "height": 470
+  }, 
+  "471": {
+    "timestamp": 1531493082, 
+    "bits": 422153587, 
+    "algo": "sha256d", 
+    "height": 471
+  }, 
+  "476": {
+    "timestamp": 1531493124, 
+    "bits": 421269453, 
+    "algo": "sha256d", 
+    "height": 476
+  }, 
+  "477": {
+    "timestamp": 1531493130, 
+    "bits": 421130592, 
+    "algo": "sha256d", 
+    "height": 477
+  }, 
+  "474": {
+    "timestamp": 1531493095, 
+    "bits": 421582130, 
+    "algo": "sha256d", 
+    "height": 474
+  }, 
+  "475": {
+    "timestamp": 1531493120, 
+    "bits": 421419657, 
+    "algo": "sha256d", 
+    "height": 475
+  }, 
+  "478": {
+    "timestamp": 1531493136, 
+    "bits": 486691747, 
+    "algo": "neoscrypt", 
+    "height": 478
+  }, 
+  "479": {
+    "timestamp": 1531493146, 
+    "bits": 421002216, 
+    "algo": "sha256d", 
+    "height": 479
+  }
+}

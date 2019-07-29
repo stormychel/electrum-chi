@@ -29,6 +29,29 @@ class Test_auxpow(SequentialTestCase):
         # by ElectrumX (i.e. not contain an AuxPoW).
         return blockchain.deserialize_header(bfh(data_hex), constants.net.max_checkpoint() + 1)
 
+    @staticmethod
+    def clear_coinbase_outputs(auxpow_header: dict, fix_merkle_root=True) -> None:
+        """Clears the auxpow coinbase outputs
+
+        Set the outputs of the auxpow coinbase to an empty list.  This is
+        necessary when the coinbase has been modified and needs to be
+        re-serialised, since present outputs are invalid due to the
+        fast_tx_deserialize optimisation."""
+
+        auxpow_header['parent_coinbase_tx']._outputs = []
+
+        # Clear the cached raw serialization
+        auxpow_header['parent_coinbase_tx'].raw = None
+        auxpow_header['parent_coinbase_tx'].raw_bytes = None
+
+        # Re-serialize.  Note that our AuxPoW library won't do this for us,
+        # because it optimizes via fast_txid.
+        auxpow_header['parent_coinbase_tx'].raw_bytes = bfh(auxpow_header['parent_coinbase_tx'].serialize_to_network(witness=False))
+
+        # Correct the coinbase Merkle root.
+        if fix_merkle_root:
+            update_merkle_root_to_match_coinbase(auxpow_header)
+
     # Deserialize the AuxPoW header from Namecoin block #37,174.
     # This height was chosen because it has large, non-equal lengths of the
     # coinbase and chain Merkle branches.  It has an explicit coinbase MM
@@ -124,14 +147,9 @@ class Test_auxpow(SequentialTestCase):
     def test_should_reject_bad_coinbase_merkle_branch(self):
         header = self.deserialize_with_auxpow(namecoin_header_37174)
 
-        # Set outputs to an empty list
-        header['auxpow']['parent_coinbase_tx']._outputs = []
-        # Clear the cached raw serialization
-        header['auxpow']['parent_coinbase_tx'].raw = None
-        header['auxpow']['parent_coinbase_tx'].raw_bytes = None
-        # Re-serialize.  Note that our AuxPoW library won't do this for us,
-        # because it optimizes via fast_txid.
-        header['auxpow']['parent_coinbase_tx'].raw_bytes = bfh(header['auxpow']['parent_coinbase_tx'].serialize_to_network(witness=False))
+        # Clearing the outputs modifies the coinbase transaction so that its
+        # hash no longer matches the parent block merkle root.
+        self.clear_coinbase_outputs(header['auxpow'], fix_merkle_root=False)
 
         with self.assertRaises(auxpow.AuxPoWBadCoinbaseMerkleBranchError):
             blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
@@ -143,21 +161,8 @@ class Test_auxpow(SequentialTestCase):
 
         # Set inputs to an empty list
         header['auxpow']['parent_coinbase_tx']._inputs = []
-        # Set outputs to an empty list; this is necessary to re-serialize
-        # because any outputs present are invalid due to fast_tx_deserialize
-        # optimization.
-        header['auxpow']['parent_coinbase_tx']._outputs = []
-        # Clear the cached raw serialization
-        header['auxpow']['parent_coinbase_tx'].raw = None
-        header['auxpow']['parent_coinbase_tx'].raw_bytes = None
-        # Re-serialize.  Note that our AuxPoW library won't do this for us,
-        # because it optimizes via fast_txid.
-        header['auxpow']['parent_coinbase_tx'].raw_bytes = bfh(header['auxpow']['parent_coinbase_tx'].serialize_to_network(witness=False))
 
-        # Correct the coinbase Merkle root.  This will also break the
-        # difficulty check, but as that doesn't occur until the end, we can get
-        # away with it.
-        update_merkle_root_to_match_coinbase(header['auxpow'])
+        self.clear_coinbase_outputs(header['auxpow'])
 
         with self.assertRaises(auxpow.AuxPoWCoinbaseNoInputsError):
             blockchain.Blockchain.verify_header(header, namecoin_prev_hash_37174, namecoin_target_37174)
@@ -176,21 +181,7 @@ class Test_auxpow(SequentialTestCase):
 
         header['auxpow']['parent_coinbase_tx']._inputs[0]['scriptSig'] = bh2u(padded_script)
 
-        # Set outputs to an empty list; this is necessary to re-serialize
-        # because any outputs present are invalid due to fast_tx_deserialize
-        # optimization.
-        header['auxpow']['parent_coinbase_tx']._outputs = []
-        # Clear the cached raw serialization
-        header['auxpow']['parent_coinbase_tx'].raw = None
-        header['auxpow']['parent_coinbase_tx'].raw_bytes = None
-        # Re-serialize.  Note that our AuxPoW library won't do this for us,
-        # because it optimizes via fast_txid.
-        header['auxpow']['parent_coinbase_tx'].raw_bytes = bfh(header['auxpow']['parent_coinbase_tx'].serialize_to_network(witness=False))
-
-        # Correct the coinbase Merkle root.  This will also break the
-        # difficulty check, but as that doesn't occur until the end, we can get
-        # away with it.
-        update_merkle_root_to_match_coinbase(header['auxpow'])
+        self.clear_coinbase_outputs(header['auxpow'])
 
         with self.assertRaises(auxpow.AuxPoWCoinbaseRootTooLate):
             blockchain.Blockchain.verify_header(header, namecoin_prev_hash_19414, namecoin_target_19414)
@@ -206,15 +197,20 @@ class Test_auxpow(SequentialTestCase):
             blockchain.Blockchain.verify_header(header, namecoin_prev_hash_19414, namecoin_target_19414)
 
 
-# Fix up the merkle root of the parent block header to match the coinbase
-# transaction.
 def update_merkle_root_to_match_coinbase(auxpow_header):
+    """Updates the parent block merkle root
+
+    This modifies the merkle root in the auxpow's parent block header to
+    match the auxpow coinbase transaction.  We need this after modifying
+    the coinbase for tests.
+
+    Note that this also breaks the PoW.  This is fine for tests that
+    fail due to an earlier check already."""
+
     coinbase = auxpow_header['parent_coinbase_tx']
 
     revised_coinbase_txid = auxpow.fast_txid(coinbase)
-
     revised_merkle_branch = [revised_coinbase_txid]
-
     revised_merkle_root = auxpow.calculate_merkle_root(revised_coinbase_txid, revised_merkle_branch, auxpow_header['coinbase_merkle_index'])
 
     auxpow_header['parent_header']['merkle_root'] = revised_merkle_root

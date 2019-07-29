@@ -57,7 +57,7 @@ class Test_powdata (SequentialTestCase):
     """
 
     data = bfh (hex_data)
-    start = blockchain.HEADER_SIZE
+    start = blockchain.PURE_HEADER_SIZE
 
     # A too-short auxpow raises an InvalidHeader exception rather than
     # our powdata one.  Just check for any error here.
@@ -97,7 +97,7 @@ class Test_powdata (SequentialTestCase):
       "bits": bits_neoscrypt,
     })
 
-    self.assertEqual (blockchain.serialize_header (fakeheader),
+    self.assertEqual (blockchain.serialize_pure_header (fakeheader),
                       header_neoscrypt[170:])
 
   def test_deserialize_sha256d (self):
@@ -115,6 +115,13 @@ class Test_powdata (SequentialTestCase):
     self.assertEqual (auxpow["chain_merkle_index"], 7)
     self.assertEqual (auxpow["coinbase_merkle_branch"][11],
         "084cf897b58d851626d0ba32d4c717584b018881ab022e8fba1c9d8ed6aaae0e")
+
+  def test_serialize_base (self):
+    for hex_data in [header_neoscrypt, header_sha256d]:
+      base_data = bfh (hex_data)[80 : 85]
+      parsed, _ = powdata.deserialize_base (base_data)
+      serialised = powdata.serialize_base (parsed)
+      self.assertEqual (serialised, base_data.hex ())
 
   def test_pow_hash_sha256d (self):
     phash = powdata.pow_hash (header_sha256d[-160:], powdata.ALGO_SHA256D)

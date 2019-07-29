@@ -107,9 +107,9 @@ def deserialize_auxpow_header(s, start_position=0) -> (dict, int):
     auxpow_header['chain_merkle_branch'], auxpow_header['chain_merkle_index'], start_position = deserialize_merkle_branch(s, start_position=start_position)
     
     # Finally there's the parent header.  Deserialize it.
-    parent_header_bytes = s[start_position : start_position + blockchain.HEADER_SIZE]
+    parent_header_bytes = s[start_position : start_position + blockchain.PURE_HEADER_SIZE]
     auxpow_header['parent_header'] = blockchain.deserialize_pure_header(parent_header_bytes, None)
-    start_position += blockchain.HEADER_SIZE
+    start_position += blockchain.PURE_HEADER_SIZE
     # The parent block header doesn't have any block height,
     # so delete that field.  (We used None as a dummy value above.)
     del auxpow_header['parent_header']['block_height']

@@ -29,7 +29,7 @@ see the spec at https://github.com/xaya/xaya/blob/master/doc/xaya/mining.md.
 """
 
 from . import auxpow
-from .bitcoin import hash_encode
+from .bitcoin import hash_encode, int_to_hex
 from . import blockchain
 from .util import bfh
 
@@ -63,6 +63,19 @@ class InvalidCommitmentError (VerifyError):
 class InsufficientPowError (VerifyError):
   def __init__ (self, actual, target):
     super ().__init__ (f"Insufficient PoW: {actual} vs target {target}")
+
+
+def serialize_base (data: dict) -> str:
+  """
+  Serialises the base part of the given PoW data (algo and bits) to
+  a hex string.  This is used for on-disk storage in the header database.
+  """
+
+  full_algo = data["algo"]
+  if data["mergemined"]:
+    full_algo |= MM_FLAG
+
+  return int_to_hex (full_algo, 1) + int_to_hex (data["bits"], 4)
 
 
 def deserialize_base (s: bytes, start_position=0) -> (dict, int):
@@ -102,11 +115,11 @@ def deserialize (s: bytes, start_position=0) -> (dict, int):
     res["auxpow"], start_position = auxpow.deserialize_auxpow_header (
         s, start_position=start_position)
   else:
-    fakeheader = s[start_position : start_position + blockchain.HEADER_SIZE]
-    if len (fakeheader) < blockchain.HEADER_SIZE:
+    fakeheader = s[start_position : start_position + blockchain.PURE_HEADER_SIZE]
+    if len (fakeheader) < blockchain.PURE_HEADER_SIZE:
       raise SerializedLengthError (remaining_length)
     res["fakeheader"] = blockchain.deserialize_pure_header (fakeheader, None)
-    start_position += blockchain.HEADER_SIZE
+    start_position += blockchain.PURE_HEADER_SIZE
 
   return res, start_position
 
@@ -144,7 +157,7 @@ def verify (pow_data: dict, header_hash: str) -> None:
     pow_header = fakeheader
 
   target = blockchain.Blockchain.bits_to_target (pow_data["bits"])
-  phash = pow_hash (blockchain.serialize_header (pow_header), algo)
+  phash = pow_hash (blockchain.serialize_pure_header (pow_header), algo)
   phash_as_num = int.from_bytes (bfh (phash), byteorder="big")
   if phash_as_num > target:
     raise InsufficientPowError (phash_as_num, target)

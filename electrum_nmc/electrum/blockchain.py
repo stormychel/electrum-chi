@@ -37,7 +37,8 @@ from . import powdata
 
 _logger = get_logger(__name__)
 
-HEADER_SIZE = 80  # bytes
+PURE_HEADER_SIZE = 80  # bytes
+DISK_HEADER_SIZE = PURE_HEADER_SIZE + 5
 MAX_TARGET = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
 
 
@@ -47,7 +48,7 @@ class MissingHeader(Exception):
 class InvalidHeader(Exception):
     pass
 
-def serialize_header(header_dict: dict) -> str:
+def serialize_pure_header(header_dict: dict) -> str:
     s = int_to_hex(header_dict['version'], 4) \
         + rev_hex(header_dict['prev_block_hash']) \
         + rev_hex(header_dict['merkle_root']) \
@@ -56,10 +57,15 @@ def serialize_header(header_dict: dict) -> str:
         + int_to_hex(int(header_dict['nonce']), 4)
     return s
 
+def serialize_disk_header(header_dict: dict) -> str:
+    s = serialize_pure_header(header_dict)
+    s += powdata.serialize_base(header_dict['powdata'])
+    return s
+
 def deserialize_pure_header(s: bytes, height: int) -> dict:
     if not s:
         raise InvalidHeader('Invalid header: {}'.format(s))
-    if len(s) != HEADER_SIZE:
+    if len(s) != PURE_HEADER_SIZE:
         raise InvalidHeader('Invalid header length: {}'.format(len(s)))
     hex_to_int = lambda s: int.from_bytes(s, byteorder='little')
     h = {}
@@ -72,6 +78,16 @@ def deserialize_pure_header(s: bytes, height: int) -> dict:
     h['block_height'] = height
     return h
 
+def deserialize_disk_header(s: bytes, height: int) -> dict:
+    pure_header_bytes = s[:PURE_HEADER_SIZE]
+    h = deserialize_pure_header(s[:PURE_HEADER_SIZE], height)
+
+    h['powdata'], start_position = powdata.deserialize_base(s, start_position=PURE_HEADER_SIZE)
+
+    if start_position != len(s):
+        raise Exception('Invalid header length: {}'.format(len(s)))
+    return h
+
 def deserialize_full_header(s: bytes, height: int, expect_trailing_data=False, start_position=0):
     """Deserialises a full block header which may include AuxPoW.
 
@@ -81,9 +97,9 @@ def deserialize_full_header(s: bytes, height: int, expect_trailing_data=False, s
 
     original_start = start_position
 
-    pure_header_bytes = s[start_position : start_position + HEADER_SIZE]
+    pure_header_bytes = s[start_position : start_position + PURE_HEADER_SIZE]
     h = deserialize_pure_header(pure_header_bytes, height)
-    start_position += HEADER_SIZE
+    start_position += PURE_HEADER_SIZE
 
     # FIXME: Add proper check here for truncation of headers when we support
     # checkpoints in Xaya.
@@ -102,7 +118,7 @@ def hash_header(header: dict) -> str:
         return '0' * 64
     if header.get('prev_block_hash') is None:
         header['prev_block_hash'] = '00'*32
-    return hash_raw_header(serialize_header(header))
+    return hash_raw_header(serialize_pure_header(header))
 
 
 def hash_raw_header(header: str) -> str:
@@ -305,7 +321,7 @@ class Blockchain(Logger):
     @with_lock
     def update_size(self) -> None:
         p = self.path()
-        self._size = os.path.getsize(p)//HEADER_SIZE if os.path.exists(p) else 0
+        self._size = os.path.getsize(p)//DISK_HEADER_SIZE if os.path.exists(p) else 0
 
     @classmethod
     def verify_header(cls, header: dict, prev_hash: str, target: int, expected_header_hash: str=None, skip_auxpow: bool=False) -> None:
@@ -343,7 +359,7 @@ class Blockchain(Logger):
                 expected_header_hash = None
 
             # Strip auxpow header for disk
-            stripped.extend(data[start_position:start_position+HEADER_SIZE])
+            stripped.extend(data[start_position:start_position+DISK_HEADER_SIZE])
 
             header, start_position = deserialize_full_header(data, index*2016 + i, expect_trailing_data=True, start_position=start_position)
             self.verify_header(header, prev_hash, target, expected_header_hash)
@@ -377,7 +393,7 @@ class Blockchain(Logger):
             return
 
         delta_height = (index * 2016 - self.forkpoint)
-        delta_bytes = delta_height * HEADER_SIZE
+        delta_bytes = delta_height * DISK_HEADER_SIZE
         # if this chunk contains our forkpoint, only save the part after forkpoint
         # (the part before is the responsibility of the parent)
         if delta_bytes < 0:
@@ -430,14 +446,14 @@ class Blockchain(Logger):
         assert forkpoint > parent.forkpoint, (f"forkpoint of parent chain ({parent.forkpoint}) "
                                               f"should be at lower height than children's ({forkpoint})")
         with open(parent.path(), 'rb') as f:
-            f.seek((forkpoint - parent.forkpoint)*HEADER_SIZE)
-            parent_data = f.read(parent_branch_size*HEADER_SIZE)
+            f.seek((forkpoint - parent.forkpoint)*DISK_HEADER_SIZE)
+            parent_data = f.read(parent_branch_size*DISK_HEADER_SIZE)
         self.write(parent_data, 0)
-        parent.write(my_data, (forkpoint - parent.forkpoint)*HEADER_SIZE)
+        parent.write(my_data, (forkpoint - parent.forkpoint)*DISK_HEADER_SIZE)
         # swap parameters
         self.parent, parent.parent = parent.parent, self  # type: Optional[Blockchain], Optional[Blockchain]
         self.forkpoint, parent.forkpoint = parent.forkpoint, self.forkpoint
-        self._forkpoint_hash, parent._forkpoint_hash = parent._forkpoint_hash, hash_raw_header(bh2u(parent_data[:HEADER_SIZE]))
+        self._forkpoint_hash, parent._forkpoint_hash = parent._forkpoint_hash, hash_raw_header(bh2u(parent_data[:PURE_HEADER_SIZE]))
         self._prev_hash, parent._prev_hash = parent._prev_hash, self._prev_hash
         # parent's new name
         os.replace(child_old_name, parent.path())
@@ -466,7 +482,7 @@ class Blockchain(Logger):
         filename = self.path()
         self.assert_headers_file_available(filename)
         with open(filename, 'rb+') as f:
-            if truncate and offset != self._size * HEADER_SIZE:
+            if truncate and offset != self._size * DISK_HEADER_SIZE:
                 f.seek(offset)
                 f.truncate()
             f.seek(offset)
@@ -478,11 +494,11 @@ class Blockchain(Logger):
     @with_lock
     def save_header(self, header: dict) -> None:
         delta = header.get('block_height') - self.forkpoint
-        data = bfh(serialize_header(header))
+        data = bfh(serialize_disk_header(header))
         # headers are only _appended_ to the end:
         assert delta == self.size(), (delta, self.size())
-        assert len(data) == HEADER_SIZE
-        self.write(data, delta*HEADER_SIZE)
+        assert len(data) == DISK_HEADER_SIZE
+        self.write(data, delta*DISK_HEADER_SIZE)
         self.swap_with_parent()
 
     @with_lock
@@ -497,13 +513,13 @@ class Blockchain(Logger):
         name = self.path()
         self.assert_headers_file_available(name)
         with open(name, 'rb') as f:
-            f.seek(delta * HEADER_SIZE)
-            h = f.read(HEADER_SIZE)
-            if len(h) < HEADER_SIZE:
+            f.seek(delta * DISK_HEADER_SIZE)
+            h = f.read(DISK_HEADER_SIZE)
+            if len(h) < DISK_HEADER_SIZE:
                 raise Exception('Expected to read a full header. This was only {} bytes'.format(len(h)))
-        if h == bytes([0])*HEADER_SIZE:
+        if h == bytes([0])*DISK_HEADER_SIZE:
             return None
-        return deserialize_pure_header(h, height)
+        return deserialize_disk_header(h, height)
 
     def header_at_tip(self) -> Optional[dict]:
         """Return latest header."""

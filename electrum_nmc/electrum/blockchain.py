@@ -33,6 +33,7 @@ from .simple_config import SimpleConfig
 from .logging import get_logger, Logger
 
 from . import auxpow
+from . import difficulty
 from . import powdata
 
 _logger = get_logger(__name__)
@@ -349,8 +350,13 @@ class Blockchain(Logger):
         start_position = 0
         start_height = index * 2016
         prev_hash = self.get_hash(start_height - 1)
-        target = self.get_target(index-1)
         i = 0
+
+        # Since blocks in the chunk build on top of earlier ones for computing
+        # the expected difficulty, we keep a record of those blocks here
+        # before they get written into the main file.
+        earlier_blocks = {}
+
         while start_position < len(data):
             height = start_height + i
             try:
@@ -362,9 +368,11 @@ class Blockchain(Logger):
             stripped.extend(data[start_position:start_position+DISK_HEADER_SIZE])
 
             header, start_position = deserialize_full_header(data, index*2016 + i, expect_trailing_data=True, start_position=start_position)
+            target = self.get_expected_target(header, extra_blocks=earlier_blocks)
             self.verify_header(header, prev_hash, target, expected_header_hash)
             prev_hash = hash_header(header)
 
+            earlier_blocks[height] = header
             i = i + 1
 
         return bytes(stripped)
@@ -546,40 +554,61 @@ class Blockchain(Logger):
                 raise MissingHeader(height)
             return hash_header(header)
 
-    def get_target(self, index: int) -> int:
-        # compute target from chunk x, used in chunk x+1
+    def get_expected_target(self, header: dict, extra_blocks={}) -> int:
+        """Computes the difficulty target for a header
+
+        Optionally a dictionary of height -> block mappings can be passed.
+        In that case, we try to look up blocks for the difficulty computation
+        in there before looking into the main data file."""
+
         if constants.net.TESTNET:
             return 0
-        if index == -1:
-            return MAX_TARGET
-        if index < len(self.checkpoints):
-            h, t = self.checkpoints[index]
-            return t
-        # new target
-        if (index * 2016 + 2015 > 19200) and (index * 2016 + 2015 + 1 > 2016):
-            # Namecoin: Apply retargeting hardfork after AuxPoW start
-            first = self.read_header(index * 2016 - 1)
-        else:
-            first = self.read_header(index * 2016)
-        last = self.read_header(index * 2016 + 2015)
-        if not first or not last:
-            raise MissingHeader()
-        bits = last.get('bits')
-        target = self.bits_to_target(bits)
-        nActualTimespan = last.get('timestamp') - first.get('timestamp')
-        nTargetTimespan = 14 * 24 * 60 * 60
-        nActualTimespan = max(nActualTimespan, nTargetTimespan // 4)
-        nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
-        new_target = min(MAX_TARGET, (target * nActualTimespan) // nTargetTimespan)
-        # not any target can be represented in 32 bits:
-        new_target = self.bits_to_target(self.target_to_bits(new_target))
-        return new_target
+
+        def getter (algo: int, h: int) -> Optional[dict]:
+            return self.difficulty_data_for_block (algo, h, extra_blocks)
+
+        # FIXME: Take checkpoints into account!
+        return difficulty.get_target(getter, header["powdata"]["algo"], header["block_height"])
+
+    def difficulty_data_for_block(self, algo: int, h: int, extra_blocks={}) -> Optional[dict]:
+        """
+        Returns the data that we need for difficulty retargeting (bits,
+        height and timestamp) of the last block with height <=h and the
+        given algorithm.  May return None if there is no such block.
+
+        If extra_blocks is set, we use it to look up block headers (by height)
+        before looking into the main blockchain.
+        """
+
+        # This would be well-suited for recursion.  Unfortunately, Python does
+        # not optimise tail calls, and hence we need to use a loop or run the
+        # risk of hitting the recursion limit.
+        while True:
+            if h < 0:
+                return None
+
+            header = None
+            if h in extra_blocks:
+                header = extra_blocks[h]
+            else:
+                header = self.read_header(h)
+            if header is None:
+                raise MissingHeader(h)
+
+            if header["powdata"]["algo"] == algo:
+                return {
+                    "height": h,
+                    "timestamp": header["timestamp"],
+                    "bits": header["powdata"]["bits"],
+                }
+
+            h -= 1
 
     @classmethod
     def bits_to_target(cls, bits: int) -> int:
         bitsN = (bits >> 24) & 0xff
-        if not (0x03 <= bitsN <= 0x1d):
-            raise Exception("First part of bits should be in [0x03, 0x1d]")
+        if not (0x03 <= bitsN <= 0x1e):
+            raise Exception("First part of bits should be in [0x03, 0x1e], is: %x" % bits)
         bitsBase = bits & 0xffffff
         if not (0x8000 <= bitsBase <= 0x7fffff):
             raise Exception("Second part of bits should be in [0x8000, 0x7fffff]")
@@ -598,8 +627,8 @@ class Blockchain(Logger):
 
     def chainwork_of_header_at_height(self, height: int) -> int:
         """work done by single header at given height"""
-        chunk_idx = height // 2016 - 1
-        target = self.get_target(chunk_idx)
+        # FIXME: Proper chainwork implementation for Xaya.
+        target = 0
         work = ((2 ** 256 - target - 1) // (target + 1)) + 1
         return work
 
@@ -645,7 +674,7 @@ class Blockchain(Logger):
         if prev_hash != header.get('prev_block_hash'):
             return False
         try:
-            target = self.get_target(height // 2016 - 1)
+            target = self.get_expected_target(header)
         except MissingHeader:
             return False
         try:
@@ -679,8 +708,7 @@ class Blockchain(Logger):
 
         for index in range(n):
             h = self.get_hash((index+1) * 2016 -1)
-            target = self.get_target(index)
-            cp.append((h, target))
+            cp.append((h,))
         return cp
 
 

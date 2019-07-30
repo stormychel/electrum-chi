@@ -39,7 +39,7 @@ from . import powdata
 _logger = get_logger(__name__)
 
 PURE_HEADER_SIZE = 80  # bytes
-DISK_HEADER_SIZE = PURE_HEADER_SIZE + 5
+DISK_HEADER_SIZE = PURE_HEADER_SIZE + 5 + 32
 MAX_TARGET = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
 
 
@@ -61,6 +61,7 @@ def serialize_pure_header(header_dict: dict) -> str:
 def serialize_disk_header(header_dict: dict) -> str:
     s = serialize_pure_header(header_dict)
     s += powdata.serialize_base(header_dict['powdata'])
+    s += ("%064x" % header_dict["chainwork"])
     return s
 
 def deserialize_pure_header(s: bytes, height: int) -> dict:
@@ -84,6 +85,14 @@ def deserialize_disk_header(s: bytes, height: int) -> dict:
     h = deserialize_pure_header(s[:PURE_HEADER_SIZE], height)
 
     h['powdata'], start_position = powdata.deserialize_base(s, start_position=PURE_HEADER_SIZE)
+
+    work_bytes = s[start_position : start_position + 32]
+    if len (work_bytes) < 32:
+        raise Exception(f'Invalid header length: {original_len}')
+    # Since we serialise chainwork to hex by using %064x, we get a big endian
+    # byte order for the data.
+    h["chainwork"] = int.from_bytes(work_bytes, byteorder="big")
+    start_position += 32
 
     if start_position != len(s):
         raise Exception('Invalid header length: {}'.format(len(s)))
@@ -196,11 +205,6 @@ def read_blockchains(config: 'SimpleConfig'):
 
 def get_best_chain() -> 'Blockchain':
     return blockchains[constants.net.GENESIS]
-
-# block hash -> chain work; up to and including that block
-_CHAINWORK_CACHE = {
-    "0000000000000000000000000000000000000000000000000000000000000000": 0,  # virtual block at height -1
-}  # type: Dict[str, int]
 
 
 class Blockchain(Logger):
@@ -352,6 +356,9 @@ class Blockchain(Logger):
         prev_hash = self.get_hash(start_height - 1)
         i = 0
 
+        # Keep track of the accumulated chain work.
+        work = self.get_chainwork(start_height - 1)
+
         # Since blocks in the chunk build on top of earlier ones for computing
         # the expected difficulty, we keep a record of those blocks here
         # before they get written into the main file.
@@ -364,13 +371,14 @@ class Blockchain(Logger):
             except MissingHeader:
                 expected_header_hash = None
 
-            # Strip auxpow header for disk
-            stripped.extend(data[start_position:start_position+DISK_HEADER_SIZE])
-
             header, start_position = deserialize_full_header(data, index*2016 + i, expect_trailing_data=True, start_position=start_position)
             target = self.get_expected_target(header, extra_blocks=earlier_blocks)
             self.verify_header(header, prev_hash, target, expected_header_hash)
             prev_hash = hash_header(header)
+
+            work += self.chainwork_of_header(header)
+            header["chainwork"] = work
+            stripped.extend(bfh(serialize_disk_header(header)))
 
             earlier_blocks[height] = header
             i = i + 1
@@ -501,7 +509,10 @@ class Blockchain(Logger):
 
     @with_lock
     def save_header(self, header: dict) -> None:
-        delta = header.get('block_height') - self.forkpoint
+        height = header.get('block_height')
+        header["chainwork"] = self.get_chainwork(height - 1) + self.chainwork_of_header(header)
+
+        delta = height - self.forkpoint
         data = bfh(serialize_disk_header(header))
         # headers are only _appended_ to the end:
         assert delta == self.size(), (delta, self.size())
@@ -607,8 +618,11 @@ class Blockchain(Logger):
     @classmethod
     def bits_to_target(cls, bits: int) -> int:
         bitsN = (bits >> 24) & 0xff
-        if not (0x03 <= bitsN <= 0x1e):
-            raise Exception("First part of bits should be in [0x03, 0x1e], is: %x" % bits)
+        # Mainnet has bits only up to 0x1e, but the regtest difficulty
+        # starts with 0x20.  We want to support that as well, e.g. for
+        # tests/test_blockchain.py.
+        if not (0x03 <= bitsN <= 0x20):
+            raise Exception("First part of bits should be in [0x03, 0x20], is: %x" % bits)
         bitsBase = bits & 0xffffff
         if not (0x8000 <= bitsBase <= 0x7fffff):
             raise Exception("Second part of bits should be in [0x8000, 0x7fffff]")
@@ -625,39 +639,29 @@ class Blockchain(Logger):
             bitsBase >>= 8
         return bitsN << 24 | bitsBase
 
-    def chainwork_of_header_at_height(self, height: int) -> int:
-        """work done by single header at given height"""
-        # FIXME: Proper chainwork implementation for Xaya.
-        target = 0
+    def chainwork_of_header(self, header: dict) -> int:
+        """work done by single header"""
+
+        target = self.bits_to_target(header["powdata"]["bits"])
+
         work = ((2 ** 256 - target - 1) // (target + 1)) + 1
+        work <<= difficulty.algo_log2_weight(header["powdata"]["algo"])
+
         return work
 
     @with_lock
     def get_chainwork(self, height=None) -> int:
         if height is None:
             height = max(0, self.height())
-        if constants.net.TESTNET:
-            # On testnet/regtest, difficulty works somewhat different.
-            # It's out of scope to properly implement that.
-            return height
-        last_retarget = height // 2016 * 2016 - 1
-        cached_height = last_retarget
-        while _CHAINWORK_CACHE.get(self.get_hash(cached_height)) is None:
-            if cached_height <= -1:
-                break
-            cached_height -= 2016
-        assert cached_height >= -1, cached_height
-        running_total = _CHAINWORK_CACHE[self.get_hash(cached_height)]
-        while cached_height < last_retarget:
-            cached_height += 2016
-            work_in_single_header = self.chainwork_of_header_at_height(cached_height)
-            work_in_chunk = 2016 * work_in_single_header
-            running_total += work_in_chunk
-            _CHAINWORK_CACHE[self.get_hash(cached_height)] = running_total
-        cached_height += 2016
-        work_in_single_header = self.chainwork_of_header_at_height(cached_height)
-        work_in_last_partial_chunk = (height % 2016 + 1) * work_in_single_header
-        return running_total + work_in_last_partial_chunk
+
+        if height == -1:
+            return 0
+
+        header = self.read_header(height)
+        if header is None:
+            raise MissingHeader(height)
+
+        return header["chainwork"]
 
     def can_connect(self, header: dict, check_height: bool=True, skip_auxpow: bool=False) -> bool:
         if header is None:

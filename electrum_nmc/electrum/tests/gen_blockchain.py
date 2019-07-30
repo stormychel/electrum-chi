@@ -83,5 +83,6 @@ place_chain (["B", "C", "D", "E", "F", "O", "P", "Q", "R", "S", "T", "U"],
              "A", "sha256d")
 place_chain (["G", "H", "I", "J", "K", "L"], "F", "sha256d")
 place_chain (["M", "N", "X", "Y", "Z"], "I", "sha256d")
+place_chain (["Neo1", "Neo2"], "B", "neoscrypt")
 
 print (json.dumps (data, indent=2))

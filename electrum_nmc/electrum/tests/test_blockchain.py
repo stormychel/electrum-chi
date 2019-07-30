@@ -19,6 +19,8 @@ class TestBlockchain(SequentialTestCase):
     #                             - G <- H <- I <- J <- K <- L
     #                           /
     # A <- B <- C <- D <- E <- F <- O <- P <- Q <- R <- S <- T <- U
+    #       \
+    #         - Neo1 <- Neo2
 
     @classmethod
     def setUpClass(cls):
@@ -327,3 +329,58 @@ class TestBlockchain(SequentialTestCase):
 
         for b in (chain_u, chain_l, chain_z):
             self.assertTrue(all([b.can_connect(b.read_header(i), False) for i in range(b.height())]))
+
+    def test_chainwork(self):
+        blockchain.blockchains[constants.net.GENESIS] = chain_u = Blockchain(
+            config=self.config, forkpoint=0, parent=None,
+            forkpoint_hash=constants.net.GENESIS, prev_hash=None)
+        open(chain_u.path(), 'w+').close()
+
+        u_headers = ["A", "B", "C", "D", "E", "F", "O", "P", "Q", "R", "S", "T", "U"]
+        for i in u_headers:
+            self._append_header(chain_u, self.HEADERS[i])
+
+        l_headers = ["H", "I", "J", "K"]
+        chain_l = chain_u.fork(self.HEADERS["G"])
+        for i in l_headers:
+            self._append_header(chain_l, self.HEADERS[i])
+
+        z_headers = ["N", "X", "Y", "Z"]
+        chain_z = chain_l.fork(self.HEADERS["M"])
+        for i in z_headers:
+            self._append_header(chain_z, self.HEADERS[i])
+
+        neo_headers = ["Neo1", "Neo2"]
+        chain_neo = chain_z.fork(self.HEADERS["B"])
+        for i in neo_headers:
+            self._append_header(chain_neo, self.HEADERS[i])
+
+        for hdrs, chain in zip ([u_headers, l_headers, z_headers, neo_headers],
+                                [chain_u, chain_l, chain_z, chain_neo]):
+            for i in hdrs:
+                work = chain.get_chainwork(self.DATA[i]["height"])
+                self.assertEqual("%064x" % work, self.DATA[i]["work"])
+
+    def test_neoscrypt_harder(self):
+        blockchain.blockchains[constants.net.GENESIS] = chain_u = Blockchain(
+            config=self.config, forkpoint=0, parent=None,
+            forkpoint_hash=constants.net.GENESIS, prev_hash=None)
+        open(chain_u.path(), 'w+').close()
+
+        # We build up a chain of more SHA-256d blocks, but since Neoscrypt
+        # is harder by a factor of 2^10, a single Neoscrypt block will make
+        # that chain "longer".
+
+        for i in ["A", "B", "C", "D", "E"]:
+            self._append_header(chain_u, self.HEADERS[i])
+
+        chain_neo = chain_u.fork(self.HEADERS["B"])
+        self._append_header(chain_neo, self.HEADERS["Neo1"])
+
+        self.assertEqual(0, chain_neo.forkpoint)
+        self.assertEqual(None, chain_neo.parent)
+        self.assertEqual(constants.net.GENESIS, chain_neo._forkpoint_hash)
+        self.assertEqual(None, chain_neo._prev_hash)
+
+        self.assertEqual(1, chain_u.forkpoint)
+        self.assertEqual(chain_neo, chain_u.parent)

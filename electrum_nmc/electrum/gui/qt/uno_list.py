@@ -32,9 +32,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
 from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
-from electrum.commands import NameUpdatedTooRecentlyError
 from electrum.i18n import _
-from electrum.names import format_name_identifier, format_name_value, get_queued_firstupdate_from_new, name_expiration_datetime_estimate
+from electrum.names import format_name_identifier, format_name_value
 from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates, bh2u
 from electrum.wallet import InternalAddressCorruption
 
@@ -52,13 +51,11 @@ class UNOList(UTXOList):
     class Columns(IntEnum):
         NAME = 0
         VALUE = 1
-        EXPIRES_IN = 2
-        STATUS = 3
+        STATUS = 2
 
     headers = {
         Columns.NAME: _('Name'),
         Columns.VALUE: _('Value'),
-        Columns.EXPIRES_IN: _('Expires (Est.)'),
         Columns.STATUS: _('Status'),
     }
     filter_columns = [Columns.NAME, Columns.VALUE]
@@ -87,20 +84,15 @@ class UNOList(UTXOList):
             return
 
         if 'name' not in name_op:
-            # utxo is name_new
-            firstupdate_output = get_queued_firstupdate_from_new(self.wallet, txid, vout)
-            if firstupdate_output is not None:
-                if firstupdate_output.name_op is not None:
-                    name_op = firstupdate_output.name_op
-            expires_in, expires_datetime = None, None
-            status = _('Registration Pending')
+            # Upstream handles a name_new here, which doesn't exist in Xaya.
+            assert False
         else:
             # utxo is name_anyupdate
             height = x.get('height')
             header_at_tip = self.network.blockchain().header_at_tip()
             #chain_height = self.network.blockchain().height()
-            expires_in, expires_datetime = name_expiration_datetime_estimate(height, header_at_tip['block_height'], header_at_tip['timestamp'])
-            status = '' if expires_in is not None else _('Update Pending')
+            pending = (height <= 0)
+            status = '' if not pending else _('Update Pending')
 
         if 'name' in name_op:
             # utxo is name_anyupdate or a name_new that we've queued a name_firstupdate for
@@ -115,14 +107,11 @@ class UNOList(UTXOList):
             value = None
             formatted_value = ''
 
-        formatted_expires_in = ( _('Expires in %d blocks\nDate/time is only an estimate; do not rely on it!')%expires_in) if expires_in is not None else ''
-        formatted_expires_datetime = expires_datetime.isoformat(' ') if expires_datetime is not None else ''
-
         txout = txid + ":%d"%vout
 
         self.utxo_dict[txout] = x
 
-        labels = [formatted_name, formatted_value, formatted_expires_datetime, status]
+        labels = [formatted_name, formatted_value, status]
         utxo_item = [QStandardItem(x) for x in labels]
         self.set_editability(utxo_item)
 
@@ -132,8 +121,6 @@ class UNOList(UTXOList):
         utxo_item[self.Columns.NAME].setData(txout, Qt.UserRole)
         utxo_item[self.Columns.NAME].setData(name, Qt.UserRole + USER_ROLE_NAME)
         utxo_item[self.Columns.NAME].setData(value, Qt.UserRole + USER_ROLE_VALUE)
-
-        utxo_item[self.Columns.EXPIRES_IN].setToolTip(formatted_expires_in)
 
         address = x.get('address')
         if self.wallet.is_frozen_address(address) or self.wallet.is_frozen_coin(x):
@@ -237,9 +224,6 @@ class UNOList(UTXOList):
             try:
                 # TODO: support non-ASCII encodings
                 tx = name_update(identifier.decode('ascii'))['hex']
-            except NameUpdatedTooRecentlyError:
-                # The name was recently updated, so skip it and don't renew.
-                continue
             except (NotEnoughFunds, NoDynamicFeeEstimates) as e:
                 self.parent.show_message(str(e))
                 return

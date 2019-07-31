@@ -71,7 +71,7 @@ if TYPE_CHECKING:
     from .simple_config import SimpleConfig
 
 
-from .names import (get_default_name_tx_label, OP_NAME_NEW, OP_NAME_FIRSTUPDATE,
+from .names import (get_default_name_tx_label, OP_NAME_REGISTER,
                     OP_NAME_UPDATE)
 
 _logger = get_logger(__name__)
@@ -700,7 +700,7 @@ class Abstract_Wallet(AddressSynchronizer):
             # identifier
             if name_op is not None:
                 # We'll be adding a name operation to the base tx.
-                if name_op["op"] in [OP_NAME_NEW, OP_NAME_FIRSTUPDATE]:
+                if name_op["op"] == OP_NAME_REGISTER:
                     # We'll be adding a name registration operation to the base tx.
                     if any([o.name_op is not None for o in tx.outputs()]):
                         # The base tx already has a name operation.  Don't use
@@ -708,7 +708,7 @@ class Abstract_Wallet(AddressSynchronizer):
                         continue
                 else:
                     # We'll be adding a name_update operation to the base tx.
-                    if any([o.name_op is not None and o.name_op["op"] in [OP_NAME_NEW, OP_NAME_FIRSTUPDATE] for o in tx.outputs()]):
+                    if any([o.name_op is not None and o.name_op["op"] == OP_NAME_REGISTER for o in tx.outputs()]):
                         # The base tx already has a name registration
                         # operation.  Don't use it.
                         continue

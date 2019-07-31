@@ -51,8 +51,6 @@ _logger = get_logger(__name__)
 NO_SIGNATURE = 'ff'
 PARTIAL_TXN_HEADER_MAGIC = b'EPTF\xff'
 
-NAMECOIN_VERSION = 0x7100
-
 
 class SerializationError(Exception):
     """ Thrown when there's a problem deserializing or serializing """
@@ -780,9 +778,6 @@ class Transaction:
         self = klass(None)
         self._inputs = inputs
         self._outputs = outputs
-        for o in outputs:
-            if o.name_op is not None:
-                self.version = NAMECOIN_VERSION
         self.locktime = locktime
         if version is not None:
             self.version = version
@@ -1151,7 +1146,7 @@ class Transaction:
         for o in self.outputs():
             if o.name_op is None:
                 continue
-            if o.name_op['op'] == OP_NAME_NEW:
+            if o.name_op['op'] == OP_NAME_REGISTER:
                 newly_locked_amount += COIN // 100
         return newly_locked_amount + sum(o.value for o in self.outputs())
 
@@ -1317,5 +1312,5 @@ def tx_from_str(txt: str) -> str:
     return tx_dict["hex"]
 
 
-from .names import get_name_op_from_output_script, name_op_to_script, OP_NAME_NEW, split_name_script
+from .names import get_name_op_from_output_script, name_op_to_script, OP_NAME_REGISTER, split_name_script
 

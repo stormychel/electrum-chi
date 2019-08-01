@@ -3511,12 +3511,6 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.buy_names_new_name_lineedit.textChanged.connect(self.update_buy_names_preview)
         vbox.addWidget(self.buy_names_new_name_lineedit)
 
-        self.buy_names_format_explain_label = QLabel(_("<html><head/><body><p>Use <span style='font-weight:600;'>d/</span> prefix for domain names.  E.g. <span style='font-weight:600;'>d/mysite</span> will register <span style='font-weight:600;'>mysite.bit</span></p><p>See the <a href='https://github.com/namecoin/proposals/blob/master/ifa-0001.md'><span style='text-decoration:underline; color:#0000ff;'>Namecoin Domain Names specification</span></a> for reference.  Other prefixes can be used for miscellaneous purposes (not domain names).</p></body></html>"))
-        self.buy_names_format_explain_label.setTextFormat(Qt.RichText)
-        self.buy_names_format_explain_label.setWordWrap(True)
-        self.buy_names_format_explain_label.setOpenExternalLinks(True)
-        vbox.addWidget(self.buy_names_format_explain_label)
-
         self.buy_names_preview_label = QLabel(_("Name to register: "))
         vbox.addWidget(self.buy_names_preview_label)
 
@@ -3560,7 +3554,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
     def update_buy_names_preview(self):
         # TODO: handle non-ASCII encodings
-        identifier = self.buy_names_new_name_lineedit.text().encode('ascii')
+        identifier = self.buy_names_new_name_lineedit.text().encode('utf-8')
         identifier_formatted = format_name_identifier(identifier)
         self.buy_names_preview_label.setText(_("Name to register: ") + identifier_formatted)
 
@@ -3570,7 +3564,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
     def check_name_availability(self):
         # TODO: handle non-ASCII encodings
         identifier_ascii = self.buy_names_new_name_lineedit.text()
-        identifier = identifier_ascii.encode('ascii')
+        identifier = identifier_ascii.encode('utf-8')
 
         identifier_formatted = format_name_identifier(identifier)
 
@@ -3592,7 +3586,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         if not name_valid:
             self.buy_names_available_widget.hide()
-            self.buy_names_already_exists_label.setText(_("That name is invalid (probably exceeded the 255-byte limit) and therefore cannot be registered."))
+            self.buy_names_already_exists_label.setText(_("That name is invalid and therefore cannot be registered."))
             self.buy_names_already_exists_widget.show()
         elif name_exists:
             self.buy_names_available_widget.hide()
@@ -3606,9 +3600,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
     def register_new_name(self):
         # TODO: handle non-ASCII encodings
         identifier_ascii = self.buy_names_new_name_lineedit.text()
-        identifier = identifier_ascii.encode('ascii')
+        identifier = identifier_ascii.encode('utf-8')
 
-        initial_value = b''
+        initial_value = b'{}'
 
         show_configure_name(identifier, initial_value, self, True)
 
@@ -3631,14 +3625,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.names_configure_button.setMinimumSize(150, 0)
         self.names_configure_button.setToolTip(_('Change the value of the selected name or transfer ownership'))
         self.names_configure_button.clicked.connect(l.configure_selected_item)
-        self.names_renew_button = QPushButton(_('Renew Name'))
-        self.names_renew_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.names_renew_button.setMinimumSize(150, 0)
-        self.names_renew_button.setToolTip(_('Renew the selected name with its current value (nothing will happen if the name was updated in the last 12 blocks)'))
-        self.names_renew_button.clicked.connect(l.renew_selected_items)
 
         self.names_actions_hbox.addWidget(self.names_configure_button)
-        self.names_actions_hbox.addWidget(self.names_renew_button)
 
         self.names_actions = QWidget()
         self.names_actions.setLayout(self.names_actions_hbox)

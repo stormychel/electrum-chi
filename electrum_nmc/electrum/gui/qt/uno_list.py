@@ -172,7 +172,6 @@ class UNOList(UTXOList):
             return
         menu = QMenu()
 
-        menu.addAction(_("Renew"), lambda: self.renew_selected_items())
         if len(selected) == 1:
             txid = selected[0].split(':')[0]
             tx = self.wallet.db.transactions.get(txid)
@@ -205,54 +204,6 @@ class UNOList(UTXOList):
             menu.addAction(_("Copy {} as hex").format(selected_data_type), lambda: self.parent.app.clipboard().setText(copy_hex))
 
         menu.exec_(self.viewport().mapToGlobal(position))
-
-    # TODO: We should be able to pass a password to this function, which would
-    # be used for all name_update calls.  That way, we wouldn't need to prompt
-    # the user per name.
-    def renew_selected_items(self):
-        selected = self.selected_in_column(0)
-        if not selected:
-            return
-
-        name_update = self.parent.console.namespace.get('name_update')
-        broadcast = self.parent.console.namespace.get('broadcast')
-        addtransaction = self.parent.console.namespace.get('addtransaction')
-
-        for item in selected:
-            identifier = item.data(Qt.UserRole + USER_ROLE_NAME)
-
-            try:
-                # TODO: support non-ASCII encodings
-                tx = name_update(identifier.decode('ascii'))['hex']
-            except (NotEnoughFunds, NoDynamicFeeEstimates) as e:
-                self.parent.show_message(str(e))
-                return
-            except InternalAddressCorruption as e:
-                self.parent.show_error(str(e))
-                raise
-            except BaseException as e:
-                traceback.print_exc(file=sys.stdout)
-                self.parent.show_message(str(e))
-                return
-
-            try:
-                broadcast(tx)
-            except Exception as e:
-                formatted_name = format_name_identifier(identifier)
-                self.parent.show_error(_("Error broadcasting renewal for ") + formatted_name + ": " + str(e))
-                continue
-
-            # We add the transaction to the wallet explicitly because
-            # otherwise, the wallet will only learn that the transaction's
-            # inputs are spent once the ElectrumX server sends us a copy of the
-            # transaction, which is several seconds later, which will cause us
-            # to double-spend those inputs in subsequent renewals during this
-            # loop.
-            status = addtransaction(tx)
-            if not status:
-                formatted_name = format_name_identifier(identifier)
-                self.parent.show_error(_("Error adding renewal for ") + formatted_name + _(" to wallet"))
-                continue
 
     def configure_selected_item(self):
         selected = self.selected_in_column(0)

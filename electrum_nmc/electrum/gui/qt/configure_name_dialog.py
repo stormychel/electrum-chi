@@ -122,11 +122,12 @@ class ConfigureNameDialog(QDialog):
                 self.main_window.show_error(_("Invalid address ") + recipient_address)
                 return
 
-        name_autoregister = self.main_window.console.namespace.get('name_autoregister')
+        name_register = self.main_window.console.namespace.get('name_register')
+        broadcast = self.main_window.console.namespace.get('broadcast')
 
         try:
             # TODO: support non-ASCII encodings
-            name_autoregister(identifier.decode('ascii'), value.decode('ascii'), recipient_address)
+            tx = name_register(identifier.decode('utf-8'), value.decode('ascii'), recipient_address)['hex']
         except NameAlreadyExistsError as e:
             self.main_window.show_message(_("Error registering ") + formatted_name + ": " + str(e))
             return
@@ -138,16 +139,17 @@ class ConfigureNameDialog(QDialog):
             formatted_name = format_name_identifier(identifier)
             self.main_window.show_error(_("Error registering ") + formatted_name + ": " + str(e))
             raise
-        except TxBroadcastError as e:
-            msg = e.get_message_for_gui()
-            self.main_window.show_error(msg)
-        except BestEffortRequestFailed as e:
-            msg = repr(e)
-            self.main_window.show_error(msg)
         except BaseException as e:
             traceback.print_exc(file=sys.stdout)
             formatted_name = format_name_identifier(identifier)
             self.main_window.show_message(_("Error registering ") + formatted_name + ": " + str(e))
+            return
+
+        try:
+            broadcast(tx)
+        except Exception as e:
+            formatted_name = format_name_identifier(identifier)
+            self.main_window.show_error(_("Error broadcasting registration for ") + formatted_name + ": " + str(e))
             return
 
     def update_and_broadcast(self, identifier, value, transfer_to):
@@ -173,7 +175,7 @@ class ConfigureNameDialog(QDialog):
 
         try:
             # TODO: support non-ASCII encodings
-            tx = name_update(identifier.decode('ascii'), value.decode('ascii'), recipient_address)['hex']
+            tx = name_update(identifier.decode('utf-8'), value.decode('ascii'), recipient_address)['hex']
         except (NotEnoughFunds, NoDynamicFeeEstimates) as e:
             formatted_name = format_name_identifier(identifier)
             self.main_window.show_message(_("Error creating update for ") + formatted_name + ": " + str(e))

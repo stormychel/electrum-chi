@@ -136,6 +136,14 @@ class Test_powdata (SequentialTestCase):
     with self.assertRaises (powdata.InvalidAlgoError):
       powdata.pow_hash ("", 42)
 
+  def deserialize_full_header (self, header_hex):
+    """
+    Deserialises a header given as hex string, making sure to bypass the
+    logic for truncated headers.
+    """
+
+    return blockchain.deserialize_full_header (bfh (header_hex), None)
+
   def call_verify_header (self, header, bits=None, prev_hash=None):
     """
     Calls blockchain.verify_header, but fills in the target and prev hash
@@ -158,15 +166,15 @@ class Test_powdata (SequentialTestCase):
     blockchain.Blockchain.verify_header (header, prev_hash, target)
 
   def test_valid_neoscrypt (self):
-    data = blockchain.deserialize_full_header (bfh (header_neoscrypt), None)
+    data = self.deserialize_full_header (header_neoscrypt)
     self.call_verify_header (data, bits_neoscrypt, prev_hash_neoscrypt)
 
   def test_valid_sha256d (self):
-    data = blockchain.deserialize_full_header (bfh (header_sha256d), None)
+    data = self.deserialize_full_header (header_sha256d)
     self.call_verify_header (data, bits_sha256d, prev_hash_sha256d)
 
   def test_nonzero_header_bits (self):
-    data = blockchain.deserialize_full_header (bfh (header_neoscrypt), None)
+    data = self.deserialize_full_header (header_neoscrypt)
     data["bits"] = 42
     try:
       self.call_verify_header (data)
@@ -176,66 +184,66 @@ class Test_powdata (SequentialTestCase):
       self.assertEqual (type (exc), Exception)
 
   def test_bits_mismatch (self):
-    data = blockchain.deserialize_full_header (bfh (header_neoscrypt), None)
+    data = self.deserialize_full_header (header_neoscrypt)
     with self.assertRaises (Exception):
       self.call_verify_header (data, bits=bits_sha256d)
 
   def test_invalid_algo (self):
-    data = blockchain.deserialize_full_header (bfh (header_neoscrypt), None)
+    data = self.deserialize_full_header (header_neoscrypt)
     data["powdata"]["algo"] = 42
     with self.assertRaises (powdata.InvalidAlgoError):
       self.call_verify_header (data)
 
   def test_neoscrypt_mm (self):
-    data = blockchain.deserialize_full_header (bfh (header_neoscrypt), None)
+    data = self.deserialize_full_header (header_neoscrypt)
     data["powdata"]["mergemined"] = True
     with self.assertRaises (powdata.InvalidAlgoError):
       self.call_verify_header (data)
 
   def test_sha256d_not_mm (self):
-    data = blockchain.deserialize_full_header (bfh (header_sha256d), None)
+    data = self.deserialize_full_header (header_sha256d)
     data["powdata"]["mergemined"] = False
     with self.assertRaises (powdata.InvalidAlgoError):
       self.call_verify_header (data)
 
   def test_mm_no_auxpow (self):
-    data = blockchain.deserialize_full_header (bfh (header_sha256d), None)
+    data = self.deserialize_full_header (header_sha256d)
     del data["powdata"]["auxpow"]
     with self.assertRaises (powdata.VerifyError):
       self.call_verify_header (data)
 
   def test_standalone_no_fakeheader (self):
-    data = blockchain.deserialize_full_header (bfh (header_neoscrypt), None)
+    data = self.deserialize_full_header (header_neoscrypt)
     del data["powdata"]["fakeheader"]
     with self.assertRaises (powdata.VerifyError):
       self.call_verify_header (data)
 
   def test_invalid_auxpow (self):
-    data = blockchain.deserialize_full_header (bfh (header_sha256d), None)
+    data = self.deserialize_full_header (header_sha256d)
     data["powdata"]["auxpow"]["coinbase_merkle_index"] = 42
     with self.assertRaises (auxpow.AuxPoWNotGenerateError):
       self.call_verify_header (data)
 
   def test_auxpow_wrong_commitment (self):
-    data = blockchain.deserialize_full_header (bfh (header_sha256d), None)
+    data = self.deserialize_full_header (header_sha256d)
     data["timestamp"] = 42
     with self.assertRaises (auxpow.AuxPoWCoinbaseRootMissingError):
       self.call_verify_header (data)
 
   def test_fakeheader_wrong_commitment (self):
-    data = blockchain.deserialize_full_header (bfh (header_neoscrypt), None)
+    data = self.deserialize_full_header (header_neoscrypt)
     data["timestamp"] = 42
     with self.assertRaises (powdata.InvalidCommitmentError):
       self.call_verify_header (data)
 
   def test_auxpow_insufficient_pow (self):
-    data = blockchain.deserialize_full_header (bfh (header_sha256d), None)
+    data = self.deserialize_full_header (header_sha256d)
     data["powdata"]["auxpow"]["parent_header"]["nonce"] = 10
     with self.assertRaises (powdata.InsufficientPowError):
       self.call_verify_header (data)
 
   def test_neoscrypt_insufficient_pow (self):
-    data = blockchain.deserialize_full_header (bfh (header_neoscrypt), None)
+    data = self.deserialize_full_header (header_neoscrypt)
     data["powdata"]["fakeheader"]["nonce"] = 10
     with self.assertRaises (powdata.InsufficientPowError):
       self.call_verify_header (data)

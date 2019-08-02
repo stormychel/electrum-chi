@@ -31,7 +31,6 @@ import json
 import os
 
 from . import SequentialTestCase
-from . import TestCaseForTestnet
 from . import FAST_TESTS
 
 

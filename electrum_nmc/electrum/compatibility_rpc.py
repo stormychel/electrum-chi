@@ -31,7 +31,13 @@ allows to connect games to Electrum that are originally written for the
 Xaya Core JSON-RPC interface.
 """
 
+from . import bitcoin
+from . import crypto
+from . import ecc
 from .jsonrpc import VerifyingJSONRPCServer
+from . import util
+
+import base64
 
 
 class Server(VerifyingJSONRPCServer):
@@ -45,6 +51,8 @@ class Server(VerifyingJSONRPCServer):
 
     self.register_function (self.getbalance, "getbalance")
     self.register_function (self.getnewaddress, "getnewaddress")
+    self.register_function (self.signmessage, "signmessage")
+    self.register_function (self.verifymessage, "verifymessage")
 
     self.register_function (self.name_list, "name_list")
     self.register_function (self.name_pending, "name_pending")
@@ -67,6 +75,27 @@ class Server(VerifyingJSONRPCServer):
       return addr
 
     raise RuntimeError (f"Unsupported address type: {address_type}")
+
+  def signmessage (self, address, message):
+    return self.cmd_runner.signmessage (address, message)
+
+  def verifymessage (self, address, signature, message):
+    # We need to handle the special form with address recovery supported
+    # by Xaya Core.
+    if address == "":
+      sig = base64.b64decode (signature)
+      msg_hash = crypto.sha256d (ecc.msg_magic (util.to_bytes (message)))
+      pubkey, comp = ecc.ECPubkey.from_signature65 (sig, msg_hash)
+      address = bitcoin.public_key_to_p2pkh (pubkey.get_public_key_bytes (comp))
+      addr_recovery = True
+    else:
+      addr_recovery = False
+
+    res = self.cmd_runner.verifymessage (address, signature, message)
+    if not addr_recovery:
+      return res
+
+    return {"valid": res, "address": address}
 
   def name_list (self, name=None):
     return self.cmd_runner.name_list (name)

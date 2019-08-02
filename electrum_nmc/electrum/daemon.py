@@ -27,6 +27,7 @@ import ast
 import os
 import time
 import traceback
+import select
 import sys
 import threading
 from typing import Dict, Optional, Tuple
@@ -45,6 +46,8 @@ from .simple_config import SimpleConfig
 from .exchange_rate import FxThread
 from .plugin import run_hook
 from .logging import get_logger
+
+from . import compatibility_rpc
 
 
 _logger = get_logger(__name__)
@@ -145,6 +148,7 @@ class Daemon(DaemonThread):
         self.wallets = {}  # type: Dict[str, Abstract_Wallet]
         # Setup JSONRPC server
         self.server = None
+        self.compat_server = None
         if listen_jsonrpc:
             self.init_server(config, fd)
         self.start()
@@ -164,7 +168,6 @@ class Daemon(DaemonThread):
         os.write(fd, bytes(repr((server.socket.getsockname(), time.time())), 'utf8'))
         os.close(fd)
         self.server = server
-        server.timeout = 0.1
         server.register_function(self.ping, 'ping')
         server.register_function(self.run_gui, 'gui')
         server.register_function(self.run_daemon, 'daemon')
@@ -172,6 +175,14 @@ class Daemon(DaemonThread):
         for cmdname in known_commands:
             server.register_function(getattr(self.cmd_runner, cmdname), cmdname)
         server.register_function(self.run_cmdline, 'run_cmdline')
+
+        compat_port = config.get('rpcportcompat', 0)
+        if compat_port != 0:
+            self.compat_server = compatibility_rpc.Server((host, compat_port),
+                                                          logRequests=False,
+                                                          rpc_user=rpc_user,
+                                                          rpc_password=rpc_password,
+                                                          cmd_runner=self.cmd_runner)
 
     def ping(self):
         return True
@@ -321,7 +332,18 @@ class Daemon(DaemonThread):
 
     def run(self):
         while self.is_running():
-            self.server.handle_request() if self.server else time.sleep(0.1)
+            servers = []
+            if self.server is not None:
+                servers.append(self.server)
+            if self.compat_server is not None:
+                servers.append(self.compat_server)
+            if len(servers) == 0:
+                time.sleep(0.1)
+            else:
+                timeout = 0.1
+                ready, _, _ = select.select(servers, [], [], timeout)
+                if len(ready) > 0:
+                    ready[0].handle_request()
         # stop network/wallets
         for k, wallet in self.wallets.items():
             wallet.stop_threads()

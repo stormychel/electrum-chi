@@ -980,7 +980,10 @@ class Transaction:
         else:
             raise TypeError('Unknown txin type', txin['type'])
 
-        if 'name_op' in txin and txin['name_op'] is not None:
+        # For script types that have a layer of "indirection" (like P2SH
+        # or segwit), the preimage script for signatures does not contain
+        # the name prefix.
+        if txin['type'] in ['p2pkh', 'p2pk'] and 'name_op' in txin and txin['name_op'] is not None:
             result = name_op_to_script(txin['name_op']) + result
 
         return result
@@ -1045,7 +1048,13 @@ class Transaction:
             outpoint = self.serialize_outpoint(txin)
             preimage_script = self.get_preimage_script(txin)
             scriptCode = var_int(len(preimage_script) // 2) + preimage_script
-            amount = int_to_hex(txin['value'], 8)
+            # Signatures commit to the input value (per BIP143), but for name
+            # operations, the value in the txin does not include the locked
+            # amount.  Fix this.
+            txin_value = txin['value']
+            if 'name_op' in txin and txin['name_op'] is not None:
+                txin_value += COIN // 100
+            amount = int_to_hex(txin_value, 8)
             nSequence = int_to_hex(txin.get('sequence', 0xffffffff - 1), 4)
             preimage = nVersion + hashPrevouts + hashSequence + outpoint + scriptCode + amount + nSequence + hashOutputs + nLocktime + nHashType
         else:

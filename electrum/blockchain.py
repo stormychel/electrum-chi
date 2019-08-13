@@ -299,13 +299,7 @@ class Blockchain(Logger):
 
     @classmethod
     def verify_header(cls, header: dict, prev_hash: str, target: int, expected_header_hash: str=None, skip_auxpow: bool=False) -> None:
-        # Don't verify AuxPoW when covered by a checkpoint
-        if header.get('block_height') <= constants.net.max_checkpoint():
-            skip_auxpow = True
-
         _hash = hash_header(header)
-        if not skip_auxpow:
-            _pow_hash = auxpow.hash_parent_header(header)
         if expected_header_hash and expected_header_hash != _hash:
             raise Exception("hash mismatches with expected: {} vs {}".format(expected_header_hash, _hash))
         if prev_hash != header.get('prev_block_hash'):
@@ -316,7 +310,10 @@ class Blockchain(Logger):
         if bits != header.get('bits'):
             raise Exception("bits mismatch: %s vs %s" % (bits, header.get('bits')))
         # Don't verify AuxPoW when covered by a checkpoint
+        if header.get('block_height') <= constants.net.max_checkpoint():
+            skip_auxpow = True
         if not skip_auxpow:
+            _pow_hash = auxpow.hash_parent_header(header)
             block_hash_as_num = int.from_bytes(bfh(_pow_hash), byteorder='big')
             if block_hash_as_num > target:
                 raise Exception(f"insufficient proof of work: {block_hash_as_num} vs target {target}")

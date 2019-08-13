@@ -88,6 +88,9 @@ class AuxPoWCoinbaseNoInputsError(AuxPowVerifyError):
 class AuxPoWCoinbaseRootTooLate(AuxPowVerifyError):
     pass
 
+class AuxPoWCoinbaseRootMissingError(AuxPowVerifyError):
+    pass
+
 def auxpow_active(base_header):
     height_allows_auxpow = base_header['block_height'] >= MIN_AUXPOW_HEIGHT
     version_allows_auxpow = base_header['version'] & BLOCK_VERSION_AUXPOW_BIT
@@ -283,7 +286,7 @@ def verify_auxpow(header):
 
         #return error("Aux POW missing chain merkle root in parent coinbase");
 
-        raise Exception('Aux POW missing chain merkle root in parent coinbase')
+        raise AuxPoWCoinbaseRootMissingError('Aux POW missing chain merkle root in parent coinbase')
 
     #if (pcHead != script.end())
     #{

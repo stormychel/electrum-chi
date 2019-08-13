@@ -175,9 +175,9 @@ class Test_bitcoin(SequentialTestCase):
         sig1_b64 = base64.b64encode(sig1)
         sig2_b64 = base64.b64encode(sig2)
 
-        # Re-signed these with Namecoin Core, since the upstream Electrum ones are invalid for Namecoin's msg_magic.
-        self.assertEqual(sig1_b64, b'IKqxjcFykcFJPUsIJtUvR5901nJnD/WN326bDVHqnvxjX6+E/mXH9FY+MNpNyl/liXQDhd53BihaVH2lOGknzFU=')
-        self.assertEqual(sig2_b64, b'HMBdVzZJfSqhGsrJ6NgUoLUxPmTS0NSxA2Y/q3Te69MVNtt4aWbJORq+0MCllDfqiKo9IIaWpSmXk0VXlaIMxx4=')
+        # Re-signed these with Xaya Core, since the upstream Namecoin ones are invalid for Xaya's msg_magic.
+        self.assertEqual(sig1_b64, b'H8FU6ku4jO82lAtIVxT2nEl++MKMe0N+lcOStNQAhcGZV8MGqeWkxSvcUZSl0YAexEZG5qlMs289V+RV6qyQV7k=')
+        self.assertEqual(sig2_b64, b'G7CwmsisI1gzC06FPrROr37S0CLiKvxkIYB7issD2mTdLCIf/iRMgFOu16v978Qgc6awdZLUjMOZw1I7WKNmKms=')
 
         self.assertTrue(ecc.verify_message_with_address(addr1, sig1, msg1))
         self.assertTrue(ecc.verify_message_with_address(addr2, sig2, msg2))
@@ -386,12 +386,12 @@ class Test_bitcoin_testnet(TestCaseForTestnet):
         self.assertEqual(address_to_script(frombtc('tb1qqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesrxh6hy')), '0020000000c4a5cad46221b2a187905e5266362b99d5e91c6ce24d165dab93e86433')
 
         # base58 P2PKH
-        self.assertEqual(address_to_script('mutXcGt1CJdkRvXuN2xoz2quAAQYQ59bRX'), '76a9149da64e300c5e4eb4aaffc9c2fd465348d5618ad488ac')
-        self.assertEqual(address_to_script('miqtaRTkU3U8rzwKbEHx3g8FSz8GJtPS3K'), '76a914247d2d5b6334bdfa2038e85b20fc15264f8e5d2788ac')
+        self.assertEqual(address_to_script(frombtc('mutXcGt1CJdkRvXuN2xoz2quAAQYQ59bRX')), '76a9149da64e300c5e4eb4aaffc9c2fd465348d5618ad488ac')
+        self.assertEqual(address_to_script(frombtc('miqtaRTkU3U8rzwKbEHx3g8FSz8GJtPS3K')), '76a914247d2d5b6334bdfa2038e85b20fc15264f8e5d2788ac')
 
         # base58 P2SH
-        self.assertEqual(address_to_script('2N3LSvr3hv5EVdfcrxg2Yzecf3SRvqyBE4p'), 'a9146eae23d8c4a941316017946fc761a7a6c85561fb87')
-        self.assertEqual(address_to_script('2NE4ZdmxFmUgwu5wtfoN2gVniyMgRDYq1kk'), 'a914e4567743d378957cd2ee7072da74b1203c1a7a0b87')
+        self.assertEqual(address_to_script(frombtc('2N3LSvr3hv5EVdfcrxg2Yzecf3SRvqyBE4p')), 'a9146eae23d8c4a941316017946fc761a7a6c85561fb87')
+        self.assertEqual(address_to_script(frombtc('2NE4ZdmxFmUgwu5wtfoN2gVniyMgRDYq1kk')), 'a914e4567743d378957cd2ee7072da74b1203c1a7a0b87')
 
 
 class Test_xprv_xpub(SequentialTestCase):

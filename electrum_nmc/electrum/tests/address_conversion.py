@@ -70,8 +70,12 @@ def frombtc(inp: str) -> str:
 
         if vch[0] == 0:  # P2PKH address
             new_version = BitcoinMainnet.ADDRTYPE_P2PKH
+        elif vch[0] == 111:
+            new_version = BitcoinTestnet.ADDRTYPE_P2PKH
         elif vch[0] == 5:  # P2SH address
             new_version = BitcoinMainnet.ADDRTYPE_P2SH
+        elif vch[0] == 196:
+            new_version = BitcoinTestnet.ADDRTYPE_P2SH
         elif vch[0] in range (128, 136):  # Privkey with optional script type
             offset = vch[0] - 128
             new_version = BitcoinMainnet.WIF_PREFIX + offset

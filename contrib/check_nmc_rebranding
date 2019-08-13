@@ -22,6 +22,7 @@ for i in **/*.py; do
     if ./contrib/print_python_strings "$i" "bitcoin" \
         | grep -v "'b\"Bitcoin seed\"'" \
         | grep -v "main_window.py.*\"'bitcoin'\"" \
+        | grep -v "address_conversion.*Unknown Bitcoin" \
         | grep -v "org.bitcoin.protocols.payments" \
         | grep -v "electrum_nmc/electrum/plugins/ledger/"; then
         echo "Rebranding needed"
@@ -47,13 +48,15 @@ for i in **/*.py; do
     fi
 
     # Bitcoin Bech32 addresses
-    if ./contrib/print_python_strings "$i" "['\"]bc1"; then
+    if ./contrib/print_python_strings "$i" "['\"]bc1" \
+        | grep -v 'electrum/tests/.*\.py'; then
         echo "Rebranding needed"
         exit 1
     fi
 
     # Bitcoin private keys
-    if ./contrib/print_python_strings "$i" "p2w?pkh(-p2sh)?:[KL]"; then
+    if ./contrib/print_python_strings "$i" "p2w?pkh(-p2sh)?:[KL]" \
+        | grep -v 'electrum/tests/.*\.py'; then
         echo "Rebranding needed"
         exit 1
     fi

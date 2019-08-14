@@ -478,8 +478,8 @@ class TestWalletKeystoreAddressIntegrityForTestnet(TestCaseForTestnet):
         w = WalletIntegrityHelper.create_multisig_wallet([ks1, ks2], '2of2')
         self.assertEqual(w.txin_type, 'p2wsh-p2sh')
 
-        self.assertEqual(w.get_receiving_addresses()[0], '2MzsfTfTGomPRne6TkctMmoDj6LwmVkDrMt')
-        self.assertEqual(w.get_change_addresses()[0], '2NFp9w8tbYYP9Ze2xQpeYBJQjx3gbXymHX7')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('2MzsfTfTGomPRne6TkctMmoDj6LwmVkDrMt'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('2NFp9w8tbYYP9Ze2xQpeYBJQjx3gbXymHX7'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -503,15 +503,15 @@ class TestWalletKeystoreAddressIntegrityForTestnet(TestCaseForTestnet):
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(ks.xprv, 'tprv8ZgxMBicQKsPecD328MF9ux3dSaSFWci7FNQmuWH7uZ86eY8i3XpvjK8KSH8To2QphiZiUqaYc6nzDC6bTw8YCB9QJjaQL5pAApN4z7vh2B')
         self.assertEqual(ks.xpub, 'tpubD6NzVbkrYhZ4Y5Epun1qZKcACU6NQqocgYyC4RYaYBMWw8nuLSMR7DvzVamkqxwRgrTJ1MBMhc8wwxT2vbHqMu8RBXy4BvjWMxR5EdZroxE')
-        self.assertEqual(w.get_receiving_addresses()[0], 'mpBTXYfWehjW2tavFwpUdqBJbZZkup13k2')
-        self.assertEqual(w.get_change_addresses()[0], 'mtkUQgf1psDtL67wMAKTv19LrdgPWy6GDQ')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('mpBTXYfWehjW2tavFwpUdqBJbZZkup13k2'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('mtkUQgf1psDtL67wMAKTv19LrdgPWy6GDQ'))
 
         ks = create_keystore_from_bip32seed(xtype='p2wpkh-p2sh')
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(ks.xprv, 'uprv8tXDerPXZ1QsVuQ9rV8sN13YoQitC8cD2MtdZJQAVuw19kMMxhhPYnyGLeEiThgLELqNTxS91GTLsVofKAM9LRrkGeRzzEuJRtt1Tcostr7')
         self.assertEqual(ks.xpub, 'upub57Wa4MvRPNyAiPUcxWfsj8zHMSZNbbL4PapEMgon4FTz2YgWWF1e6bHkBvpDKk2Rg2Zy9LsonXFFbv7jNeCZ5kdKWv8UkfcoxpdjJrZuBX6')
-        self.assertEqual(w.get_receiving_addresses()[0], '2MuzNWpcHrXyvPVKzEGT7Xrwp8uEnXXjWnK')
-        self.assertEqual(w.get_change_addresses()[0], '2MzTzY5VcGLwce7YmdEwjXhgQD7LYEKLJTm')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('2MuzNWpcHrXyvPVKzEGT7Xrwp8uEnXXjWnK'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('2MzTzY5VcGLwce7YmdEwjXhgQD7LYEKLJTm'))
 
         ks = create_keystore_from_bip32seed(xtype='p2wpkh')
         w = WalletIntegrityHelper.create_standard_wallet(ks)
@@ -524,15 +524,15 @@ class TestWalletKeystoreAddressIntegrityForTestnet(TestCaseForTestnet):
         w = WalletIntegrityHelper.create_multisig_wallet([ks], '1of1')
         self.assertEqual(ks.xprv, 'tprv8ZgxMBicQKsPecD328MF9ux3dSaSFWci7FNQmuWH7uZ86eY8i3XpvjK8KSH8To2QphiZiUqaYc6nzDC6bTw8YCB9QJjaQL5pAApN4z7vh2B')
         self.assertEqual(ks.xpub, 'tpubD6NzVbkrYhZ4Y5Epun1qZKcACU6NQqocgYyC4RYaYBMWw8nuLSMR7DvzVamkqxwRgrTJ1MBMhc8wwxT2vbHqMu8RBXy4BvjWMxR5EdZroxE')
-        self.assertEqual(w.get_receiving_addresses()[0], '2N6czpsRwQ3d8AHZPNbztf5NotzEsaZmVQ8')
-        self.assertEqual(w.get_change_addresses()[0], '2NDgwz4CoaSzdSAQdrCcLFWsJaVowCNgiPA')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('2N6czpsRwQ3d8AHZPNbztf5NotzEsaZmVQ8'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('2NDgwz4CoaSzdSAQdrCcLFWsJaVowCNgiPA'))
 
         ks = create_keystore_from_bip32seed(xtype='p2wsh-p2sh')
         w = WalletIntegrityHelper.create_multisig_wallet([ks], '1of1')
         self.assertEqual(ks.xprv, 'Uprv95RJn67y7xyEvUZXo9brC5PMXCm9QVHoLdYJUZfhsgmQmvvGj75fduqC9MCC28uETouMLYSFtUqqzfRRcPW6UuyR77YQPeNJKd9t3XutF8b')
         self.assertEqual(ks.xpub, 'Upub5JQfBberxLXY8xdzuB8rZDL65Ebdox1ehrTuGx5KS2JPejFRGePvBi9fzdmgtBFKuVdx1vsvfjdkj5jVfsMWEEjzMPEtA55orYubtrCZmRr')
-        self.assertEqual(w.get_receiving_addresses()[0], '2NBZQ25GC3ipaF13ZY3UT8i2xnDuS17pJqx')
-        self.assertEqual(w.get_change_addresses()[0], '2NDmUgLVX8vKvcJ4FQ37GSUre6QtBzKkb6k')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('2NBZQ25GC3ipaF13ZY3UT8i2xnDuS17pJqx'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('2NDmUgLVX8vKvcJ4FQ37GSUre6QtBzKkb6k'))
 
         ks = create_keystore_from_bip32seed(xtype='p2wsh')
         w = WalletIntegrityHelper.create_multisig_wallet([ks], '1of1')
@@ -886,7 +886,7 @@ class TestWalletSending(TestCaseForTestnet):
         wallet.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create tx
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, '2N1VTMMFb91SH9SNRAkT7z8otP5eZEct4KL', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('2N1VTMMFb91SH9SNRAkT7z8otP5eZEct4KL'), 2500000)]
         coins = wallet.get_spendable_coins(domain=None, config=self.config)
         tx = wallet.make_unsigned_transaction(coins, outputs, config=self.config, fixed_fee=5000)
         tx.set_rbf(True)
@@ -977,7 +977,7 @@ class TestWalletSending(TestCaseForTestnet):
         wallet.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create tx
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, '2N1VTMMFb91SH9SNRAkT7z8otP5eZEct4KL', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('2N1VTMMFb91SH9SNRAkT7z8otP5eZEct4KL'), 2500000)]
         coins = wallet.get_spendable_coins(domain=None, config=self.config)
         tx = wallet.make_unsigned_transaction(coins, outputs, config=self.config, fixed_fee=5000)
         tx.set_rbf(True)
@@ -1033,7 +1033,7 @@ class TestWalletSending(TestCaseForTestnet):
         wallet.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create tx
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, '2N1VTMMFb91SH9SNRAkT7z8otP5eZEct4KL', '!')]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('2N1VTMMFb91SH9SNRAkT7z8otP5eZEct4KL'), '!')]
         coins = wallet.get_spendable_coins(domain=None, config=self.config)
         tx = wallet.make_unsigned_transaction(coins, outputs, config=self.config, fixed_fee=5000)
         tx.set_rbf(True)
@@ -1090,7 +1090,7 @@ class TestWalletSending(TestCaseForTestnet):
         wallet.receive_tx_callback(funding_txid1, funding_tx1, TX_HEIGHT_UNCONFIRMED)
 
         # create tx
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, '2N1VTMMFb91SH9SNRAkT7z8otP5eZEct4KL', '!')]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('2N1VTMMFb91SH9SNRAkT7z8otP5eZEct4KL'), '!')]
         coins = wallet.get_spendable_coins(domain=None, config=self.config)
         tx = wallet.make_unsigned_transaction(coins, outputs, config=self.config, fixed_fee=5000)
         tx.set_rbf(True)
@@ -1156,7 +1156,7 @@ class TestWalletSending(TestCaseForTestnet):
         wallet.receive_tx_callback(funding_txid1, funding_tx1, TX_HEIGHT_UNCONFIRMED)
 
         # create tx
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, '2N1VTMMFb91SH9SNRAkT7z8otP5eZEct4KL', 2_500_000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('2N1VTMMFb91SH9SNRAkT7z8otP5eZEct4KL'), 2_500_000)]
         coins = wallet.get_spendable_coins(domain=None, config=config)
         tx = wallet.make_unsigned_transaction(coins, outputs, config=config, fixed_fee=5000)
         tx.set_rbf(True)
@@ -1220,7 +1220,7 @@ class TestWalletSending(TestCaseForTestnet):
 
         # create new tx (output should be batched with existing!)
         # new input will be needed!
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, '2NCVwbmEpvaXKHpXUGJfJr9iB5vtRN3vcut', 6_000_000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('2NCVwbmEpvaXKHpXUGJfJr9iB5vtRN3vcut'), 6_000_000)]
         coins = wallet.get_spendable_coins(domain=None, config=config)
         tx = wallet.make_unsigned_transaction(coins, outputs, config=config, fixed_fee=100_000)
         tx.set_rbf(True)
@@ -1294,7 +1294,7 @@ class TestWalletSending(TestCaseForTestnet):
                 else:
                     return []
 
-        privkeys = ['93NQ7CFbwTPyKDJLXe97jczw33fiLijam2SCZL3Uinz1NSbHrTu', ]
+        privkeys = [frombtc('93NQ7CFbwTPyKDJLXe97jczw33fiLijam2SCZL3Uinz1NSbHrTu'), ]
         network = NetworkMock()
         dest_addr = frombtc('tb1q3ws2p0qjk5vrravv065xqlnkckvzcpclk79eu2')
         tx = sweep(privkeys, network, config=None, recipient=dest_addr, fee=5000, locktime=1325785, tx_version=1)
@@ -1490,9 +1490,9 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
     @mock.patch.object(storage.WalletStorage, '_write')
     def test_sending_offline_wif_online_addr_p2pkh(self, mock_write):  # compressed pubkey
         wallet_offline = WalletIntegrityHelper.create_imported_wallet(privkeys=True)
-        wallet_offline.import_private_key('p2pkh:cQDxbmQfwRV3vP1mdnVHq37nJekHLsuD3wdSQseBRA2ct4MFk5Pq', password=None)
+        wallet_offline.import_private_key(frombtc('p2pkh:cQDxbmQfwRV3vP1mdnVHq37nJekHLsuD3wdSQseBRA2ct4MFk5Pq'), password=None)
         wallet_online = WalletIntegrityHelper.create_imported_wallet(privkeys=False)
-        wallet_online.import_address('mg2jk6S5WGDhUPA8mLSxDLWpUoQnX1zzoG')
+        wallet_online.import_address(frombtc('mg2jk6S5WGDhUPA8mLSxDLWpUoQnX1zzoG'))
 
         # bootstrap wallet_online
         funding_tx = Transaction('01000000000101197a89cff51096b9dd4214cdee0eb90cb27a25477e739521d728a679724042730100000000fdffffff048096980000000000160014dab37af8fefbbb31887a0a5f9b2698f4a7b45f6a80969800000000001976a91405a20074ef7eb42c7c6fcd4f499faa699742783288ac809698000000000017a914b808938a8007bc54509cd946944c479c0fa6554f87131b2c0400000000160014a04dfdb9a9aeac3b3fada6f43c2a66886186e2440247304402204f5dbb9dda65eab26179f1ca7c37c8baf028153815085dd1bbb2b826296e3b870220379fcd825742d6e2bdff772f347b629047824f289a5499a501033f6c3495594901210363c9c98740fe0455c646215cea9b13807b758791c8af7b74e62968bef57ff8ae1e391400')
@@ -1525,9 +1525,9 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
     @mock.patch.object(storage.WalletStorage, '_write')
     def test_sending_offline_wif_online_addr_p2wpkh_p2sh(self, mock_write):
         wallet_offline = WalletIntegrityHelper.create_imported_wallet(privkeys=True)
-        wallet_offline.import_private_key('p2wpkh-p2sh:cU9hVzhpvfn91u2zTVn8uqF2ymS7ucYH8V5TmsTDmuyMHgRk9WsJ', password=None)
+        wallet_offline.import_private_key(frombtc('p2wpkh-p2sh:cU9hVzhpvfn91u2zTVn8uqF2ymS7ucYH8V5TmsTDmuyMHgRk9WsJ'), password=None)
         wallet_online = WalletIntegrityHelper.create_imported_wallet(privkeys=False)
-        wallet_online.import_address('2NA2JbUVK7HGWUCK5RXSVNHrkgUYF8d9zV8')
+        wallet_online.import_address(frombtc('2NA2JbUVK7HGWUCK5RXSVNHrkgUYF8d9zV8'))
 
         # bootstrap wallet_online
         funding_tx = Transaction('01000000000101197a89cff51096b9dd4214cdee0eb90cb27a25477e739521d728a679724042730100000000fdffffff048096980000000000160014dab37af8fefbbb31887a0a5f9b2698f4a7b45f6a80969800000000001976a91405a20074ef7eb42c7c6fcd4f499faa699742783288ac809698000000000017a914b808938a8007bc54509cd946944c479c0fa6554f87131b2c0400000000160014a04dfdb9a9aeac3b3fada6f43c2a66886186e2440247304402204f5dbb9dda65eab26179f1ca7c37c8baf028153815085dd1bbb2b826296e3b870220379fcd825742d6e2bdff772f347b629047824f289a5499a501033f6c3495594901210363c9c98740fe0455c646215cea9b13807b758791c8af7b74e62968bef57ff8ae1e391400')
@@ -1560,7 +1560,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
     @mock.patch.object(storage.WalletStorage, '_write')
     def test_sending_offline_wif_online_addr_p2wpkh(self, mock_write):
         wallet_offline = WalletIntegrityHelper.create_imported_wallet(privkeys=True)
-        wallet_offline.import_private_key('p2wpkh:cPuQzcNEgbeYZ5at9VdGkCwkPA9r34gvEVJjuoz384rTfYpahfe7', password=None)
+        wallet_offline.import_private_key(frombtc('p2wpkh:cPuQzcNEgbeYZ5at9VdGkCwkPA9r34gvEVJjuoz384rTfYpahfe7'), password=None)
         wallet_online = WalletIntegrityHelper.create_imported_wallet(privkeys=False)
         wallet_online.import_address(frombtc('tb1qm2eh4787lwanrzr6pf0ekf5c7jnmghm2y9k529'))
 
@@ -1600,7 +1600,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
             gap_limit=4
         )
         wallet_online = WalletIntegrityHelper.create_imported_wallet(privkeys=False)
-        wallet_online.import_address('mg2jk6S5WGDhUPA8mLSxDLWpUoQnX1zzoG')
+        wallet_online.import_address(frombtc('mg2jk6S5WGDhUPA8mLSxDLWpUoQnX1zzoG'))
 
         # bootstrap wallet_online
         funding_tx = Transaction('01000000000101197a89cff51096b9dd4214cdee0eb90cb27a25477e739521d728a679724042730100000000fdffffff048096980000000000160014dab37af8fefbbb31887a0a5f9b2698f4a7b45f6a80969800000000001976a91405a20074ef7eb42c7c6fcd4f499faa699742783288ac809698000000000017a914b808938a8007bc54509cd946944c479c0fa6554f87131b2c0400000000160014a04dfdb9a9aeac3b3fada6f43c2a66886186e2440247304402204f5dbb9dda65eab26179f1ca7c37c8baf028153815085dd1bbb2b826296e3b870220379fcd825742d6e2bdff772f347b629047824f289a5499a501033f6c3495594901210363c9c98740fe0455c646215cea9b13807b758791c8af7b74e62968bef57ff8ae1e391400')
@@ -1638,7 +1638,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
             gap_limit=4
         )
         wallet_online = WalletIntegrityHelper.create_imported_wallet(privkeys=False)
-        wallet_online.import_address('2NA2JbUVK7HGWUCK5RXSVNHrkgUYF8d9zV8')
+        wallet_online.import_address(frombtc('2NA2JbUVK7HGWUCK5RXSVNHrkgUYF8d9zV8'))
 
         # bootstrap wallet_online
         funding_tx = Transaction('01000000000101197a89cff51096b9dd4214cdee0eb90cb27a25477e739521d728a679724042730100000000fdffffff048096980000000000160014dab37af8fefbbb31887a0a5f9b2698f4a7b45f6a80969800000000001976a91405a20074ef7eb42c7c6fcd4f499faa699742783288ac809698000000000017a914b808938a8007bc54509cd946944c479c0fa6554f87131b2c0400000000160014a04dfdb9a9aeac3b3fada6f43c2a66886186e2440247304402204f5dbb9dda65eab26179f1ca7c37c8baf028153815085dd1bbb2b826296e3b870220379fcd825742d6e2bdff772f347b629047824f289a5499a501033f6c3495594901210363c9c98740fe0455c646215cea9b13807b758791c8af7b74e62968bef57ff8ae1e391400')
@@ -1726,7 +1726,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
             '2of3', gap_limit=2
         )
         wallet_online = WalletIntegrityHelper.create_imported_wallet(privkeys=False)
-        wallet_online.import_address('2N4z38eTKcWTZnfugCCfRyXtXWMLnn8HDfw')
+        wallet_online.import_address(frombtc('2N4z38eTKcWTZnfugCCfRyXtXWMLnn8HDfw'))
 
         # bootstrap wallet_online
         funding_tx = Transaction('010000000001016207d958dc46508d706e4cd7d3bc46c5c2b02160e2578e5fad2efafc3927050301000000171600147a4fc8cdc1c2cf7abbcd88ef6d880e59269797acfdffffff02809698000000000017a91480c2353f6a7bc3c71e99e062655b19adb3dd2e48870d0916020000000017a914703f83ef20f3a52d908475dcad00c5144164d5a2870247304402203b1a5cb48cadeee14fa6c7bbf2bc581ca63104762ec5c37c703df778884cc5b702203233fa53a2a0bfbd85617c636e415da72214e359282cce409019319d031766c50121021112c01a48cc7ea13cba70493c6bffebb3e805df10ff4611d2bf559d26e25c04bf391400')
@@ -1735,7 +1735,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, '2MuCQQHJNnrXzQzuqfUCfAwAjPqpyEHbgue', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('2MuCQQHJNnrXzQzuqfUCfAwAjPqpyEHbgue'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325503
@@ -1784,7 +1784,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
             '2of2', gap_limit=2
         )
         wallet_online = WalletIntegrityHelper.create_imported_wallet(privkeys=False)
-        wallet_online.import_address('2MsHQRm1pNi6VsmXYRxYMcCTdPu7Xa1RyFe')
+        wallet_online.import_address(frombtc('2MsHQRm1pNi6VsmXYRxYMcCTdPu7Xa1RyFe'))
 
         # bootstrap wallet_online
         funding_tx = Transaction('0100000000010118d494d28e5c3bf61566ca0313e22c3b561b888a317d689cc8b47b947adebd440000000017160014aec84704ea8508ddb94a3c6e53f0992d33a2a529fdffffff020f0925000000000017a91409f7aae0265787a02de22839d41e9c927768230287809698000000000017a91400698bd11c38f887f17c99846d9be96321fbf989870247304402206b906369f4075ebcfc149f7429dcfc34e11e1b7bbfc85d1185d5e9c324be0d3702203ce7fc12fd3131920fbcbb733250f05dbf7d03e18a4656232ee69d5c54dd46bd0121028a4b697a37f3f57f6e53f90db077fa9696095b277454fda839c211d640d48649c0391400')
@@ -1793,7 +1793,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, '2N8CtJRwxb2GCaiWWdSHLZHHLoZy53CCyxf', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('2N8CtJRwxb2GCaiWWdSHLZHHLoZy53CCyxf'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325504
@@ -1853,7 +1853,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, '2MyoZVy8T1t94yLmyKu8DP1SmbWvnxbkwRA', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('2MyoZVy8T1t94yLmyKu8DP1SmbWvnxbkwRA'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325505

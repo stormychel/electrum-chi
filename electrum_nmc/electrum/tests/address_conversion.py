@@ -79,6 +79,8 @@ def frombtc(inp: str) -> str:
         elif vch[0] in range (128, 136):  # Privkey with optional script type
             offset = vch[0] - 128
             new_version = BitcoinMainnet.WIF_PREFIX + offset
+        elif vch[0] == 239:
+            new_version = BitcoinTestnet.WIF_PREFIX
         else:
             raise AssertionError(f"Unknown Bitcoin base58 version: {old_version}")
 

@@ -9,8 +9,10 @@ if [ -d "./electrum" ]; then
 fi
 
 for i in **/*.py; do
-    # This RegEx is designed to exclude "btchip" and "C2YxWaiTpNPuxjSNhUlBtcJmcdkz3"
-    if ./contrib/print_python_strings "$i" "btc$|btc[^hj]|btch[^i]|btchi[^p]|btcj[^m]|btcjm[^c]"; then
+    if ./contrib/print_python_strings "$i" "btc" \
+        | grep -v "btchip" \
+        | grep -v 'electrum/tests/.*\.py.*C2YxWaiTpNPuxjSNhUlBtcJmcdkz3' \
+        | grep -v 'electrum/tests/.*\.py.*3KaBTcviBLEJajTEMstsA2GWjYoPzPK7Y7'; then
         echo "Rebranding needed"
         exit 1
     fi
@@ -22,7 +24,8 @@ for i in **/*.py; do
     if ./contrib/print_python_strings "$i" "bitcoin" \
         | grep -v "'b\"Bitcoin seed\"'" \
         | grep -v "main_window.py.*\"'bitcoin'\"" \
-        | grep -v "address_conversion.*Unknown Bitcoin" \
+        | grep -v 'address_conversion\.py' \
+        | grep -v 'electrum/tests/.*\.py.*bitcoin:' \
         | grep -v "org.bitcoin.protocols.payments" \
         | grep -v "electrum_nmc/electrum/plugins/ledger/"; then
         echo "Rebranding needed"

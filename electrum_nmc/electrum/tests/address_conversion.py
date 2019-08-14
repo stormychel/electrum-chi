@@ -53,7 +53,7 @@ def frombtc(inp: str) -> str:
         prefix = inp[:colon]
         stripped = inp[colon + 1:]
         if prefix == "bitcoin":
-            prefix = "namecoin"
+            prefix = "xaya"
         return prefix + ":" + frombtc(stripped)
 
     # Handle bech32 segwit data first.

@@ -85,11 +85,11 @@ class TestUtil(SequentialTestCase):
                                 {'address': frombtc('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'), 'amount': 4000, 'label': 'electrum-test', 'message': u'electrum test', 'memo': u'electrum test', 'r': 'http://domain.tld/page', 'test': 'none'})
 
     def test_parse_URI_no_address_request_url(self):
-        self._do_test_parse_URI('namecoin:?r=http://domain.tld/page?h%3D2a8628fc2fbe',
+        self._do_test_parse_URI('xaya:?r=http://domain.tld/page?h%3D2a8628fc2fbe',
                                 {'r': 'http://domain.tld/page?h=2a8628fc2fbe'})
 
     def test_parse_URI_invalid_address(self):
-        self.assertRaises(BaseException, parse_URI, 'namecoin:invalidaddress')
+        self.assertRaises(BaseException, parse_URI, 'xaya:invalidaddress')
 
     def test_parse_URI_invalid(self):
         self.assertRaises(BaseException, parse_URI, frombtc('notnamecoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'))

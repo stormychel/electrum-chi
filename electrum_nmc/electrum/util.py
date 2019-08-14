@@ -648,20 +648,14 @@ def time_difference(distance_in_time, include_seconds):
         return "over %d years" % (round(distance_in_minutes / 525600))
 
 mainnet_block_explorers = {
-    'Cyphrs.com': ('https://namecoin.cyphrs.com/',
-                        {'tx': 'tx/', 'addr': 'address/'}),
-    'Namecha.in (non-libre; wiretapped by Cloudflare; discriminates against Tor)': ('https://namecha.in/',
-                        {'tx': 'tx/', 'addr': 'address/'}),
-    'Bchain.info (non-libre; no name support)': ('https://bchain.info/NMC/',
-                        {'tx': 'tx/', 'addr': 'addr/'}),
-    'BitInfoCharts.com (non-libre; wiretapped by Cloudflare; discriminates against Tor; no name support)': ('https://bitinfocharts.com/namecoin/',
+    'Xaya.io': ('https://explorer.xaya.io/',
                         {'tx': 'tx/', 'addr': 'address/'}),
     'system default': ('blockchain:/',
                         {'tx': 'tx/', 'addr': 'address/'}),
 }
 
 testnet_block_explorers = {
-    'system default': ('blockchain://000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943/',
+    'system default': ('blockchain://5195fc01d0e23d70d1f929f21ec55f47e1c6ea1e66fae98ee44cbbc994509bba/',
                        {'tx': 'tx/', 'addr': 'address/'}),
 }
 
@@ -671,7 +665,7 @@ def block_explorer_info():
 
 def block_explorer(config: 'SimpleConfig') -> str:
     from . import constants
-    default_ = 'Cyphrs.com'
+    default_ = 'Xaya.io'
     be_key = config.get('block_explorer', default_)
     be = block_explorer_info().get(be_key)
     return be_key if be is not None else default_
@@ -711,7 +705,7 @@ def parse_URI(uri: str, on_pr: Callable = None, *, loop=None) -> dict:
         return {'address': uri}
 
     u = urllib.parse.urlparse(uri)
-    if u.scheme != 'namecoin':
+    if u.scheme != 'xaya':
         raise InvalidBitcoinURI("Not a namecoin URI")
     address = u.path
 
@@ -799,7 +793,7 @@ def create_bip21_uri(addr, amount_sat: Optional[int], message: Optional[str],
             raise Exception(f"illegal key for URI: {repr(k)}")
         v = urllib.parse.quote(v)
         query.append(f"{k}={v}")
-    p = urllib.parse.ParseResult(scheme='namecoin', netloc='', path=addr, params='', query='&'.join(query), fragment='')
+    p = urllib.parse.ParseResult(scheme='xaya', netloc='', path=addr, params='', query='&'.join(query), fragment='')
     return str(urllib.parse.urlunparse(p))
 
 

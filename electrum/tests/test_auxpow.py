@@ -18,16 +18,19 @@ namecoin_target_37174 = 0x242a4a0000000000000000000000000000000000000000000000
 class Test_auxpow(SequentialTestCase):
 
     @staticmethod
-    def deserialize_with_auxpow(data_hex: str) -> dict:
+    def deserialize_with_auxpow(data_hex: str, **kwargs):
         """Deserializes a block header given as hex string
 
         This makes sure that the data is always deserialised as full
-        block header with AuxPoW."""
+        block header with AuxPoW.
+
+        The keyword-arguments expect_trailing_data and start_position can be
+        set and will be passed on to deserialize_full_header."""
 
         # We pass a height beyond the last checkpoint, because
-        # deserialize_header expects checkpointed headers to be truncated
+        # deserialize_full_header expects checkpointed headers to be truncated
         # by ElectrumX (i.e. not contain an AuxPoW).
-        return blockchain.deserialize_header(bfh(data_hex), constants.net.max_checkpoint() + 1)
+        return blockchain.deserialize_full_header(bfh(data_hex), constants.net.max_checkpoint() + 1, **kwargs)
 
     @staticmethod
     def clear_coinbase_outputs(auxpow_header: dict, fix_merkle_root=True) -> None:
@@ -89,7 +92,7 @@ class Test_auxpow(SequentialTestCase):
         chain_merkle_index = header_auxpow['chain_merkle_index']
         self.assertEqual(11, chain_merkle_index)
 
-        expected_parent_header = blockchain.deserialize_header(bfh('0100000055a7bc918827dbe7d8027781d803f4b418589b7b9fc03e718a03000000000000625a3d6dc4dfb0ab25f450cd202ff3bdb074f2edde1ddb4af5217e10c9dbafb9639a0a4fd7690d1a25aeaa97'), 1)
+        expected_parent_header = blockchain.deserialize_pure_header(bfh('0100000055a7bc918827dbe7d8027781d803f4b418589b7b9fc03e718a03000000000000625a3d6dc4dfb0ab25f450cd202ff3bdb074f2edde1ddb4af5217e10c9dbafb9639a0a4fd7690d1a25aeaa97'), None)
 
         expected_parent_hash = blockchain.hash_header(expected_parent_header)
         observed_parent_hash = blockchain.hash_header(header_auxpow['parent_header'])
@@ -98,6 +101,15 @@ class Test_auxpow(SequentialTestCase):
         expected_parent_merkle_root = expected_parent_header['merkle_root']
         observed_parent_merkle_root = header_auxpow['parent_header']['merkle_root']
         self.assertEqual(expected_parent_merkle_root, observed_parent_merkle_root)
+
+    def test_deserialize_should_reject_trailing_junk(self):
+        with self.assertRaises(Exception):
+            self.deserialize_with_auxpow(namecoin_header_37174 + "00")
+
+    def test_deserialize_with_expected_trailing_data(self):
+        data = "00" + namecoin_header_37174 + "00"
+        _, start_position = self.deserialize_with_auxpow(data, expect_trailing_data=True, start_position=1)
+        self.assertEqual(start_position, len(namecoin_header_37174)//2 + 1)
 
     # Verify the AuxPoW header from Namecoin block #37,174.
     def test_verify_auxpow_header_explicit_coinbase(self):

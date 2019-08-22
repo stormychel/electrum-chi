@@ -247,7 +247,8 @@ def configure_logging(config):
     logging.getLogger('kivy').propagate = False
 
     from . import ELECTRUM_VERSION
-    _logger.info(f"Electrum-NMC version: {ELECTRUM_VERSION} - https://www.namecoin.org - https://github.com/namecoin/electrum-nmc")
+    from .constants import GIT_REPO_URL
+    _logger.info(f"Electrum-NMC version: {ELECTRUM_VERSION} - https://www.namecoin.org - {GIT_REPO_URL}")
     _logger.info(f"Python version: {sys.version}. On platform: {describe_os_version()}")
     _logger.info(f"Logging to file: {str(_logfile_path)}")
     _logger.info(f"Log filters: verbosity {repr(verbosity)}, verbosity_shortcuts {repr(verbosity_shortcuts)}")

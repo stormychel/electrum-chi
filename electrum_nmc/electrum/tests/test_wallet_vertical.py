@@ -862,7 +862,20 @@ class TestWalletSending(TestCaseForTestnet):
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
-    def test_bump_fee_p2pkh_when_there_is_a_change_address(self, mock_write):
+    def test_rbf(self, mock_write):
+        for simulate_moving_txs in (False, True):
+            with self.subTest(msg="_bump_fee_p2pkh_when_there_is_a_change_address", simulate_moving_txs=simulate_moving_txs):
+                self._bump_fee_p2pkh_when_there_is_a_change_address(simulate_moving_txs=simulate_moving_txs)
+            with self.subTest(msg="_bump_fee_p2wpkh_when_there_is_a_change_address", simulate_moving_txs=simulate_moving_txs):
+                self._bump_fee_p2wpkh_when_there_is_a_change_address(simulate_moving_txs=simulate_moving_txs)
+            with self.subTest(msg="_bump_fee_when_user_sends_max", simulate_moving_txs=simulate_moving_txs):
+                self._bump_fee_when_user_sends_max(simulate_moving_txs=simulate_moving_txs)
+            with self.subTest(msg="_bump_fee_when_new_inputs_need_to_be_added", simulate_moving_txs=simulate_moving_txs):
+                self._bump_fee_when_new_inputs_need_to_be_added(simulate_moving_txs=simulate_moving_txs)
+            with self.subTest(msg="_rbf_batching", simulate_moving_txs=simulate_moving_txs):
+                self._rbf_batching(simulate_moving_txs=simulate_moving_txs)
+
+    def _bump_fee_p2pkh_when_there_is_a_change_address(self, *, simulate_moving_txs):
         wallet = self.create_standard_wallet_from_seed('fold object utility erase deputy output stadium feed stereo usage modify bean')
 
         # bootstrap wallet
@@ -879,6 +892,8 @@ class TestWalletSending(TestCaseForTestnet):
         tx.set_rbf(True)
         tx.locktime = 1325501
         tx.version = 1
+        if simulate_moving_txs:
+            tx = Transaction(str(tx))
         wallet.sign_transaction(tx, password=None)
 
         self.assertTrue(tx.is_complete())
@@ -898,9 +913,11 @@ class TestWalletSending(TestCaseForTestnet):
         self.assertEqual((0, funding_output_value - 2500000 - 5000, 0), wallet.get_balance())
 
         # bump tx
-        tx = wallet.bump_fee(tx=Transaction(tx.serialize()), new_fee_rate=70, config=self.config)
+        tx = wallet.bump_fee(tx=Transaction(tx.serialize()), new_fee_rate=70.0, config=self.config)
         tx.locktime = 1325501
         tx.version = 1
+        if simulate_moving_txs:
+            tx = Transaction(str(tx))
         self.assertFalse(tx.is_complete())
 
         wallet.sign_transaction(tx, password=None)
@@ -949,9 +966,7 @@ class TestWalletSending(TestCaseForTestnet):
         wallet.receive_tx_callback(tx.txid(), tx, TX_HEIGHT_UNCONFIRMED)
         self.assertEqual((0, funding_output_value - 50000, 0), wallet.get_balance())
 
-    @needs_test_with_all_ecc_implementations
-    @mock.patch.object(storage.WalletStorage, '_write')
-    def test_bump_fee_p2wpkh_when_there_is_a_change_address(self, mock_write):
+    def _bump_fee_p2wpkh_when_there_is_a_change_address(self, *, simulate_moving_txs):
         wallet = self.create_standard_wallet_from_seed('frost repair depend effort salon ring foam oak cancel receive save usage')
 
         # bootstrap wallet
@@ -968,6 +983,8 @@ class TestWalletSending(TestCaseForTestnet):
         tx.set_rbf(True)
         tx.locktime = 1325499
         tx.version = 1
+        if simulate_moving_txs:
+            tx = Transaction(str(tx))
         wallet.sign_transaction(tx, password=None)
 
         self.assertTrue(tx.is_complete())
@@ -987,9 +1004,11 @@ class TestWalletSending(TestCaseForTestnet):
         self.assertEqual((0, funding_output_value - 2500000 - 5000, 0), wallet.get_balance())
 
         # bump tx
-        tx = wallet.bump_fee(tx=Transaction(tx.serialize()), new_fee_rate=70, config=self.config)
+        tx = wallet.bump_fee(tx=Transaction(tx.serialize()), new_fee_rate=70.0, config=self.config)
         tx.locktime = 1325500
         tx.version = 1
+        if simulate_moving_txs:
+            tx = Transaction(str(tx))
         self.assertFalse(tx.is_complete())
 
         wallet.sign_transaction(tx, password=None)
@@ -1004,9 +1023,7 @@ class TestWalletSending(TestCaseForTestnet):
         wallet.receive_tx_callback(tx.txid(), tx, TX_HEIGHT_UNCONFIRMED)
         self.assertEqual((0, 7490060, 0), wallet.get_balance())
 
-    @needs_test_with_all_ecc_implementations
-    @mock.patch.object(storage.WalletStorage, '_write')
-    def test_bump_fee_when_user_sends_max(self, mock_write):
+    def _bump_fee_when_user_sends_max(self, *, simulate_moving_txs):
         wallet = self.create_standard_wallet_from_seed('frost repair depend effort salon ring foam oak cancel receive save usage')
 
         # bootstrap wallet
@@ -1022,6 +1039,8 @@ class TestWalletSending(TestCaseForTestnet):
         tx.set_rbf(True)
         tx.locktime = 1325499
         tx.version = 1
+        if simulate_moving_txs:
+            tx = Transaction(str(tx))
         wallet.sign_transaction(tx, password=None)
 
         self.assertTrue(tx.is_complete())
@@ -1041,9 +1060,11 @@ class TestWalletSending(TestCaseForTestnet):
         self.assertEqual((0, 0, 0), wallet.get_balance())
 
         # bump tx
-        tx = wallet.bump_fee(tx=Transaction(tx.serialize()), new_fee_rate=70, config=self.config)
+        tx = wallet.bump_fee(tx=Transaction(tx.serialize()), new_fee_rate=70.0, config=self.config)
         tx.locktime = 1325500
         tx.version = 1
+        if simulate_moving_txs:
+            tx = Transaction(str(tx))
         self.assertFalse(tx.is_complete())
 
         wallet.sign_transaction(tx, password=None)
@@ -1058,9 +1079,7 @@ class TestWalletSending(TestCaseForTestnet):
         wallet.receive_tx_callback(tx.txid(), tx, TX_HEIGHT_UNCONFIRMED)
         self.assertEqual((0, 0, 0), wallet.get_balance())
 
-    @needs_test_with_all_ecc_implementations
-    @mock.patch.object(storage.WalletStorage, '_write')
-    def test_bump_fee_when_new_inputs_need_to_be_added(self, mock_write):
+    def _bump_fee_when_new_inputs_need_to_be_added(self, *, simulate_moving_txs):
         wallet = self.create_standard_wallet_from_seed('frost repair depend effort salon ring foam oak cancel receive save usage')
 
         # bootstrap wallet (incoming funding_tx1)
@@ -1077,6 +1096,8 @@ class TestWalletSending(TestCaseForTestnet):
         tx.set_rbf(True)
         tx.locktime = 1325499
         tx.version = 1
+        if simulate_moving_txs:
+            tx = Transaction(str(tx))
         wallet.sign_transaction(tx, password=None)
 
         self.assertTrue(tx.is_complete())
@@ -1104,9 +1125,11 @@ class TestWalletSending(TestCaseForTestnet):
         self.assertEqual((0, 5_000_000, 0), wallet.get_balance())
 
         # bump tx
-        tx = wallet.bump_fee(tx=Transaction(tx.serialize()), new_fee_rate=70, config=self.config)
+        tx = wallet.bump_fee(tx=Transaction(tx.serialize()), new_fee_rate=70.0, config=self.config)
         tx.locktime = 1325500
         tx.version = 1
+        if simulate_moving_txs:
+            tx = Transaction(str(tx))
         self.assertFalse(tx.is_complete())
 
         wallet.sign_transaction(tx, password=None)
@@ -1121,9 +1144,7 @@ class TestWalletSending(TestCaseForTestnet):
         wallet.receive_tx_callback(tx.txid(), tx, TX_HEIGHT_UNCONFIRMED)
         self.assertEqual((0, 4_990_300, 0), wallet.get_balance())
 
-    @needs_test_with_all_ecc_implementations
-    @mock.patch.object(storage.WalletStorage, '_write')
-    def test_rbf_batching(self, mock_write):
+    def _rbf_batching(self, *, simulate_moving_txs):
         wallet = self.create_standard_wallet_from_seed('frost repair depend effort salon ring foam oak cancel receive save usage')
         config = SimpleConfig({'electrum_path': self.electrum_path, 'batch_rbf': True})
 
@@ -1141,6 +1162,8 @@ class TestWalletSending(TestCaseForTestnet):
         tx.set_rbf(True)
         tx.locktime = 1325499
         tx.version = 1
+        if simulate_moving_txs:
+            tx = Transaction(str(tx))
         wallet.sign_transaction(tx, password=None)
 
         self.assertTrue(tx.is_complete())
@@ -1175,6 +1198,8 @@ class TestWalletSending(TestCaseForTestnet):
         tx.set_rbf(True)
         tx.locktime = 1325499
         tx.version = 1
+        if simulate_moving_txs:
+            tx = Transaction(str(tx))
         wallet.sign_transaction(tx, password=None)
 
         self.assertTrue(tx.is_complete())
@@ -1201,6 +1226,8 @@ class TestWalletSending(TestCaseForTestnet):
         tx.set_rbf(True)
         tx.locktime = 1325499
         tx.version = 1
+        if simulate_moving_txs:
+            tx = Transaction(str(tx))
         wallet.sign_transaction(tx, password=None)
 
         self.assertTrue(tx.is_complete())

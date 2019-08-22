@@ -30,7 +30,6 @@ import traceback
 import json
 import shutil
 import weakref
-import webbrowser
 import csv
 from decimal import Decimal
 import base64
@@ -87,7 +86,7 @@ from .util import (read_QIcon, ColorScheme, text_dialog, icon_path, WaitingDialo
                    OkButton, InfoButton, WWLabel, TaskThread, CancelButton,
                    CloseButton, HelpButton, MessageBoxMixin, EnterButton, expiration_values,
                    ButtonsLineEdit, CopyCloseButton, import_meta_gui, export_meta_gui,
-                   filename_field, address_field, char_width_in_lineedit)
+                   filename_field, address_field, char_width_in_lineedit, webopen)
 from .installwizard import WIF_HELP_TEXT
 from .history_list import HistoryList, HistoryModel
 from .update_checker import UpdateCheck, UpdateCheckThread
@@ -643,9 +642,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         help_menu = menubar.addMenu(_("&Help"))
         help_menu.addAction(_("&About"), self.show_about)
         help_menu.addAction(_("&Check for updates"), self.show_update_check)
-        help_menu.addAction(_("&Official website"), lambda: webbrowser.open("https://www.namecoin.org"))
+        help_menu.addAction(_("&Official website"), lambda: webopen("https://www.namecoin.org"))
         help_menu.addSeparator()
-        help_menu.addAction(_("&Documentation"), lambda: webbrowser.open("http://docs.electrum.org/")).setShortcut(QKeySequence.HelpContents)
+        help_menu.addAction(_("&Documentation"), lambda: webopen("http://docs.electrum.org/")).setShortcut(QKeySequence.HelpContents)
         help_menu.addAction(_("&Report Bug"), self.show_report_bug)
         help_menu.addSeparator()
         help_menu.addAction(_("&Donate to server"), self.donate_to_server)
@@ -676,7 +675,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
     def show_report_bug(self):
         msg = ' '.join([
             _("Please report any bugs as issues on github:<br/>"),
-            "<a href=\"https://github.com/namecoin/electrum-nmc/issues\">https://github.com/namecoin/electrum-nmc/issues</a><br/><br/>",
+            f'''<a href="{constants.GIT_REPO_ISSUES_URL}">{constants.GIT_REPO_ISSUES_URL}</a><br/><br/>''',
             _("Before reporting a bug, upgrade to the most recent version of Electrum-NMC (latest release or git HEAD), and include the version number in your report."),
             _("Try to explain not only what the bug is, but how it occurs.")
          ])

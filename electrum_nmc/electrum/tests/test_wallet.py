@@ -18,6 +18,8 @@ from electrum.json_db import JsonDB
 
 from . import SequentialTestCase
 
+from .address_conversion import frombtc
+
 
 class FakeSynchronizer(object):
 
@@ -180,61 +182,41 @@ class TestCreateRestoreWallet(WalletTestCase):
         self.assertEqual(passphrase, wallet.keystore.get_passphrase(password))
         self.assertEqual(text, wallet.keystore.get_seed(password))
         self.assertEqual(encrypt_file, wallet.storage.is_encrypted())
-        #self.assertEqual('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw', wallet.get_receiving_addresses()[0])
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual('nc1q2ccr34wzep58d4239tl3x3734ttle92aquuuud', wallet.get_receiving_addresses()[0])
+        self.assertEqual(frombtc('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw'), wallet.get_receiving_addresses()[0])
 
     def test_restore_wallet_from_text_xpub(self):
         text = 'zpub6nydoME6CFdJtMpzHW5BNoPz6i6XbeT9qfz72wsRqGdgGEYeivso6xjfw8cGcCyHwF7BNW4LDuHF35XrZsovBLWMF4qXSjmhTXYiHbWqGLt'
         d = restore_wallet_from_text(text, path=self.wallet_path, network=None, gap_limit=1)
         wallet = d['wallet']  # type: Standard_Wallet
         self.assertEqual(text, wallet.keystore.get_master_public_key())
-        #self.assertEqual('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw', wallet.get_receiving_addresses()[0])
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual('nc1q2ccr34wzep58d4239tl3x3734ttle92aquuuud', wallet.get_receiving_addresses()[0])
+        self.assertEqual(frombtc('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw'), wallet.get_receiving_addresses()[0])
 
     def test_restore_wallet_from_text_xprv(self):
         text = 'zprvAZzHPqhCMt51fskXBUYB1fTFYgG3CBjJUT4WEZTpGw6hPSDWBPZYZARC5sE9xAcX8NeWvvucFws8vZxEa65RosKAhy7r5MsmKTxr3hmNmea'
         d = restore_wallet_from_text(text, path=self.wallet_path, network=None, gap_limit=1)
         wallet = d['wallet']  # type: Standard_Wallet
         self.assertEqual(text, wallet.keystore.get_master_private_key(password=None))
-        #self.assertEqual('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw', wallet.get_receiving_addresses()[0])
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual('nc1q2ccr34wzep58d4239tl3x3734ttle92aquuuud', wallet.get_receiving_addresses()[0])
+        self.assertEqual(frombtc('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw'), wallet.get_receiving_addresses()[0])
 
     def test_restore_wallet_from_text_addresses(self):
-        #text = 'bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw bc1qnp78h78vp92pwdwq5xvh8eprlga5q8gu66960c'
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        text = 'nc1q2ccr34wzep58d4239tl3x3734ttle92aquuuud nc1qnp78h78vp92pwdwq5xvh8eprlga5q8guak6a0m'
+        text = frombtc('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw') + ' ' + frombtc('bc1qnp78h78vp92pwdwq5xvh8eprlga5q8gu66960c')
         d = restore_wallet_from_text(text, path=self.wallet_path, network=None)
         wallet = d['wallet']  # type: Imported_Wallet
-        #self.assertEqual('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw', wallet.get_receiving_addresses()[0])
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual('nc1q2ccr34wzep58d4239tl3x3734ttle92aquuuud', wallet.get_receiving_addresses()[0])
+        self.assertEqual(frombtc('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw'), wallet.get_receiving_addresses()[0])
         self.assertEqual(2, len(wallet.get_receiving_addresses()))
         # also test addr deletion
-        #wallet.delete_address('bc1qnp78h78vp92pwdwq5xvh8eprlga5q8gu66960c')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        wallet.delete_address('nc1qnp78h78vp92pwdwq5xvh8eprlga5q8guak6a0m')
+        wallet.delete_address(frombtc('bc1qnp78h78vp92pwdwq5xvh8eprlga5q8gu66960c'))
         self.assertEqual(1, len(wallet.get_receiving_addresses()))
 
     def test_restore_wallet_from_text_privkeys(self):
-        #text = 'p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL p2wpkh:L24GxnN7NNUAfCXA6hFzB1jt59fYAAiFZMcLaJ2ZSawGpM3uqhb1'
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        text = 'p2wpkh:TktYN7Gf6FfF7PEshsq9PKrzyhixC6of4hCtzidnJZZexCH2ETJ5 p2wpkh:TiD4hB6tUN7KL7D6rdnRa4fD1k7TZvp42L17fv3UyU8HTZUp13qP'
+        text = frombtc('p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL') + ' ' + frombtc('p2wpkh:L24GxnN7NNUAfCXA6hFzB1jt59fYAAiFZMcLaJ2ZSawGpM3uqhb1')
         d = restore_wallet_from_text(text, path=self.wallet_path, network=None)
         wallet = d['wallet']  # type: Imported_Wallet
         addr0 = wallet.get_receiving_addresses()[0]
-        #self.assertEqual('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw', addr0)
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual('nc1q2ccr34wzep58d4239tl3x3734ttle92aquuuud', addr0)
-        #self.assertEqual('p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL',
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual('p2wpkh:TktYN7Gf6FfF7PEshsq9PKrzyhixC6of4hCtzidnJZZexCH2ETJ5',
+        self.assertEqual(frombtc('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw'), addr0)
+        self.assertEqual(frombtc('p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL'),
                          wallet.export_private_key(addr0, password=None)[0])
         self.assertEqual(2, len(wallet.get_receiving_addresses()))
         # also test addr deletion
-        #wallet.delete_address('bc1qnp78h78vp92pwdwq5xvh8eprlga5q8gu66960c')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        wallet.delete_address('nc1qnp78h78vp92pwdwq5xvh8eprlga5q8guak6a0m')
+        wallet.delete_address(frombtc('bc1qnp78h78vp92pwdwq5xvh8eprlga5q8gu66960c'))
         self.assertEqual(1, len(wallet.get_receiving_addresses()))

@@ -38,6 +38,24 @@ from electrum import segwit_addr
 def frombtc(inp: str) -> str:
     """Given a Bitcoin address or key, converts it to Namecoin format"""
 
+    # If there is a trailing suffix on an URI with an address, remove it
+    # and add it back after conversion.
+    qm = inp.find("?")
+    if qm != -1:
+        suffix = inp[qm:]
+        stripped = inp[:qm]
+        return frombtc(stripped) + suffix
+
+    # If there is a prefix separated by colon, strip it off and add it
+    # back later.  For bitcoin: URI's, the prefix is rebranded as well.
+    colon = inp.find(":")
+    if colon != -1:
+        prefix = inp[:colon]
+        stripped = inp[colon + 1:]
+        if prefix == "bitcoin":
+            prefix = "namecoin"
+        return prefix + ":" + frombtc(stripped)
+
     # Handle bech32 segwit data first.
     if inp[:3].lower() == "bc1":
         return convert_bech32(inp, BitcoinMainnet.SEGWIT_HRP)
@@ -45,19 +63,9 @@ def frombtc(inp: str) -> str:
         return convert_bech32(inp, BitcoinTestnet.SEGWIT_HRP)
 
     # Otherwise, try to base58-decode it and then look at the version to
-    # determine what it could have been.  We allow a prefix separated by a
-    # colon, and just add it back afterwards.
+    # determine what it could have been.
     try:
-        colon = inp.find(":")
-        if colon == -1:
-            prefix = None
-            stripped = inp
-        else:
-            prefix = inp[:colon]
-            stripped = inp[colon + 1:]
-
-        vch = bitcoin.DecodeBase58Check(stripped)
-
+        vch = bitcoin.DecodeBase58Check(inp)
         old_version = vch[0]
 
         if vch[0] == 0:  # P2PKH address
@@ -72,9 +80,6 @@ def frombtc(inp: str) -> str:
 
         new_vch = bytes([new_version]) + vch[1:]
         outp = bitcoin.EncodeBase58Check(new_vch)
-
-        if prefix is not None:
-            outp = prefix + ":" + outp
 
         return outp
     except bitcoin.InvalidChecksum:

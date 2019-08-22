@@ -5,6 +5,8 @@ from electrum.util import (format_satoshis, format_fee_satoshis, parse_URI,
 
 from . import SequentialTestCase
 
+from .address_conversion import frombtc
+
 
 class TestUtil(SequentialTestCase):
 
@@ -50,69 +52,37 @@ class TestUtil(SequentialTestCase):
         self.assertEqual(expected, result)
 
     def test_parse_URI_address(self):
-        #self._do_test_parse_URI('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma',
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self._do_test_parse_URI('namecoin:N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ',
-                                #{'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'})
-                                # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-                                {'address': 'N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ'})
+        self._do_test_parse_URI(frombtc('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'),
+                                {'address': frombtc('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma')})
 
     def test_parse_URI_only_address(self):
-        #self._do_test_parse_URI('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma',
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self._do_test_parse_URI('N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ',
-                                #{'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'})
-                                # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-                                {'address': 'N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ'})
+        self._do_test_parse_URI(frombtc('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'),
+                                {'address': frombtc('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma')})
 
 
     def test_parse_URI_address_label(self):
-        #self._do_test_parse_URI('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?label=electrum%20test',
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self._do_test_parse_URI('namecoin:N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ?label=electrum%20test',
-                                #{'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'label': 'electrum test'})
-                                # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-                                {'address': 'N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ', 'label': 'electrum test'})
+        self._do_test_parse_URI(frombtc('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?label=electrum%20test'),
+                                {'address': frombtc('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'), 'label': 'electrum test'})
 
     def test_parse_URI_address_message(self):
-        #self._do_test_parse_URI('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?message=electrum%20test',
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self._do_test_parse_URI('namecoin:N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ?message=electrum%20test',
-                                #{'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'message': 'electrum test', 'memo': 'electrum test'})
-                                # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-                                {'address': 'N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ', 'message': 'electrum test', 'memo': 'electrum test'})
+        self._do_test_parse_URI(frombtc('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?message=electrum%20test'),
+                                {'address': frombtc('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'), 'message': 'electrum test', 'memo': 'electrum test'})
 
     def test_parse_URI_address_amount(self):
-        #self._do_test_parse_URI('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=0.0003',
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self._do_test_parse_URI('namecoin:N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ?amount=0.0003',
-                                #{'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'amount': 30000})
-                                # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-                                {'address': 'N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ', 'amount': 30000})
+        self._do_test_parse_URI(frombtc('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=0.0003'),
+                                {'address': frombtc('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'), 'amount': 30000})
 
     def test_parse_URI_address_request_url(self):
-        #self._do_test_parse_URI('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?r=http://domain.tld/page?h%3D2a8628fc2fbe',
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self._do_test_parse_URI('namecoin:N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ?r=http://domain.tld/page?h%3D2a8628fc2fbe',
-                                #{'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'r': 'http://domain.tld/page?h=2a8628fc2fbe'})
-                                # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-                                {'address': 'N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ', 'r': 'http://domain.tld/page?h=2a8628fc2fbe'})
+        self._do_test_parse_URI(frombtc('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?r=http://domain.tld/page?h%3D2a8628fc2fbe'),
+                                {'address': frombtc('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'), 'r': 'http://domain.tld/page?h=2a8628fc2fbe'})
 
     def test_parse_URI_ignore_args(self):
-        #self._do_test_parse_URI('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?test=test',
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self._do_test_parse_URI('namecoin:N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ?test=test',
-                                #{'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'test': 'test'})
-                                # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-                                {'address': 'N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ', 'test': 'test'})
+        self._do_test_parse_URI(frombtc('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?test=test'),
+                                {'address': frombtc('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'), 'test': 'test'})
 
     def test_parse_URI_multiple_args(self):
-        #self._do_test_parse_URI('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=0.00004&label=electrum-test&message=electrum%20test&test=none&r=http://domain.tld/page',
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self._do_test_parse_URI('namecoin:N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ?amount=0.00004&label=electrum-test&message=electrum%20test&test=none&r=http://domain.tld/page',
-                                #{'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'amount': 4000, 'label': 'electrum-test', 'message': u'electrum test', 'memo': u'electrum test', 'r': 'http://domain.tld/page', 'test': 'none'})
-                                # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-                                {'address': 'N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ', 'amount': 4000, 'label': 'electrum-test', 'message': u'electrum test', 'memo': u'electrum test', 'r': 'http://domain.tld/page', 'test': 'none'})
+        self._do_test_parse_URI(frombtc('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=0.00004&label=electrum-test&message=electrum%20test&test=none&r=http://domain.tld/page'),
+                                {'address': frombtc('15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'), 'amount': 4000, 'label': 'electrum-test', 'message': u'electrum test', 'memo': u'electrum test', 'r': 'http://domain.tld/page', 'test': 'none'})
 
     def test_parse_URI_no_address_request_url(self):
         self._do_test_parse_URI('namecoin:?r=http://domain.tld/page?h%3D2a8628fc2fbe',
@@ -122,14 +92,10 @@ class TestUtil(SequentialTestCase):
         self.assertRaises(BaseException, parse_URI, 'namecoin:invalidaddress')
 
     def test_parse_URI_invalid(self):
-        #self.assertRaises(BaseException, parse_URI, 'notbitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertRaises(BaseException, parse_URI, 'notnamecoin:N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ')
+        self.assertRaises(BaseException, parse_URI, frombtc('notnamecoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'))
 
     def test_parse_URI_parameter_polution(self):
-        #self.assertRaises(Exception, parse_URI, 'bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=0.0003&label=test&amount=30.0')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertRaises(Exception, parse_URI, 'namecoin:N1LgXEXdjF7G37MPzgwyATN6joULz6LfdQ?amount=0.0003&label=test&amount=30.0')
+        self.assertRaises(Exception, parse_URI, frombtc('bitcoin:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=0.0003&label=test&amount=30.0'))
 
     def test_is_hash256_str(self):
         self.assertTrue(is_hash256_str('09a4c03e3bdf83bbe3955f907ee52da4fc12f4813d459bc75228b64ad08617c7'))

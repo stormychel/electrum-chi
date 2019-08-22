@@ -20,6 +20,8 @@ from . import TestCaseForTestnet
 from . import SequentialTestCase
 from .test_bitcoin import needs_test_with_all_ecc_implementations
 
+from .address_conversion import frombtc
+
 
 UNICODE_HORROR_HEX = 'e282bf20f09f988020f09f98882020202020e3818620e38191e3819fe381be20e3828fe3828b2077cda2cda2cd9d68cda16fcda2cda120ccb8cda26bccb5cd9f6eccb4cd98c7ab77ccb8cc9b73cd9820cc80cc8177cd98cda2e1b8a9ccb561d289cca1cda27420cca7cc9568cc816fccb572cd8fccb5726f7273cca120ccb6cda1cda06cc4afccb665cd9fcd9f20ccb6cd9d696ecda220cd8f74cc9568ccb7cca1cd9f6520cd9fcd9f64cc9b61cd9c72cc95cda16bcca2cca820cda168ccb465cd8f61ccb7cca2cca17274cc81cd8f20ccb4ccb7cda0c3b2ccb5ccb666ccb82075cca7cd986ec3adcc9bcd9c63cda2cd8f6fccb7cd8f64ccb8cda265cca1cd9d3fcd9e'
 UNICODE_HORROR = bfh(UNICODE_HORROR_HEX).decode('utf-8')
@@ -95,12 +97,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(w.txin_type, 'p2pkh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], '1NNkttn1YvVGdqBW4PR6zvc3Zx3H5owKRf')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'NHx86YGzUJaqANS1LCjgDSkxJBSL3XHZLC')
-        #self.assertEqual(w.get_change_addresses()[0], '1KSezYMhAJMWqFbVFB2JshYg69UpmEXR4D')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'NF22CBrg5gT5MnqzWzLt6DhapNsshAm32h')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('1NNkttn1YvVGdqBW4PR6zvc3Zx3H5owKRf'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('1KSezYMhAJMWqFbVFB2JshYg69UpmEXR4D'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -119,12 +117,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(w.txin_type, 'p2wpkh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], 'bc1q3g5tmkmlvxryhh843v4dz026avatc0zzr6h3af')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'nc1q3g5tmkmlvxryhh843v4dz026avatc0zzykgka2')
-        #self.assertEqual(w.get_change_addresses()[0], 'bc1qdy94n2q5qcp0kg7v9yzwe6wvfkhnvyzje7nx2p')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'nc1qdy94n2q5qcp0kg7v9yzwe6wvfkhnvyzj7jvp2z')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('bc1q3g5tmkmlvxryhh843v4dz026avatc0zzr6h3af'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('bc1qdy94n2q5qcp0kg7v9yzwe6wvfkhnvyzje7nx2p'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -143,12 +137,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(w.txin_type, 'p2wpkh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], 'bc1qx94dutas7ysn2my645cyttujrms5d9p57f6aam')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'nc1qx94dutas7ysn2my645cyttujrms5d9p5e996ac')
-        #self.assertEqual(w.get_change_addresses()[0], 'bc1qcywwsy87sdp8vz5rfjh3sxdv6rt95kujdqq38g')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'nc1qcywwsy87sdp8vz5rfjh3sxdv6rt95kuj2vlk8t')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('bc1qx94dutas7ysn2my645cyttujrms5d9p57f6aam'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('bc1qcywwsy87sdp8vz5rfjh3sxdv6rt95kujdqq38g'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -166,12 +156,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(w.txin_type, 'p2pkh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], '1FJEEB8ihPMbzs2SkLmr37dHyRFzakqUmo')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'NAsbRpdhcmTAXQGx2A6RFdnChef3Y77815')
-        #self.assertEqual(w.get_change_addresses()[0], '1KRW8pH6HFHZh889VDq6fEKvmrsmApwNfe')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'NEzsLTn5CdP8DfNem39fskUqW6Gp59Kf3x')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('1FJEEB8ihPMbzs2SkLmr37dHyRFzakqUmo'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('1KRW8pH6HFHZh889VDq6fEKvmrsmApwNfe'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -205,12 +191,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_multisig_wallet([ks1, ks2, ks3], '2of3')
         self.assertEqual(w.txin_type, 'p2sh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], '35L8XmCDoEBKeaWRjvmZvoZvhp8BXMMMPV')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], '6J2xQdaXUftLC3d7wHS7ookDjrBjFPm4xj')
-        #self.assertEqual(w.get_change_addresses()[0], '3PeZEcumRqHSPNN43hd4yskGEBdzXgY8Cy')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], '6cMP7VJ57GzSvqUkF4HcrsvZGDhYCp18AE')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('35L8XmCDoEBKeaWRjvmZvoZvhp8BXMMMPV'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('3PeZEcumRqHSPNN43hd4yskGEBdzXgY8Cy'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -244,12 +226,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_multisig_wallet([ks1, ks2, ks3], '2of3')
         self.assertEqual(w.txin_type, 'p2wsh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], 'bc1qpmufh0zjp5prfsrk2yskcy82sa26srqkd97j0457andc6m0gh5asw7kqd2')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'nc1qpmufh0zjp5prfsrk2yskcy82sa26srqkd97j0457andc6m0gh5asz9cvnd')
-        #self.assertEqual(w.get_change_addresses()[0], 'bc1qd4q50nft7kxm9yglfnpup9ed2ukj3tkxp793y0zya8dc9m39jcwq308dxz')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'nc1qd4q50nft7kxm9yglfnpup9ed2ukj3tkxp793y0zya8dc9m39jcwqa5fpc9')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('bc1qpmufh0zjp5prfsrk2yskcy82sa26srqkd97j0457andc6m0gh5asw7kqd2'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('bc1qd4q50nft7kxm9yglfnpup9ed2ukj3tkxp793y0zya8dc9m39jcwq308dxz'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -267,12 +245,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(w.txin_type, 'p2pkh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], '16j7Dqk3Z9DdTdBtHcCVLaNQy9MTgywUUo')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'N2JURVF2UXKBzASPZRX4Z6XKhNkWgExVt9')
-        #self.assertEqual(w.get_change_addresses()[0], '1GG5bVeWgAp5XW7JLCphse14QaC4qiHyWn')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'NBqSo99VbYue43Moc29H6A9y8ob7jLpULe')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('16j7Dqk3Z9DdTdBtHcCVLaNQy9MTgywUUo'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('1GG5bVeWgAp5XW7JLCphse14QaC4qiHyWn'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -290,12 +264,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(w.txin_type, 'p2pkh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], '1F88g2naBMhDB7pYFttPWGQgryba3hPevM')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'NAhVsgHZ6jnmhf53XiCxinZbbCzd3g9o9z')
-        #self.assertEqual(w.get_change_addresses()[0], '1H4QD1rg2zQJ4UjuAVJr5eW1fEM8WMqyxh')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'NCdmQfMexNVrb1zQSJdRJAevPTkBTTVuMo')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('1F88g2naBMhDB7pYFttPWGQgryba3hPevM'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('1H4QD1rg2zQJ4UjuAVJr5eW1fEM8WMqyxh'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -313,12 +283,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(w.txin_type, 'p2wpkh-p2sh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], '35ohQTdNykjkF1Mn9nAVEFjupyAtsPAK1W')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], '6JWXHL1gfCSknUUUM8q37FvCs1EScPw9Vk')
-        #self.assertEqual(w.get_change_addresses()[0], '3KaBTcviBLEJajTEMstsA2GWjYoPzPK7Y7')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], '6YH1LVK1rmwK8CZvZEZR32SomarwfZ1ZhD')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('35ohQTdNykjkF1Mn9nAVEFjupyAtsPAK1W'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('3KaBTcviBLEJajTEMstsA2GWjYoPzPK7Y7'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -337,12 +303,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(w.txin_type, 'p2wpkh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], 'bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'nc1qcr8te4kr609gcawutmrza0j4xv80jy8zkr9wyl')
-        #self.assertEqual(w.get_change_addresses()[0], 'bc1q8c6fshw2dlwun7ekn9qwf37cu2rn755upcp6el')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'nc1q8c6fshw2dlwun7ekn9qwf37cu2rn755ux57aeu')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('bc1q8c6fshw2dlwun7ekn9qwf37cu2rn755upcp6el'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -364,12 +326,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_multisig_wallet([ks1, ks2], '2of2')
         self.assertEqual(w.txin_type, 'p2sh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], '32ji3QkAgXNz6oFoRfakyD3ys1XXiERQYN')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], '6FSXvH8UMy5zeGNVd2FJrDEGu3b5LXf1PY')
-        #self.assertEqual(w.get_change_addresses()[0], '36XWwEHrrVCLnhjK5MrVVGmUHghr9oWTN1')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], '6KELp6gAXvuMLAr1GiX3NGwmKimPrPw7hJ')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('32ji3QkAgXNz6oFoRfakyD3ys1XXiERQYN'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('36XWwEHrrVCLnhjK5MrVVGmUHghr9oWTN1'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -391,12 +349,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_multisig_wallet([ks1, ks2], '2of2')
         self.assertEqual(w.txin_type, 'p2wsh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], 'bc1qvzezdcv6vs5h45ugkavp896e0nde5c5lg5h0fwe2xyfhnpkxq6gq7pnwlc')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'nc1qvzezdcv6vs5h45ugkavp896e0nde5c5lg5h0fwe2xyfhnpkxq6gqj6azpl')
-        #self.assertEqual(w.get_change_addresses()[0], 'bc1qxqf840dqswcmu7a8v82fj6ej0msx08flvuy6kngr7axstjcaq6us9hrehd')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'nc1qxqf840dqswcmu7a8v82fj6ej0msx08flvuy6kngr7axstjcaq6usfvd4f2')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('bc1qvzezdcv6vs5h45ugkavp896e0nde5c5lg5h0fwe2xyfhnpkxq6gq7pnwlc'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('bc1qxqf840dqswcmu7a8v82fj6ej0msx08flvuy6kngr7axstjcaq6us9hrehd'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -418,12 +372,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_multisig_wallet([ks1, ks2], '2of2')
         self.assertEqual(w.txin_type, 'p2sh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], '3JPTQ2nitVxXBJ1yhMeDwH6q417UifE3bN')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], '6X6HGuB2ZwfXim8ftiJmpHH863B2TmQ6YY')
-        #self.assertEqual(w.get_change_addresses()[0], '3FGyDuxgUDn2pSZe5xAJH1yUwSdhzDMyEE')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], '6Tyo6nLz9fV3MugLHJprA29myUhFgBa3Y3')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('3JPTQ2nitVxXBJ1yhMeDwH6q417UifE3bN'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('3FGyDuxgUDn2pSZe5xAJH1yUwSdhzDMyEE'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -444,12 +394,8 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_multisig_wallet([ks1, ks2], '2of2')
         self.assertEqual(w.txin_type, 'p2wsh-p2sh')
 
-        #self.assertEqual(w.get_receiving_addresses()[0], '35LeC45QgCVeRor1tJD6LiDgPbybBXisns')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], '6J3U4vTiMeCeyGxi5eseDiPyRe38vteBZd')
-        #self.assertEqual(w.get_change_addresses()[0], '39RhtDchc6igmx5tyoimhojFL1ZbQBrXa6')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], '6N8Xm611HYRhKRCbBAPKaouYN3d93ea6Ui')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('35LeC45QgCVeRor1tJD6LiDgPbybBXisns'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('39RhtDchc6igmx5tyoimhojFL1ZbQBrXa6'))
 
     @needs_test_with_all_ecc_implementations
     @mock.patch.object(storage.WalletStorage, '_write')
@@ -473,67 +419,43 @@ class TestWalletKeystoreAddressIntegrityForMainnet(SequentialTestCase):
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(ks.xprv, 'xprv9s21ZrQH143K3nyWMZVjzGL4KKAE1zahmhTHuV5pdw4eK3o3igC5QywgQG7UTRe6TGBniPDpPFWzXMeMUFbBj8uYsfXGjyMmF54wdNt8QBm')
         self.assertEqual(ks.xpub, 'xpub661MyMwAqRbcGH3yTb2kMQGnsLziRTJZ8vNthsVSCGbdBr8CGDWKxnGAFYgyKTzBtwvPPmfVAWJuFmxRXjSbUTg87wDkWQ5GmzpfUcN9t8Z')
-        #self.assertEqual(w.get_receiving_addresses()[0], '19fWEVaXqgJFFn7JYNr6ouxyjZy3uK7CdK')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'N5EsS95Wm4PonKMopCAg2S7tToN6tBU39K')
-        #self.assertEqual(w.get_change_addresses()[0], '1EEX7da31qndYyeKdbM665w1ze5gbkkAZZ')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'N9otKH51wDtC5WtpuQffJc5visUjceV1YV')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('19fWEVaXqgJFFn7JYNr6ouxyjZy3uK7CdK'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('1EEX7da31qndYyeKdbM665w1ze5gbkkAZZ'))
 
         ks = create_keystore_from_bip32seed(xtype='p2wpkh-p2sh')
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(ks.xprv, 'yprvABrGsX5C9janu6AdBvHNCMRZVHJfxcaCgoyWgsyi1wSXN9cGyLMe33bpRU54TLJ1ruJbTrpNqusYQeFvBx1CXNb9k1DhKtBFWo8b1sLbXhN')
         self.assertEqual(ks.xpub, 'ypub6QqdH2c5z7967aF6HwpNZVNJ3K9AN5J442u7VGPKaGyWEwwRWsftaqvJGkeZKNe7Jb3C9FG3dAfT94ZzFRrcGhMizGvB6Jtm3itJsEFhxMC')
-        #self.assertEqual(w.get_receiving_addresses()[0], '34SAT5gGF5UaBhhSZ8qEuuxYvZ2cm7Zi23')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], '6H8zKx4ZvXBajAp8kVVnnv8qxb6AQvqsw2')
-        #self.assertEqual(w.get_change_addresses()[0], '38unULZaetSGSKvDx7Krukh8zm8NQnxGiA')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], '6MccMCwtLL9Gyo2v9TzQnksS2oBv9oUabp')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('34SAT5gGF5UaBhhSZ8qEuuxYvZ2cm7Zi23'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('38unULZaetSGSKvDx7Krukh8zm8NQnxGiA'))
 
         ks = create_keystore_from_bip32seed(xtype='p2wpkh')
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(ks.xprv, 'zprvAWgYBBk7JR8GkPMk2H4zQSX4fFT7uEZhbvVjUGsbPwpQRFRWDzXCf7FxSg2eTEwwGYRQDLQwJaE6HvsUueRDKcGkcLv7unzjnXCEQVWhrF9')
         self.assertEqual(ks.xpub, 'zpub6jftahH18ngZxsSD8JbzmaToDHHcJhHYy9RLGfHCxHMPJ3kemXqTCuaSHxc9KHJ2iE9ztirc5q212MBYy8Gd4w3KrccbgDiFKSwxFpYKEH6')
-        #self.assertEqual(w.get_receiving_addresses()[0], 'bc1qtuynwzd0d6wptvyqmc6ehkm70zcamxpshyzu5e')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'nc1qtuynwzd0d6wptvyqmc6ehkm70zcamxpssgam56')
-        #self.assertEqual(w.get_change_addresses()[0], 'bc1qjy5zunxh6hjysele86qqywfa437z4xwmleq8wk')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'nc1qjy5zunxh6hjysele86qqywfa437z4xwmc4lqw4')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('bc1qtuynwzd0d6wptvyqmc6ehkm70zcamxpshyzu5e'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('bc1qjy5zunxh6hjysele86qqywfa437z4xwmleq8wk'))
 
         ks = create_keystore_from_bip32seed(xtype='standard')  # p2sh
         w = WalletIntegrityHelper.create_multisig_wallet([ks], '1of1')
         self.assertEqual(ks.xprv, 'xprv9s21ZrQH143K3nyWMZVjzGL4KKAE1zahmhTHuV5pdw4eK3o3igC5QywgQG7UTRe6TGBniPDpPFWzXMeMUFbBj8uYsfXGjyMmF54wdNt8QBm')
         self.assertEqual(ks.xpub, 'xpub661MyMwAqRbcGH3yTb2kMQGnsLziRTJZ8vNthsVSCGbdBr8CGDWKxnGAFYgyKTzBtwvPPmfVAWJuFmxRXjSbUTg87wDkWQ5GmzpfUcN9t8Z')
-        #self.assertEqual(w.get_receiving_addresses()[0], '3F4nm8Vunb7mxVvqhUP238PYge2hpU5qYv')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], '6TmcdztDU2pnVy3Xtq3Zv8Zqig6FVhntzJ')
-        #self.assertEqual(w.get_change_addresses()[0], '3N8jvKGmxzVHENn6B4zTdZt3N9bmRKjj96')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], '6aqZoBf5eSCHmqtnNRf1Wa4LQBfKAEx1hG')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('3F4nm8Vunb7mxVvqhUP238PYge2hpU5qYv'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('3N8jvKGmxzVHENn6B4zTdZt3N9bmRKjj96'))
 
         ks = create_keystore_from_bip32seed(xtype='p2wsh-p2sh')
         w = WalletIntegrityHelper.create_multisig_wallet([ks], '1of1')
         self.assertEqual(ks.xprv, 'YprvANkMzkodih9AKfL18akM2RmND5LwAyFo15dBc9FFPiGvzLBBjjjv8ATkEB2Y1mWv6NNaLSpVj8G3XosgVBA9frhpaUL6jHeFQXQTbqVPcv2')
         self.assertEqual(ks.xpub, 'Ypub6bjiQGLXZ4hTY9QUEcHMPZi6m7BRaRyeNJYnQXerx3ous8WLHH4AfxnE5Tc2sos1Y47B1qGAWP3xGEBkYf1ZRBUPpk2aViMkwTABT6qoiBb')
-        #self.assertEqual(w.get_receiving_addresses()[0], '3L1BxLLASGKE3DR1ruraWm3hZshGCKqcJx')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], '6Yi1qCiU7i2EagXi4GX8PmDzbukosZQCRS')
-        #self.assertEqual(w.get_change_addresses()[0], '3NDGcbZVXTpaQWRhiuVPpXsNt4g2JiCX4E')
-        # Converted to Namecoin using `contrib/convertAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], '6av6VTwoCuXawyYPvG9whY3fv6jZyBwqf7')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('3L1BxLLASGKE3DR1ruraWm3hZshGCKqcJx'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('3NDGcbZVXTpaQWRhiuVPpXsNt4g2JiCX4E'))
 
         ks = create_keystore_from_bip32seed(xtype='p2wsh')
         w = WalletIntegrityHelper.create_multisig_wallet([ks], '1of1')
         self.assertEqual(ks.xprv, 'ZprvAhadJRUYsNgeAxX7xwXyEWrsP3VP7bFHvC9QPY98miep3RzQzPuUkE7tFNz81gAqW1VP5vR4BncbR6VFCsaAU6PRSp2XKCTjgFU6zRpk6Xp')
         self.assertEqual(ks.xpub, 'Zpub6vZyhw1ShkEwPSbb4y4ybeobw5KsX3y9HR51BvYkL4BnvEKZXwDjJ2SN6fZcsiWvwhDymJriy3QW9WoKGMRaDR9zh5j15dBFDBDpqjK1ekQ')
-        #self.assertEqual(w.get_receiving_addresses()[0], 'bc1q84x0yrztvcjg88qef4d6978zccxulcmc9y88xcg4ghjdau999x7q7zv2qe')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'nc1q84x0yrztvcjg88qef4d6978zccxulcmc9y88xcg4ghjdau999x7qjezx77')
-        #self.assertEqual(w.get_change_addresses()[0], 'bc1q0fj5mra96hhnum80kllklc52zqn6kppt3hyzr49yhr3ecr42z3tsrkg3gs')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'nc1q0fj5mra96hhnum80kllklc52zqn6kppt3hyzr49yhr3ecr42z3ts0dxakh')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('bc1q84x0yrztvcjg88qef4d6978zccxulcmc9y88xcg4ghjdau999x7q7zv2qe'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('bc1q0fj5mra96hhnum80kllklc52zqn6kppt3hyzr49yhr3ecr42z3tsrkg3gs'))
 
 
 class TestWalletKeystoreAddressIntegrityForTestnet(TestCaseForTestnet):
@@ -595,12 +517,8 @@ class TestWalletKeystoreAddressIntegrityForTestnet(TestCaseForTestnet):
         w = WalletIntegrityHelper.create_standard_wallet(ks)
         self.assertEqual(ks.xprv, 'vprv9DMUxX4ShgxMMCbGgqvVa693yNsL8kbhwUQrLhJ3svJtCrAbDMrxArdQMrCJTcLFdyxBDS2hTvotknRE2rmA8fYM8z8Ra9inhcwerEsG6Ev')
         self.assertEqual(ks.xpub, 'vpub5SLqN2bLY4WeZgfjnsTVwE5nXQhpYDKZJhLT95hfSFqs5eVjkuBCiewtD8moKegM5fgmtpUNFBboVCjJ6LcZszJvPFpuLaSJEYhNhUAnrCS')
-        #self.assertEqual(w.get_receiving_addresses()[0], 'tb1qtuynwzd0d6wptvyqmc6ehkm70zcamxpsaze002')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'tn1qtuynwzd0d6wptvyqmc6ehkm70zcamxps8a9alj')
-        #self.assertEqual(w.get_change_addresses()[0], 'tb1qjy5zunxh6hjysele86qqywfa437z4xwm4lm549')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'tn1qjy5zunxh6hjysele86qqywfa437z4xwm0q8x9a')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('tb1qtuynwzd0d6wptvyqmc6ehkm70zcamxpsaze002'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('tb1qjy5zunxh6hjysele86qqywfa437z4xwm4lm549'))
 
         ks = create_keystore_from_bip32seed(xtype='standard')  # p2sh
         w = WalletIntegrityHelper.create_multisig_wallet([ks], '1of1')
@@ -620,12 +538,8 @@ class TestWalletKeystoreAddressIntegrityForTestnet(TestCaseForTestnet):
         w = WalletIntegrityHelper.create_multisig_wallet([ks], '1of1')
         self.assertEqual(ks.xprv, 'Vprv16YtLrHXxePM6noKqtFtMtmUgBE9bEpF3fPLmpvuPksssLostujtdHBwqhEeVuzESz22UY8hyPx9ed684SQpCmUKSVhpxPFbvVNY7qnviNR')
         self.assertEqual(ks.xpub, 'Vpub5dEvVGKn7251zFq7jXvUmJRbFCk5ka19cxz84LyCp2gGhq4eXJZUomop1qjGt5uFK8kkmQUV8PzJcNM4PZmX2URbDiwJjyuJ8GyFHRrEmmG')
-        #self.assertEqual(w.get_receiving_addresses()[0], 'tb1q84x0yrztvcjg88qef4d6978zccxulcmc9y88xcg4ghjdau999x7qf2696k')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_receiving_addresses()[0], 'tn1q84x0yrztvcjg88qef4d6978zccxulcmc9y88xcg4ghjdau999x7q9hldue')
-        #self.assertEqual(w.get_change_addresses()[0], 'tb1q0fj5mra96hhnum80kllklc52zqn6kppt3hyzr49yhr3ecr42z3ts5777jl')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        self.assertEqual(w.get_change_addresses()[0], 'tn1q0fj5mra96hhnum80kllklc52zqn6kppt3hyzr49yhr3ecr42z3tscrmk5s')
+        self.assertEqual(w.get_receiving_addresses()[0], frombtc('tb1q84x0yrztvcjg88qef4d6978zccxulcmc9y88xcg4ghjdau999x7qf2696k'))
+        self.assertEqual(w.get_change_addresses()[0], frombtc('tb1q0fj5mra96hhnum80kllklc52zqn6kppt3hyzr49yhr3ecr42z3ts5777jl'))
 
 
 class TestWalletSending(TestCaseForTestnet):
@@ -1255,9 +1169,7 @@ class TestWalletSending(TestCaseForTestnet):
 
         # create new tx (output should be batched with existing!)
         # no new input will be needed. just a new output, and change decreased.
-        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1qy6xmdj96v5dzt3j08hgc05yk3kltqsnmw4r6ry', 2_500_000)]
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1qy6xmdj96v5dzt3j08hgc05yk3kltqsnm52lgnu', 2_500_000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('tb1qy6xmdj96v5dzt3j08hgc05yk3kltqsnmw4r6ry'), 2_500_000)]
         coins = wallet.get_spendable_coins(domain=None, config=config)
         tx = wallet.make_unsigned_transaction(coins, outputs, config=config, fixed_fee=20000)
         tx.set_rbf(True)
@@ -1357,9 +1269,7 @@ class TestWalletSending(TestCaseForTestnet):
 
         privkeys = ['93NQ7CFbwTPyKDJLXe97jczw33fiLijam2SCZL3Uinz1NSbHrTu', ]
         network = NetworkMock()
-        #dest_addr = 'tb1q3ws2p0qjk5vrravv065xqlnkckvzcpclk79eu2'
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        dest_addr = 'tn1q3ws2p0qjk5vrravv065xqlnkckvzcpclvpetvj'
+        dest_addr = frombtc('tb1q3ws2p0qjk5vrravv065xqlnkckvzcpclk79eu2')
         tx = sweep(privkeys, network, config=None, recipient=dest_addr, fee=5000, locktime=1325785, tx_version=1)
 
         tx_copy = Transaction(tx.serialize())
@@ -1401,9 +1311,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1qyw3c0rvn6kk2c688y3dygvckn57525y8qnxt3a', 2500000)]
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1qyw3c0rvn6kk2c688y3dygvckn57525y86v6ep9', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('tb1qyw3c0rvn6kk2c688y3dygvckn57525y8qnxt3a'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1446655
@@ -1446,9 +1354,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1qp0mv2sxsyxxfj5gl0332f9uyez93su9cf26757', 2500000)]
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1qp0mv2sxsyxxfj5gl0332f9uyez93su9cn4xvyx', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('tb1qp0mv2sxsyxxfj5gl0332f9uyez93su9cf26757'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325340
@@ -1489,9 +1395,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1qp0mv2sxsyxxfj5gl0332f9uyez93su9cf26757', 2500000)]
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1qp0mv2sxsyxxfj5gl0332f9uyez93su9cn4xvyx', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('tb1qp0mv2sxsyxxfj5gl0332f9uyez93su9cf26757'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325341
@@ -1533,9 +1437,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1qp0mv2sxsyxxfj5gl0332f9uyez93su9cf26757', 2500000)]
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1qp0mv2sxsyxxfj5gl0332f9uyez93su9cn4xvyx', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('tb1qp0mv2sxsyxxfj5gl0332f9uyez93su9cf26757'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325341
@@ -1572,9 +1474,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm', 2500000)]
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1quk7ahlhr3qmjndy0uvu9y9hxfesrtaht3ze68r', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325340
@@ -1609,9 +1509,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm', 2500000)]
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1quk7ahlhr3qmjndy0uvu9y9hxfesrtaht3ze68r', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325340
@@ -1637,9 +1535,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_offline = WalletIntegrityHelper.create_imported_wallet(privkeys=True)
         wallet_offline.import_private_key('p2wpkh:cPuQzcNEgbeYZ5at9VdGkCwkPA9r34gvEVJjuoz384rTfYpahfe7', password=None)
         wallet_online = WalletIntegrityHelper.create_imported_wallet(privkeys=False)
-        #wallet_online.import_address('tb1qm2eh4787lwanrzr6pf0ekf5c7jnmghm2y9k529')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        wallet_online.import_address('tn1qm2eh4787lwanrzr6pf0ekf5c7jnmghm2762x6a')
+        wallet_online.import_address(frombtc('tb1qm2eh4787lwanrzr6pf0ekf5c7jnmghm2y9k529'))
 
         # bootstrap wallet_online
         funding_tx = Transaction('01000000000101197a89cff51096b9dd4214cdee0eb90cb27a25477e739521d728a679724042730100000000fdffffff048096980000000000160014dab37af8fefbbb31887a0a5f9b2698f4a7b45f6a80969800000000001976a91405a20074ef7eb42c7c6fcd4f499faa699742783288ac809698000000000017a914b808938a8007bc54509cd946944c479c0fa6554f87131b2c0400000000160014a04dfdb9a9aeac3b3fada6f43c2a66886186e2440247304402204f5dbb9dda65eab26179f1ca7c37c8baf028153815085dd1bbb2b826296e3b870220379fcd825742d6e2bdff772f347b629047824f289a5499a501033f6c3495594901210363c9c98740fe0455c646215cea9b13807b758791c8af7b74e62968bef57ff8ae1e391400')
@@ -1648,9 +1544,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm', 2500000)]
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1quk7ahlhr3qmjndy0uvu9y9hxfesrtaht3ze68r', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325340
@@ -1688,9 +1582,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm', 2500000)]
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1quk7ahlhr3qmjndy0uvu9y9hxfesrtaht3ze68r', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325340
@@ -1728,9 +1620,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm', 2500000)]
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1quk7ahlhr3qmjndy0uvu9y9hxfesrtaht3ze68r', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325340
@@ -1759,9 +1649,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
             gap_limit=4
         )
         wallet_online = WalletIntegrityHelper.create_imported_wallet(privkeys=False)
-        #wallet_online.import_address('tb1qm2eh4787lwanrzr6pf0ekf5c7jnmghm2y9k529')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        wallet_online.import_address('tn1qm2eh4787lwanrzr6pf0ekf5c7jnmghm2762x6a')
+        wallet_online.import_address(frombtc('tb1qm2eh4787lwanrzr6pf0ekf5c7jnmghm2y9k529'))
 
         # bootstrap wallet_online
         funding_tx = Transaction('01000000000101197a89cff51096b9dd4214cdee0eb90cb27a25477e739521d728a679724042730100000000fdffffff048096980000000000160014dab37af8fefbbb31887a0a5f9b2698f4a7b45f6a80969800000000001976a91405a20074ef7eb42c7c6fcd4f499faa699742783288ac809698000000000017a914b808938a8007bc54509cd946944c479c0fa6554f87131b2c0400000000160014a04dfdb9a9aeac3b3fada6f43c2a66886186e2440247304402204f5dbb9dda65eab26179f1ca7c37c8baf028153815085dd1bbb2b826296e3b870220379fcd825742d6e2bdff772f347b629047824f289a5499a501033f6c3495594901210363c9c98740fe0455c646215cea9b13807b758791c8af7b74e62968bef57ff8ae1e391400')
@@ -1770,9 +1658,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         wallet_online.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create unsigned tx
-        #outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm', 2500000)]
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, 'tn1quk7ahlhr3qmjndy0uvu9y9hxfesrtaht3ze68r', 2500000)]
+        outputs = [TxOutput(bitcoin.TYPE_ADDRESS, frombtc('tb1quk7ahlhr3qmjndy0uvu9y9hxfesrtahtta9ghm'), 2500000)]
         tx = wallet_online.mktx(outputs=outputs, password=None, config=self.config, fee=5000)
         tx.set_rbf(True)
         tx.locktime = 1325340
@@ -1931,9 +1817,7 @@ class TestWalletOfflineSigning(TestCaseForTestnet):
         )
         # ^ third seed: hedgehog sunset update estate number jungle amount piano friend donate upper wool
         wallet_online = WalletIntegrityHelper.create_imported_wallet(privkeys=False)
-        #wallet_online.import_address('tb1q83p6eqxkuvq4eumcha46crpzg4nj84s9p0hnynkxg8nhvfzqcc7q4erju6')
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        wallet_online.import_address('tn1q83p6eqxkuvq4eumcha46crpzg4nj84s9p0hnynkxg8nhvfzqcc7qeyx664')
+        wallet_online.import_address(frombtc('tb1q83p6eqxkuvq4eumcha46crpzg4nj84s9p0hnynkxg8nhvfzqcc7q4erju6'))
 
         # bootstrap wallet_online
         funding_tx = Transaction('0100000000010132352f6459e847e65e56aa05cbd7b9ee67be90b40d8f92f6f11e9bfaa11399c501000000171600142e5d579693b2a7679622935df94d9f3c84909b24fdffffff0280969800000000002200203c43ac80d6e3015cf378bf6bac0c22456723d6050bef324ec641e7762440c63c83717d010000000017a91441b772909ad301b41b76f4a3c5058888a7fe6f9a8702483045022100de54689f74b8efcce7fdc91e40761084686003bcd56c886ee97e75a7e803526102204dea51ae5e7d01bd56a8c336c64841f7fe02a8b101fa892e13f2d079bb14e6bf012102024e2f73d632c49f4b821ccd3b6da66b155427b1e5b1c4688cefd5a4b4bfa404c1391400')
@@ -2057,33 +1941,23 @@ class TestWalletHistory_EvilGapLimit(TestCaseForTestnet):
         # txn A is an external incoming txn paying to addr (3) and (15)
         # txn B is an external incoming txn paying to addr (4) and (25)
         # txn C is an internal transfer txn from addr (25) -- to -- (1) and (25)
-        #w.receive_history_callback('tb1qgh5c088he4d559wl0hw27hrdeg8p2z96pefn4q',  # HD index 1
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        w.receive_history_callback('tn1qgh5c088he4d559wl0hw27hrdeg8p2z96mx4p9c',  # HD index 1
+        w.receive_history_callback(frombtc('tb1qgh5c088he4d559wl0hw27hrdeg8p2z96pefn4q'),  # HD index 1
                                    [('268fce617aaaa4847835c2212b984d7b7741fdab65de22813288341819bc5656', 1316917)],
                                    {})
         w.synchronize()
-        #w.receive_history_callback('tb1qm0ejr6g964zt2jux5te7m9ds43n28hdsdz9ull',  # HD index 3
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        w.receive_history_callback('tn1qm0ejr6g964zt2jux5te7m9ds43n28hdshaew08',  # HD index 3
+        w.receive_history_callback(frombtc('tb1qm0ejr6g964zt2jux5te7m9ds43n28hdsdz9ull'),  # HD index 3
                                    [('511a35e240f4c8855de4c548dad932d03611a37e94e9203fdb6fc79911fe1dd4', 1316912)],
                                    {})
         w.synchronize()
-        #w.receive_history_callback('tb1qj4pnq958k89zcem3342lhcgyz0rnmhkzl6x0cl',  # HD index 4
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        w.receive_history_callback('tn1qj4pnq958k89zcem3342lhcgyz0rnmhkz996ag8',  # HD index 4
+        w.receive_history_callback(frombtc('tb1qj4pnq958k89zcem3342lhcgyz0rnmhkzl6x0cl'),  # HD index 4
                                    [('fde0b68938709c4979827caa576e9455ded148537fdb798fd05680da64dc1b4f', 1316917)],
                                    {})
         w.synchronize()
-        #w.receive_history_callback('tb1q3pyjwpm8wxgvquak240mprfhaydmkawcsl25je',  # HD index 15
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        w.receive_history_callback('tn1q3pyjwpm8wxgvquak240mprfhaydmkawc2qkxzp',  # HD index 15
+        w.receive_history_callback(frombtc('tb1q3pyjwpm8wxgvquak240mprfhaydmkawcsl25je'),  # HD index 15
                                    [('511a35e240f4c8855de4c548dad932d03611a37e94e9203fdb6fc79911fe1dd4', 1316912)],
                                    {})
         w.synchronize()
-        #w.receive_history_callback('tb1qr0qjp99ygawul0eylxfqmt7alygye22mj33vej',  # HD index 25
-        # Converted to Namecoin using `contrib/convertBechAddress.py` from Namecoin Core.
-        w.receive_history_callback('tn1qr0qjp99ygawul0eylxfqmt7alygye22mgwd7f2',  # HD index 25
+        w.receive_history_callback(frombtc('tb1qr0qjp99ygawul0eylxfqmt7alygye22mj33vej'),  # HD index 25
                                    [('fde0b68938709c4979827caa576e9455ded148537fdb798fd05680da64dc1b4f', 1316917),
                                     ('268fce617aaaa4847835c2212b984d7b7741fdab65de22813288341819bc5656', 1316917)],
                                    {})

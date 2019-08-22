@@ -351,7 +351,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 self.logger.error("on_error", exc_info=exc_info)
             except OSError:
                 pass  # see #4418
-            self.show_error(str(e))
+            self.show_error(repr(e))
 
     def on_network(self, event, *args):
         if event == 'wallet_updated':
@@ -894,7 +894,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.history_model.set_view(self.history_list)
         l.searchable_list = l
         toolbar = l.create_toolbar(self.config)
-        toolbar_shown = self.config.get('show_toolbar_history', False)
+        toolbar_shown = bool(self.config.get('show_toolbar_history', False))
         l.show_toolbar(toolbar_shown)
         return self.create_list_tab(l, toolbar)
 
@@ -1041,7 +1041,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                     try:
                         self.wallet.sign_payment_request(addr, alias, alias_addr, password)
                     except Exception as e:
-                        self.show_error(str(e))
+                        self.show_error(repr(e))
                         return
                 else:
                     return
@@ -1060,7 +1060,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.wallet.add_payment_request(req, self.config)
         except Exception as e:
             self.logger.exception('Error adding payment request')
-            self.show_error(_('Error adding payment request') + ':\n' + str(e))
+            self.show_error(_('Error adding payment request') + ':\n' + repr(e))
         else:
             self.sign_payment_request(addr)
             self.save_request_button.setEnabled(False)
@@ -1680,7 +1680,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         amount = tx.output_value() if self.max_button.isChecked() else sum(map(lambda x:x[2], outputs))
         fee = tx.get_fee()
 
-        use_rbf = self.config.get('use_rbf', True)
+        use_rbf = bool(self.config.get('use_rbf', True))
         if use_rbf:
             tx.set_rbf(True)
 
@@ -1948,7 +1948,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         from .address_list import AddressList
         self.address_list = l = AddressList(self)
         toolbar = l.create_toolbar(self.config)
-        toolbar_shown = self.config.get('show_toolbar_addresses', False)
+        toolbar_shown = bool(self.config.get('show_toolbar_addresses', False))
         l.show_toolbar(toolbar_shown)
         return self.create_list_tab(l, toolbar)
 
@@ -2103,7 +2103,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         c = commands.Commands(self.config, self.wallet, self.network, lambda: self.console.set_json(True))
         methods = {}
         def mkfunc(f, method):
-            return lambda *args: f(method, args, self.password_dialog)
+            return lambda *args, **kwargs: f(method, args, self.password_dialog, **kwargs)
         for m in dir(c):
             if m[0]=='_' or m in ['network','wallet','config']: continue
             methods[m] = mkfunc(c._run, m)
@@ -2167,7 +2167,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 return
             except BaseException as e:
                 self.logger.exception('')
-                self.show_error(str(e))
+                self.show_error(repr(e))
                 return
             old_password = hw_dev_pw if self.wallet.has_password() else None
             new_password = hw_dev_pw if encrypt_file else None
@@ -2304,7 +2304,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             seed = keystore.get_seed(password)
             passphrase = keystore.get_passphrase(password)
         except BaseException as e:
-            self.show_error(str(e))
+            self.show_error(repr(e))
             return
         from .seed_dialog import SeedDialog
         d = SeedDialog(self, seed, passphrase)
@@ -2324,7 +2324,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             pk, redeem_script = self.wallet.export_private_key(address, password)
         except Exception as e:
             self.logger.exception('')
-            self.show_message(str(e))
+            self.show_message(repr(e))
             return
         xtype = bitcoin.deserialize_privkey(pk)[0]
         d = WindowModalDialog(self, _("Private key"))
@@ -2518,7 +2518,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             tx = tx_from_str(txt)
             return Transaction(tx)
         except BaseException as e:
-            self.show_critical(_("Electrum-NMC was unable to parse your transaction") + ":\n" + str(e))
+            self.show_critical(_("Electrum-NMC was unable to parse your transaction") + ":\n" + repr(e))
             return
 
     def read_tx_from_qrcode(self):
@@ -2526,7 +2526,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         try:
             data = qrscanner.scan_barcode(self.config.get_video_device())
         except BaseException as e:
-            self.show_error(str(e))
+            self.show_error(repr(e))
             return
         if not data:
             return
@@ -2579,7 +2579,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 raw_tx = self.network.run_from_another_thread(
                     self.network.get_transaction(txid, timeout=10))
             except Exception as e:
-                self.show_message(_("Error getting transaction from network") + ":\n" + str(e))
+                self.show_message(_("Error getting transaction from network") + ":\n" + repr(e))
                 return
             tx = transaction.Transaction(raw_tx)
             self.show_transaction(tx)
@@ -2671,7 +2671,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.show_critical(txt, title=_("Unable to create csv"))
 
         except Exception as e:
-            self.show_message(str(e))
+            self.show_message(repr(e))
             return
 
         self.show_message(_("Private keys exported."))
@@ -2748,7 +2748,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             try:
                 valid_privkeys = get_pk(raise_on_error=True) is not None
             except Exception as e:
-                button.setToolTip(f'{_("Error")}: {str(e)}')
+                button.setToolTip(f'{_("Error")}: {repr(e)}')
             else:
                 button.setToolTip('')
             button.setEnabled(get_address() is not None and valid_privkeys)
@@ -2769,7 +2769,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         try:
             coins, keypairs = sweep_preparations(get_pk(), self.network)
         except Exception as e:  # FIXME too broad...
-            self.show_message(str(e))
+            self.show_message(repr(e))
             return
         self.do_clear()
         self.tx_external_keypairs = keypairs
@@ -2892,7 +2892,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         fee_widgets.append((fee_type_label, fee_type_combo))
 
         feebox_cb = QCheckBox(_('Edit fees manually'))
-        feebox_cb.setChecked(self.config.get('show_fee', False))
+        feebox_cb.setChecked(bool(self.config.get('show_fee', False)))
         feebox_cb.setToolTip(_("Show fee edit box in send tab."))
         def on_feebox(x):
             self.config.set_key('show_fee', x == Qt.Checked)
@@ -2900,7 +2900,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         feebox_cb.stateChanged.connect(on_feebox)
         fee_widgets.append((feebox_cb, None))
 
-        use_rbf = self.config.get('use_rbf', True)
+        use_rbf = bool(self.config.get('use_rbf', True))
         use_rbf_cb = QCheckBox(_('Use Replace-By-Fee'))
         use_rbf_cb.setChecked(use_rbf)
         use_rbf_cb.setToolTip(
@@ -2914,7 +2914,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         fee_widgets.append((use_rbf_cb, None))
 
         batch_rbf_cb = QCheckBox(_('Batch RBF transactions'))
-        batch_rbf_cb.setChecked(self.config.get('batch_rbf', False))
+        batch_rbf_cb.setChecked(bool(self.config.get('batch_rbf', False)))
         batch_rbf_cb.setEnabled(use_rbf)
         batch_rbf_cb.setToolTip(
             _('If you check this box, your unconfirmed transactions will be consolidated into a single transaction.') + '\n' + \
@@ -2962,7 +2962,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 SSL_error = None
             except BaseException as e:
                 SSL_identity = "error"
-                SSL_error = str(e)
+                SSL_error = repr(e)
         else:
             SSL_identity = ""
             SSL_error = None
@@ -3041,7 +3041,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         gui_widgets.append((colortheme_label, colortheme_combo))
 
         updatecheck_cb = QCheckBox(_("Automatically check for software updates"))
-        updatecheck_cb.setChecked(self.config.get('check_updates', False))
+        updatecheck_cb.setChecked(bool(self.config.get('check_updates', False)))
         def on_set_updatecheck(v):
             self.config.set_key('check_updates', v == Qt.Checked, save=True)
         updatecheck_cb.stateChanged.connect(on_set_updatecheck)
@@ -3108,7 +3108,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         def on_unconf(x):
             self.config.set_key('confirmed_only', bool(x))
-        conf_only = self.config.get('confirmed_only', False)
+        conf_only = bool(self.config.get('confirmed_only', False))
         unconf_cb = QCheckBox(_('Spend only confirmed coins'))
         unconf_cb.setToolTip(_('Spend only confirmed inputs.'))
         unconf_cb.setChecked(conf_only)
@@ -3117,7 +3117,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         def on_outrounding(x):
             self.config.set_key('coin_chooser_output_rounding', bool(x))
-        enable_outrounding = self.config.get('coin_chooser_output_rounding', False)
+        enable_outrounding = bool(self.config.get('coin_chooser_output_rounding', False))
         outrounding_cb = QCheckBox(_('Enable output value rounding'))
         outrounding_cb.setToolTip(
             _('Set the value of the change output so that it has similar precision to the other outputs.') + '\n' +

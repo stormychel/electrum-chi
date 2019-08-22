@@ -208,16 +208,6 @@ class BitFlyer(ExchangeBase):
 
 # Doesn't support Namecoin.
 """
-class Bitmarket(ExchangeBase):
-
-    async def get_rates(self, ccy):
-        json = await self.get_json('www.bitmarket.pl', '/json/BTCPLN/ticker.json')
-        return {'PLN': Decimal(json['last'])}
-"""
-
-
-# Doesn't support Namecoin.
-"""
 class BitPay(ExchangeBase):
 
     async def get_rates(self, ccy):
@@ -693,11 +683,11 @@ class FxThread(ThreadJob):
         rate = self.exchange.historical_rate(self.ccy, d_t)
         # Frequently there is no rate for today, until tomorrow :)
         # Use spot quotes in that case
-        if rate == 'NaN' and (datetime.today().date() - d_t.date()).days <= 2:
+        if rate in ('NaN', None) and (datetime.today().date() - d_t.date()).days <= 2:
             rate = self.exchange.quotes.get(self.ccy, 'NaN')
-            if rate is None:
-                rate = 'NaN'
             self.history_used_spot = True
+        if rate is None:
+            rate = 'NaN'
         return Decimal(rate)
 
     def historical_value_str(self, satoshis, d_t):

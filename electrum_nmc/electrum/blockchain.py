@@ -111,9 +111,14 @@ def deserialize_full_header(s: bytes, height: int, expect_trailing_data=False, s
     h = deserialize_pure_header(pure_header_bytes, height)
     start_position += PURE_HEADER_SIZE
 
-    # FIXME: Add proper check here for truncation of headers when we support
-    # checkpoints in Xaya.
-    if True:
+    # We use height=None for cases where we want to disable truncated headers
+    # in tests.  Also, when there are no checkpoints at all, then we do not
+    # want the genesis block to be truncated.
+    if height == 0 and constants.net.CHECKPOINTS == []:
+        height = None
+    if height is not None and height <= constants.net.max_checkpoint():
+        h['powdata'], start_position = powdata.deserialize_base(s, start_position=start_position)
+    else:
         h['powdata'], start_position = powdata.deserialize(s, start_position=start_position)
 
     if expect_trailing_data:
@@ -557,8 +562,8 @@ class Blockchain(Logger):
             return constants.net.GENESIS
         elif is_height_checkpoint():
             index = height // 2016
-            h, t = self.checkpoints[index]
-            return h
+            d = self.checkpoints[index]
+            return d["hash"]
         else:
             header = self.read_header(height)
             if header is None:
@@ -578,7 +583,6 @@ class Blockchain(Logger):
         def getter (algo: int, h: int) -> Optional[dict]:
             return self.difficulty_data_for_block (algo, h, extra_blocks)
 
-        # FIXME: Take checkpoints into account!
         return difficulty.get_target(getter, header["powdata"]["algo"], header["block_height"])
 
     def difficulty_data_for_block(self, algo: int, h: int, extra_blocks={}) -> Optional[dict]:
@@ -603,17 +607,32 @@ class Blockchain(Logger):
                 header = extra_blocks[h]
             else:
                 header = self.read_header(h)
-            if header is None:
+
+            if header is not None:
+                if header["powdata"]["algo"] == algo:
+                    return {
+                        "height": h,
+                        "timestamp": header["timestamp"],
+                        "bits": header["powdata"]["bits"],
+                    }
+                h -= 1
+                continue
+
+            # If the header is beyond the last checkpoint, it should
+            # be there.
+            if h > constants.net.max_checkpoint():
                 raise MissingHeader(h)
 
-            if header["powdata"]["algo"] == algo:
-                return {
-                    "height": h,
-                    "timestamp": header["timestamp"],
-                    "bits": header["powdata"]["bits"],
-                }
+            cp_data = self.checkpoints[h // 2016]
+            algo_headers = cp_data["algo_headers"][f"{algo}"]
 
-            h -= 1
+            # Check through the headers by decreasing height.  The first we
+            # find that is <=h is ok.
+            for hdr in algo_headers[::-1]:
+                if hdr["height"] <= h:
+                    return hdr
+
+            raise MissingHeader (h)
 
     @classmethod
     def bits_to_target(cls, bits: int) -> int:
@@ -658,10 +677,15 @@ class Blockchain(Logger):
             return 0
 
         header = self.read_header(height)
-        if header is None:
-            raise MissingHeader(height)
+        if header is not None:
+            return header["chainwork"]
 
-        return header["chainwork"]
+        if height <= constants.net.max_checkpoint():
+            index = height // 2016
+            if height == (index + 1) * 2016 - 1:
+                return self.checkpoints[index]["chainwork"]
+
+        raise MissingHeader(height)
 
     def can_connect(self, header: dict, check_height: bool=True, skip_auxpow: bool=False) -> bool:
         if header is None:
@@ -700,19 +724,38 @@ class Blockchain(Logger):
             return False
 
     def get_checkpoints(self):
-        # for each chunk, store the hash of the last block and the target after the chunk
+        # Due to continuous difficulty retargeting in Xaya, we need more
+        # information than upstream with each checkpoint so that we can then
+        # use it as basis for difficulty computations.  In particular, we
+        # store the block hash, chainwork as well as the difficulty data
+        # (bits, height and timestamp) of the last 24 blocks of each algorithm.
         cp = []
 
-        # Namecoin: don't generate checkpoints for unexpired names, because
-        # otherwise we'll need to fetch chunks on demand during name lookups,
-        # which will add some latency.  TODO: Allow user-configurable pre-
-        # fetching of checkpointed unexpired chunks.
-        #n = self.height() // 2016
-        n = (self.height() - 36000) // 2016
+        n = self.height() // 2016
 
         for index in range(n):
-            h = self.get_hash((index+1) * 2016 -1)
-            cp.append((h,))
+            height = (index + 1) * 2016 - 1
+            header = self.read_header(height)
+            if header is None:
+                raise MissingHeader(height)
+
+            algo_headers = {}
+            for algo in [powdata.ALGO_SHA256D, powdata.ALGO_NEOSCRYPT]:
+                hdrs = []
+                h = height
+                while len(hdrs) < difficulty.NUM_BLOCKS:
+                    next_hdr = self.difficulty_data_for_block(algo, h)
+                    assert next_hdr is not None, (algo, h)
+                    hdrs.append(next_hdr)
+                    h = next_hdr["height"] - 1
+                algo_headers[f"{algo}"] = hdrs[::-1]
+
+            data = {
+              "hash": hash_header(header),
+              "chainwork": header["chainwork"],
+              "algo_headers": algo_headers,
+            }
+            cp.append(data)
         return cp
 
 

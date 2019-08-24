@@ -34,7 +34,8 @@ class TestBlockchain(SequentialTestCase):
 
         cls.HEADERS = {}
         for i in cls.DATA:
-            cls.HEADERS[i] = deserialize_full_header(bfh(cls.DATA[i]["header_hex"]), cls.DATA[i]["height"])
+            cls.HEADERS[i] = deserialize_full_header(bfh(cls.DATA[i]["header_hex"]), None)
+            cls.HEADERS[i]["block_height"] = cls.DATA[i]["height"]
 
     @classmethod
     def tearDownClass(cls):

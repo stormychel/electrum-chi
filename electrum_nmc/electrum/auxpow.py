@@ -59,19 +59,13 @@ MAX_INDEX_PC_BACKWARDS_COMPATIBILITY = 20
 # Header for merge-mining data in the coinbase.
 COINBASE_MERGED_MINING_HEADER = bfh('fabe') + b'mm'
 
-BLOCK_VERSION_AUXPOW_BIT = 0x100
-MIN_AUXPOW_HEIGHT = 19200
-
 # TODO: move this to network constants
-CHAIN_ID = 1
+CHAIN_ID = 1829
 
 class AuxPowVerifyError(Exception):
     pass
 
 class AuxPoWNotGenerateError(AuxPowVerifyError):
-    pass
-
-class AuxPoWOwnChainIDError(AuxPowVerifyError):
     pass
 
 class AuxPoWChainMerkleTooLongError(AuxPowVerifyError):
@@ -89,25 +83,13 @@ class AuxPoWCoinbaseRootTooLate(AuxPowVerifyError):
 class AuxPoWCoinbaseRootMissingError(AuxPowVerifyError):
     pass
 
-def auxpow_active(base_header):
-    height_allows_auxpow = base_header['block_height'] >= MIN_AUXPOW_HEIGHT
-    version_allows_auxpow = base_header['version'] & BLOCK_VERSION_AUXPOW_BIT
-
-    return height_allows_auxpow and version_allows_auxpow
-
-def get_chain_id(base_header):
-    return base_header['version'] >> 16
-
-def deserialize_auxpow_header(base_header, s, start_position=0) -> (dict, int):
+def deserialize_auxpow_header(s, start_position=0) -> (dict, int):
     """Deserialises an AuxPoW instance.
 
     Returns the deserialised AuxPoW dict and the end position in the byte
     array as a pair."""
 
     auxpow_header = {}
-
-    # Chain ID is the top 16 bits of the 32-bit version.
-    auxpow_header['chain_id'] = get_chain_id(base_header)
 
     # The parent coinbase transaction is first.
     # Deserialize it and save the trailing data.
@@ -125,9 +107,9 @@ def deserialize_auxpow_header(base_header, s, start_position=0) -> (dict, int):
     auxpow_header['chain_merkle_branch'], auxpow_header['chain_merkle_index'], start_position = deserialize_merkle_branch(s, start_position=start_position)
     
     # Finally there's the parent header.  Deserialize it.
-    parent_header_bytes = s[start_position : start_position + blockchain.HEADER_SIZE]
+    parent_header_bytes = s[start_position : start_position + blockchain.PURE_HEADER_SIZE]
     auxpow_header['parent_header'] = blockchain.deserialize_pure_header(parent_header_bytes, None)
-    start_position += blockchain.HEADER_SIZE
+    start_position += blockchain.PURE_HEADER_SIZE
     # The parent block header doesn't have any block height,
     # so delete that field.  (We used None as a dummy value above.)
     del auxpow_header['parent_header']['block_height']
@@ -148,14 +130,6 @@ def deserialize_merkle_branch(s, start_position=0):
         hashes.append(hash_encode(_hash))
     index = vds.read_int32()
     return hashes, index, vds.read_cursor
-
-def hash_parent_header(header):
-    if not auxpow_active(header):
-        return blockchain.hash_header(header)
-
-    verify_auxpow(header)
-
-    return blockchain.hash_header(header['auxpow']['parent_header'])
 
 # Reimplementation of btcutils.check_merkle_branch from Electrum-DOGE.
 # btcutils seems to have an unclear license and no obvious Git repo, so it
@@ -187,10 +161,7 @@ def calc_merkle_index(chain_id, nonce, merkle_size):
 
 # Copied from Electrum-DOGE
 # TODO: Audit this function carefully.
-def verify_auxpow(header):
-    auxhash = blockchain.hash_header(header)
-    auxpow = header['auxpow']
-
+def verify_auxpow(auxpow, auxhash):
     parent_block = auxpow['parent_header']
     coinbase = auxpow['parent_coinbase_tx']
     coinbase_hash = fast_txid(coinbase)
@@ -206,12 +177,6 @@ def verify_auxpow(header):
 
     if (coinbase_index != 0):
         raise AuxPoWNotGenerateError()
-
-    #if (get_chain_id(parent_block) == chain_id)
-    #  return error("Aux POW parent has our chain ID");
-
-    if (get_chain_id(parent_block) == CHAIN_ID):
-        raise AuxPoWOwnChainIDError()
 
     #if (vChainMerkleBranch.size() > 30)
     #    return error("Aux POW chain merkle branch too long");

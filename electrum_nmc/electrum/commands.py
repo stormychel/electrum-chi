@@ -40,7 +40,7 @@ from . import bitcoin
 from .bitcoin import is_address,  hash_160, COIN, TYPE_ADDRESS
 from .bip32 import BIP32Node
 from .i18n import _
-from .names import build_name_new, format_name_identifier, name_expires_in, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE, validate_value_length
+from .names import format_name_identifier, name_identifier_to_scripthash, OP_NAME_REGISTER, OP_NAME_UPDATE
 from .verifier import verify_tx_is_in_block
 from .transaction import Transaction, multisig_script, TxOutput
 from .paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
@@ -61,12 +61,6 @@ class NameNotFoundError(Exception):
     pass
 
 class NameAlreadyExistsError(Exception):
-    pass
-
-class NamePreRegistrationPendingError(Exception):
-    pass
-
-class NameUpdatedTooRecentlyError(Exception):
     pass
 
 def satoshis(amount):
@@ -265,7 +259,7 @@ class Commands:
                 continue
 
             # TODO: handle non-ASCII name/value encoding
-            name = name_op["name"].decode("ascii")
+            name = name_op["name"].decode("utf-8")
             value = name_op["value"].decode("ascii")
 
             # Skip this item if it doesn't match the requested identifier
@@ -277,8 +271,6 @@ class Commands:
 
             address = i["address"]
             height = i["height"]
-            expires_in = name_expires_in(height, chain_height)
-            expired = expires_in <= 0 if expires_in is not None else None
 
             result_item = {
                 "name": name,
@@ -287,8 +279,7 @@ class Commands:
                 "vout": vout,
                 "address": address,
                 "height": height,
-                "expires_in": expires_in,
-                "expired": expired,
+                "ismine": self.wallet.is_mine(address),
             }
             result.append(result_item)
         return result
@@ -572,8 +563,8 @@ class Commands:
         return tx.as_dict()
 
     @command('wp')
-    def name_new(self, identifier, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False):
-        """Create a name_new transaction. """
+    def name_register(self, identifier, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False):
+        """Create a name_register transaction. """
         if not allow_existing:
             name_exists = True
             try:
@@ -587,108 +578,31 @@ class Commands:
         domain = from_addr.split(',') if from_addr else None
 
         # TODO: support non-ASCII encodings
-        # TODO: enforce length limit on identifier
-        identifier_bytes = identifier.encode("ascii")
-        name_op, rand = build_name_new(identifier_bytes)
-        memo = "Pre-Registration: " + format_name_identifier(identifier_bytes)
-
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_outputs=[(destination, amount, name_op, memo)])
-        return {"tx": tx.as_dict(), "txid": tx.txid(), "rand": bh2u(rand)}
-
-    @command('wp')
-    def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False):
-        """Create a name_firstupdate transaction. """
-        if not allow_early:
-            conf = self.wallet.get_tx_height(name_new_txid).conf
-            if conf < 12:
-                remaining_conf = 12 - conf
-                raise NamePreRegistrationPendingError("The name pre-registration is still pending; wait " + str(remaining_conf) + "more blocks")
-
-        tx_fee = satoshis(fee)
-        domain = from_addr.split(',') if from_addr else None
-
-        # TODO: support non-ASCII encodings
         # TODO: enforce length limits on identifier and value
-        # TODO: enforce exact length of rand
-        identifier_bytes = identifier.encode("ascii")
+        identifier_bytes = identifier.encode("utf-8")
         value_bytes = value.encode("ascii")
-        rand_bytes = bfh(rand)
-        name_op = {"op": OP_NAME_FIRSTUPDATE, "name": identifier_bytes, "rand": rand_bytes, "value": value_bytes}
+        name_op = {"op": OP_NAME_REGISTER, "name": identifier_bytes, "value": value_bytes}
         memo = "Registration: " + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_txids=[name_new_txid], name_outputs=[(destination, amount, name_op, memo)])
+        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_outputs=[(destination, amount, name_op, memo)])
         return tx.as_dict()
 
     @command('wpn')
-    def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None):
+    def name_update(self, identifier, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None):
         """Create a name_update transaction. """
 
         tx_fee = satoshis(fee)
         domain = from_addr.split(',') if from_addr else None
 
-        # Allow renewing a name without any value changes by omitting the
-        # value.
-        renew = False
-        if value is None:
-            list_results = self.name_list(identifier)[0]
-
-            # This check is in place to prevent an attack where an ElectrumX
-            # server supplies an unconfirmed name_update transaction with a
-            # malicious value and then tricks the wallet owner into signing a
-            # name renewal with that malicious value.  expires_in is None when
-            # the transaction has 0 confirmations.
-            expires_in = list_results["expires_in"]
-            if expires_in is None or expires_in > 36000 - 12:
-                raise NameUpdatedTooRecentlyError("Name was updated too recently to safely determine current value.  Either wait or specify an explicit value.")
-
-            value = list_results["value"]
-            renew = True
-
         # TODO: support non-ASCII encodings
         # TODO: enforce length limits on identifier and value
-        identifier_bytes = identifier.encode("ascii")
+        identifier_bytes = identifier.encode("utf-8")
         value_bytes = value.encode("ascii")
         name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": value_bytes}
-        memo = ("Renew: " if renew else "Update: ") + format_name_identifier(identifier_bytes)
+        memo = "Update: " + format_name_identifier(identifier_bytes)
 
         tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_identifiers=[identifier_bytes], name_outputs=[(destination, amount, name_op, memo)])
         return tx.as_dict()
-
-    @command('wpn')
-    def name_autoregister(self, identifier, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, rbf=None, password=None, locktime=None, allow_existing=False):
-        """Creates a name_new transaction, broadcasts it, creates a corresponding name_firstupdate transaction, and queues it. """
-
-        # Validate the value before we try to pre-register the name.  That way,
-        # if the value is invalid, we'll be able to cancel the registration
-        # without losing money in fees.
-        validate_value_length(value)
-
-        # TODO: Don't hardcode the 0.005 name_firstupdate fee
-        new_result = self.name_new(identifier, amount=amount+0.005, fee=fee, from_addr=from_addr, change_addr=change_addr, nocheck=nocheck, rbf=rbf, password=password, locktime=locktime, allow_existing=allow_existing)
-        new_txid = new_result["txid"]
-        new_rand = new_result["rand"]
-        new_tx = new_result["tx"]["hex"]
-
-        self.broadcast(new_tx)
-
-        # We add the name_new transaction to the wallet explicitly because
-        # otherwise, the wallet will only learn about the name_new once the
-        # ElectrumX server sends us a copy of the transaction, which is several
-        # seconds later, which will cause the wallet to fail to spend the
-        # name_new when we immediately create the name_firstupdate.
-        status = self.addtransaction(new_tx)
-        if not status:
-            raise Exception("Error adding name pre-registration to wallet")
-
-        for o in Transaction(new_tx).outputs():
-            if o.name_op is not None:
-                new_addr = o.address
-                break
-
-        firstupdate_result = self.name_firstupdate(identifier, new_rand, new_txid, value, destination=destination, amount=amount, fee=fee, from_addr=new_addr, change_addr=change_addr, nocheck=nocheck, rbf=rbf, password=password, locktime=locktime, allow_early=True)
-        firstupdate_tx = firstupdate_result["hex"]
-
-        self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid)
 
     @command('w')
     def history(self, year=None, show_addresses=False, show_fiat=False, show_fees=False,
@@ -1004,15 +918,15 @@ class Commands:
     @command('n')
     def name_show(self, identifier):
         # TODO: support non-ASCII encodings
-        identifier_bytes = identifier.encode("ascii")
+        identifier_bytes = identifier.encode("utf-8")
         sh = name_identifier_to_scripthash(identifier_bytes)
 
         txs = self.network.run_from_another_thread(self.network.get_history_for_scripthash(sh))
 
-        # Pick the most recent name op that's [12, 36000) confirmations.
+        # Pick the most recent name op that's confirmed
         chain_height = self.network.blockchain().height()
-        safe_height_max = chain_height - 12
-        safe_height_min = chain_height - 35999
+        safe_height_max = chain_height
+        safe_height_min = 0
 
         tx_best = None
         for tx_candidate in txs[::-1]:
@@ -1020,7 +934,7 @@ class Commands:
                 tx_best = tx_candidate
                 break
         if tx_best is None:
-            raise NameNotFoundError("Name never existed, is expired, or is unconfirmed")
+            raise NameNotFoundError("Name never existed, or is unconfirmed")
         txid = tx_best["tx_hash"]
         height = tx_best["height"]
 
@@ -1081,16 +995,14 @@ class Commands:
                         is_mine = self.wallet.is_mine(o.address)
 
                     return {
-                        "name": o.name_op["name"].decode("ascii"),
-                        "name_encoding": "ascii",
+                        "name": o.name_op["name"].decode("utf-8"),
+                        "name_encoding": "utf-8",
                         "value": o.name_op["value"].decode("ascii"),
                         "value_encoding": "ascii",
                         "txid": txid,
                         "vout": idx,
                         "address": o.address,
                         "height": height,
-                        "expires_in": name_expires_in(height, chain_height),
-                        "expired": False,
                         "ismine": is_mine,
                     }
 

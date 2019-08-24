@@ -30,7 +30,6 @@ from electrum import powdata
 from electrum.util import bfh
 
 from . import SequentialTestCase
-from . import TestCaseForTestnet
 from . import FAST_TESTS
 
 

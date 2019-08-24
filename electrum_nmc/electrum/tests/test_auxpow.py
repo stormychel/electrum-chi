@@ -2,7 +2,6 @@ from electrum import auxpow, blockchain, constants
 from electrum.util import bfh, bh2u
 
 from . import SequentialTestCase
-from . import TestCaseForTestnet
 from . import FAST_TESTS
 
 # Xaya testnet block #63 is merge mined without an explicit MM header

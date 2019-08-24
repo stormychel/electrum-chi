@@ -1,18 +1,12 @@
 {
-    "electrum-nmc.le-space.de": {
+    "xaya.domob.eu": {
         "pruning": "-",
         "s": "50002",
         "version": "1.4"
     },
-    "nmc.bitcoins.sk": {
+    "seeder.xaya.io": {
         "pruning": "-",
         "s": "50002",
-        "version": "1.4"
-    },
-    "ulrichard.ch": {
-        "pruning": "-",
-        "s": "50006",
-        "t": "50005",
         "version": "1.4"
     }
 }

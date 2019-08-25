@@ -65,9 +65,9 @@ def inv_dict(d):
 ca_path = certifi.where()
 
 
-base_units = {'NMC':8, 'mNMC':5, 'uNMC':2, 'swartz':0}
+base_units = {'CHI':8, 'mCHI':5, 'uCHI':2, 'satoshi':0}
 base_units_inverse = inv_dict(base_units)
-base_units_list = ['NMC', 'mNMC', 'uNMC', 'swartz']  # list(dict) does not guarantee order
+base_units_list = ['CHI', 'mCHI', 'uCHI', 'satoshi']  # list(dict) does not guarantee order
 
 DECIMAL_POINT_DEFAULT = 5  # mBTC
 
@@ -701,12 +701,12 @@ def parse_URI(uri: str, on_pr: Callable = None, *, loop=None) -> dict:
 
     if ':' not in uri:
         if not bitcoin.is_address(uri):
-            raise InvalidBitcoinURI("Not a namecoin address")
+            raise InvalidBitcoinURI("Not an address")
         return {'address': uri}
 
     u = urllib.parse.urlparse(uri)
     if u.scheme != 'xaya':
-        raise InvalidBitcoinURI("Not a namecoin URI")
+        raise InvalidBitcoinURI("Not a Xaya URI")
     address = u.path
 
     # python for android fails to parse query
@@ -723,7 +723,7 @@ def parse_URI(uri: str, on_pr: Callable = None, *, loop=None) -> dict:
     out = {k: v[0] for k, v in pq.items()}
     if address:
         if not bitcoin.is_address(address):
-            raise InvalidBitcoinURI(f"Invalid namecoin address: {address}")
+            raise InvalidBitcoinURI(f"Invalid address: {address}")
         out['address'] = address
     if 'amount' in out:
         am = out['amount']

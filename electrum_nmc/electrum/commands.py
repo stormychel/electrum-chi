@@ -159,8 +159,8 @@ class Commands:
     @command('')
     def restore(self, text, passphrase=None, password=None, encrypt_file=True):
         """Restore a wallet from text. Text can be a seed phrase, a master
-        public key, a master private key, a list of namecoin addresses
-        or namecoin private keys.
+        public key, a master private key, a list of addresses
+        or private keys.
         If you want to be prompted for an argument, type '?' or ':' (concealed)
         """
         d = restore_wallet_from_text(text,
@@ -628,7 +628,7 @@ class Commands:
 
     @command('w')
     def setlabel(self, key, label):
-        """Assign a label to an item. Item may be a namecoin address or a
+        """Assign a label to an item. Item may be a address or a
         transaction ID"""
         self.wallet.set_label(key, label)
 
@@ -720,7 +720,7 @@ class Commands:
             PR_PAID: 'Paid',
             PR_EXPIRED: 'Expired',
         }
-        out['amount_NMC'] = format_satoshis(out.get('amount'))
+        out['amount_CHI'] = format_satoshis(out.get('amount'))
         out['status'] = pr_str[out.get('status', PR_UNKNOWN)]
         return out
 
@@ -1055,8 +1055,8 @@ def eval_bool(x: str) -> bool:
 
 param_descriptions = {
     'privkey': 'Private key. Type \'?\' to get a prompt.',
-    'destination': 'Namecoin address, contact or alias',
-    'address': 'Namecoin address',
+    'destination': 'Address, contact or alias',
+    'address': 'Address',
     'seed': 'Seed phrase',
     'txid': 'Transaction ID',
     'pos': 'Position',
@@ -1066,8 +1066,8 @@ param_descriptions = {
     'pubkey': 'Public key',
     'message': 'Clear text message. Use quotes if it contains spaces.',
     'encrypted': 'Encrypted message',
-    'amount': 'Amount to be sent (in NMC). Type \'!\' to send the maximum available.',
-    'requested_amount': 'Requested amount (in NMC).',
+    'amount': 'Amount to be sent (in CHI). Type \'!\' to send the maximum available.',
+    'requested_amount': 'Requested amount (in CHI).',
     'outputs': 'list of ["address", amount]',
     'redeem_script': 'redeem script (hexadecimal)',
 }
@@ -1085,7 +1085,7 @@ command_options = {
     'labels':      ("-l", "Show the labels of listed addresses"),
     'nocheck':     (None, "Do not verify aliases"),
     'imax':        (None, "Maximum number of inputs"),
-    'fee':         ("-f", "Transaction fee (in NMC)"),
+    'fee':         ("-f", "Transaction fee (in CHI)"),
     'from_addr':   ("-F", "Source address (must be a wallet address; use sweep to spend from non-wallet address)."),
     'change_addr': ("-c", "Change address. Default is a spare address, or the source address if it's not in the wallet"),
     'nbits':       (None, "Number of bits of entropy"),
@@ -1112,8 +1112,8 @@ command_options = {
     'fee_level':   (None, "Float between 0.0 and 1.0, representing fee slider position"),
     'from_height': (None, "Only show transactions that confirmed after given block height"),
     'to_height':   (None, "Only show transactions that confirmed before given block height"),
-    'destination': (None, "Namecoin address, contact or alias"),
-    'amount':      (None, "Amount to be sent (in NMC). Type \'!\' to send the maximum available."),
+    'destination': (None, "Address, contact or alias"),
+    'amount':      (None, "Amount to be sent (in CHI). Type \'!\' to send the maximum available."),
     'allow_existing': (None, "Allow pre-registering a name that already is registered.  Your registration fee will be forfeited until you can register the name after it expires."),
     'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
     'identifier':  (None, "The requested name identifier"),
@@ -1152,10 +1152,10 @@ config_variables = {
         'requests_dir': 'directory where a bip70 file will be written.',
         'ssl_privkey': 'Path to your SSL private key, needed to sign the request.',
         'ssl_chain': 'Chain of SSL certificates, needed for signed requests. Put your certificate at the top and the root CA at the end',
-        'url_rewrite': 'Parameters passed to str.replace(), in order to create the r= part of namecoin: URIs. Example: \"(\'file:///var/www/\',\'https://www.namecoin.org/\')\"',
+        'url_rewrite': 'Parameters passed to str.replace(), in order to create the r= part of xaya: URIs. Example: \"(\'file:///var/www/\',\'https://www.xaya.io/\')\"',
     },
     'listrequests':{
-        'url_rewrite': 'Parameters passed to str.replace(), in order to create the r= part of namecoin: URIs. Example: \"(\'file:///var/www/\',\'https://www.namecoin.org/\')\"',
+        'url_rewrite': 'Parameters passed to str.replace(), in order to create the r= part of xaya: URIs. Example: \"(\'file:///var/www/\',\'https://www.xaya.io/\')\"',
     }
 }
 
@@ -1237,7 +1237,7 @@ def get_parser():
     subparsers = parser.add_subparsers(dest='cmd', metavar='<command>')
     # gui
     parser_gui = subparsers.add_parser('gui', description="Run Electrum-CHI's Graphical User Interface.", help="Run GUI (default)")
-    parser_gui.add_argument("url", nargs='?', default=None, help="namecoin URI (or bip70 file)")
+    parser_gui.add_argument("url", nargs='?', default=None, help="xaya URI (or bip70 file)")
     parser_gui.add_argument("-g", "--gui", dest="gui", help="select graphical user interface", choices=['qt', 'kivy', 'text', 'stdio'])
     parser_gui.add_argument("-o", "--offline", action="store_true", dest="offline", default=False, help="Run offline")
     parser_gui.add_argument("-m", action="store_true", dest="hide_gui", default=False, help="hide GUI on startup")

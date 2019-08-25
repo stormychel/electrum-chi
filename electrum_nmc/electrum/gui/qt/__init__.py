@@ -94,7 +94,7 @@ class ElectrumGui(Logger):
         if hasattr(QtCore.Qt, "AA_ShareOpenGLContexts"):
             QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
         if hasattr(QGuiApplication, 'setDesktopFileName'):
-            QGuiApplication.setDesktopFileName('electrum-nmc.desktop')
+            QGuiApplication.setDesktopFileName('electrum-chi.desktop')
         self.gui_thread = threading.current_thread()
         self.config = config
         self.daemon = daemon
@@ -103,7 +103,7 @@ class ElectrumGui(Logger):
         self.efilter = OpenFileEventFilter(self.windows)
         self.app = QElectrumApplication(sys.argv)
         self.app.installEventFilter(self.efilter)
-        self.app.setWindowIcon(read_QIcon("electrum_nmc.png"))
+        self.app.setWindowIcon(read_QIcon("electrum_chi.png"))
         # timer
         self.timer = QTimer(self.app)
         self.timer.setSingleShot(False)
@@ -116,7 +116,7 @@ class ElectrumGui(Logger):
         # init tray
         self.dark_icon = self.config.get("dark_icon", False)
         self.tray = QSystemTrayIcon(self.tray_icon(), None)
-        self.tray.setToolTip('Electrum-NMC')
+        self.tray.setToolTip('Electrum-CHI')
         self.tray.activated.connect(self.tray_activated)
         self.build_tray_menu()
         self.tray.show()
@@ -154,7 +154,7 @@ class ElectrumGui(Logger):
             submenu.addAction(_("Close"), window.close)
         m.addAction(_("Dark/Light"), self.toggle_tray_icon)
         m.addSeparator()
-        m.addAction(_("Exit Electrum-NMC"), self.close)
+        m.addAction(_("Exit Electrum-CHI"), self.close)
 
     def tray_icon(self):
         if self.dark_icon:
@@ -186,7 +186,7 @@ class ElectrumGui(Logger):
 
     def show_network_dialog(self, parent):
         if not self.daemon.network:
-            parent.show_warning(_('You are using Electrum-NMC in offline mode; restart Electrum-NMC if you want to get connected'), title=_('Offline'))
+            parent.show_warning(_('You are using Electrum-CHI in offline mode; restart Electrum-CHI if you want to get connected'), title=_('Offline'))
             return
         if self.nd:
             self.nd.on_update()

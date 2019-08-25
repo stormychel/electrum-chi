@@ -159,7 +159,7 @@ class SafeTPlugin(HW_PluginBase):
         return client
 
     def get_coin_name(self):
-        return "Testnet" if constants.net.TESTNET else "Namecoin"
+        return "Testnet" if constants.net.TESTNET else "Xaya"
 
     def initialize_device(self, device_id, wizard, handler):
         # Initialization method

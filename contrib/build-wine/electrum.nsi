@@ -6,9 +6,9 @@
 ;--------------------------------
 ;Variables
 
-  !define PRODUCT_NAME "Electrum-NMC"
-  !define PRODUCT_WEB_SITE "https://www.namecoin.org/"
-  !define PRODUCT_PUBLISHER "Namecoin Project"
+  !define PRODUCT_NAME "Electrum-CHI"
+  !define PRODUCT_WEB_SITE "https://www.xaya.io/"
+  !define PRODUCT_PUBLISHER "Autonomous Worlds Ltd"
   !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 
 ;--------------------------------
@@ -16,7 +16,7 @@
 
   ;Name and file
   Name "${PRODUCT_NAME}"
-  OutFile "dist/electrum-nmc-setup.exe"
+  OutFile "dist/electrum-chi-setup.exe"
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\${PRODUCT_NAME}"
@@ -72,7 +72,7 @@
   !define MUI_ABORTWARNING
   !define MUI_ABORTWARNING_TEXT "Are you sure you wish to abort the installation of ${PRODUCT_NAME}?"
   
-  !define MUI_ICON "c:\electrum-nmc\electrum_nmc\electrum\gui\icons\electrum_nmc.ico"
+  !define MUI_ICON "c:\electrum-chi\electrum_nmc\electrum\gui\icons\electrum_chi.ico"
   
 ;--------------------------------
 ;Pages
@@ -110,8 +110,8 @@ Section
   Delete "$SMPROGRAMS\${PRODUCT_NAME}\*.*"
   
   ;Files to pack into the installer
-  File /r "dist\electrum-nmc\*.*"
-  File "c:\electrum-nmc\electrum_nmc\electrum\gui\icons\electrum_nmc.ico"
+  File /r "dist\electrum-chi\*.*"
+  File "c:\electrum-chi\electrum_nmc\electrum\gui\icons\electrum_chi.ico"
 
   ;Store installation folder
   WriteRegStr HKCU "Software\${PRODUCT_NAME}" "" $INSTDIR
@@ -122,21 +122,21 @@ Section
 
   ;Create desktop shortcut
   DetailPrint "Creating desktop shortcut..."
-  CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe" ""
+  CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\electrum-chi-${PRODUCT_VERSION}.exe" ""
 
   ;Create start-menu items
   DetailPrint "Creating start-menu items..."
   CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
   CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk" "$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe" "" "$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe" 0
-  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME} Testnet.lnk" "$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe" "--testnet" "$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe" 0
+  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk" "$INSTDIR\electrum-chi-${PRODUCT_VERSION}.exe" "" "$INSTDIR\electrum-chi-${PRODUCT_VERSION}.exe" 0
+  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME} Testnet.lnk" "$INSTDIR\electrum-chi-${PRODUCT_VERSION}.exe" "--testnet" "$INSTDIR\electrum-chi-${PRODUCT_VERSION}.exe" 0
 
 
   ;Links bitcoin: URI's to Electrum
-  WriteRegStr HKCU "Software\Classes\namecoin" "" "URL:namecoin Protocol"
-  WriteRegStr HKCU "Software\Classes\namecoin" "URL Protocol" ""
-  WriteRegStr HKCU "Software\Classes\namecoin" "DefaultIcon" "$\"$INSTDIR\electrum_nmc.ico, 0$\""
-  WriteRegStr HKCU "Software\Classes\namecoin\shell\open\command" "" "$\"$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe$\" $\"%1$\""
+  WriteRegStr HKCU "Software\Classes\xaya" "" "URL:xaya Protocol"
+  WriteRegStr HKCU "Software\Classes\xaya" "URL Protocol" ""
+  WriteRegStr HKCU "Software\Classes\xaya" "DefaultIcon" "$\"$INSTDIR\electrum_chi.ico, 0$\""
+  WriteRegStr HKCU "Software\Classes\xaya\shell\open\command" "" "$\"$INSTDIR\electrum-chi-${PRODUCT_VERSION}.exe$\" $\"%1$\""
 
   ;Adds an uninstaller possibility to Windows Uninstall or change a program section
   WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
@@ -144,7 +144,7 @@ Section
   WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
   WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-  WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\electrum_nmc.ico"
+  WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\electrum_chi.ico"
 
   ;Fixes Windows broken size estimates
   ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
@@ -167,7 +167,7 @@ Section "Uninstall"
   Delete "$SMPROGRAMS\${PRODUCT_NAME}\*.*"
   RMDir  "$SMPROGRAMS\${PRODUCT_NAME}"
   
-  DeleteRegKey HKCU "Software\Classes\namecoin"
+  DeleteRegKey HKCU "Software\Classes\xaya"
   DeleteRegKey HKCU "Software\${PRODUCT_NAME}"
   DeleteRegKey HKCU "${PRODUCT_UNINST_KEY}"
 SectionEnd

@@ -51,8 +51,8 @@ from .logging import get_logger, Logger
 _logger = get_logger(__name__)
 
 
-REQUEST_HEADERS = {'Accept': 'application/namecoin-paymentrequest', 'User-Agent': 'Electrum-CHI'}
-ACK_HEADERS = {'Content-Type':'application/namecoin-payment','Accept':'application/namecoin-paymentack','User-Agent':'Electrum-CHI'}
+REQUEST_HEADERS = {'Accept': 'application/xaya-paymentrequest', 'User-Agent': 'Electrum-CHI'}
+ACK_HEADERS = {'Content-Type':'application/xaya-payment','Accept':'application/xaya-paymentack','User-Agent':'Electrum-CHI'}
 
 ca_path = certifi.where()
 ca_list = None
@@ -85,7 +85,7 @@ async def get_payment_request(url: str) -> 'PaymentRequest':
                     response.raise_for_status()
                     # Guard against `namecoin:`-URIs with invalid payment request URLs
                     if "Content-Type" not in response.headers \
-                    or response.headers["Content-Type"] != "application/namecoin-paymentrequest":
+                    or response.headers["Content-Type"] != "application/xaya-paymentrequest":
                         data = None
                         error = "payment URL not pointing to a payment request handling server"
                     else:
@@ -178,7 +178,7 @@ class PaymentRequest:
             return True
         if pr.pki_type in ["x509+sha256", "x509+sha1"]:
             return self.verify_x509(pr)
-        elif pr.pki_type in ["dnssec+nmc", "dnssec+ecdsa"]:
+        elif pr.pki_type in ["dnssec+chi", "dnssec+ecdsa"]:
             return self.verify_dnssec(pr, contacts)
         else:
             self.error = "ERROR: Unsupported PKI Type for Message Signature"
@@ -231,7 +231,7 @@ class PaymentRequest:
         if info.get('validated') is not True:
             self.error = "Alias verification failed (DNSSEC)"
             return False
-        if pr.pki_type == "dnssec+nmc":
+        if pr.pki_type == "dnssec+chi":
             self.requestor = alias
             address = info.get('address')
             pr.signature = b''
@@ -359,7 +359,7 @@ def make_unsigned_request(req):
 
 
 def sign_request_with_alias(pr, alias, alias_privkey):
-    pr.pki_type = 'dnssec+nmc'
+    pr.pki_type = 'dnssec+chi'
     pr.pki_data = str(alias)
     message = pr.SerializeToString()
     ec_key = ecc.ECPrivkey(alias_privkey)
@@ -466,7 +466,7 @@ def serialize_request(req):
     requestor = req.get('name')
     if requestor and signature:
         pr.signature = bfh(signature)
-        pr.pki_type = 'dnssec+nmc'
+        pr.pki_type = 'dnssec+chi'
         pr.pki_data = str(requestor)
     return pr
 

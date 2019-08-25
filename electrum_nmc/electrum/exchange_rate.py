@@ -282,14 +282,12 @@ class Coinbase(ExchangeBase):
 """
 
 
+# Doesn't support Xaya.
+"""
 class CoinCap(ExchangeBase):
 
     async def get_rates(self, ccy):
         # CoinCap rates API is broken for Namecoin.  Use history API instead.
-        """
-        json = await self.get_json('api.coincap.io', '/v2/rates/namecoin/')
-        return {'USD': Decimal(json['data']['rateUsd'])}
-        """
         history = await self.get_json('api.coincap.io',
                                       '/v2/assets/namecoin/history?interval=d1&limit=2000')
         return {'USD': Decimal(json['data'][-1]['priceUsd'])}
@@ -304,6 +302,7 @@ class CoinCap(ExchangeBase):
                                       '/v2/assets/namecoin/history?interval=d1&limit=2000')
         return dict([(datetime.utcfromtimestamp(h['time']/1000).strftime('%Y-%m-%d'), h['priceUsd'])
                      for h in history['data']])
+"""
 
 
 # Doesn't support Namecoin.
@@ -347,7 +346,8 @@ class CoinGecko(ExchangeBase):
         return dict([(ccy.upper(), Decimal(d['value']))
                      for ccy, d in json['rates'].items()])
         """
-        json = await self.get_json('api.coingecko.com', '/api/v3/coins/namecoin')
+
+        json = await self.get_json('api.coingecko.com', '/api/v3/coins/xaya')
         return dict([(ccy.upper(), Decimal(d['value']))
                      for ccy, d in json['market_data']['current_price'].items()])
 
@@ -357,7 +357,7 @@ class CoinGecko(ExchangeBase):
 
     async def request_history(self, ccy):
         history = await self.get_json('api.coingecko.com',
-                                      '/api/v3/coins/namecoin/market_chart?vs_currency=%s&days=max' % ccy)
+                                      '/api/v3/coins/xaya/market_chart?vs_currency=%s&days=max' % ccy)
 
         return dict([(datetime.utcfromtimestamp(h[0]/1000).strftime('%Y-%m-%d'), h[1])
                      for h in history['prices']])

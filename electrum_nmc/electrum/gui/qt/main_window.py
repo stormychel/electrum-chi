@@ -178,8 +178,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         tabs.addTab(self.create_history_tab(), read_QIcon("tab_history.png"), _('History'))
         tabs.addTab(self.send_tab, read_QIcon("tab_send.png"), _('Send'))
         tabs.addTab(self.receive_tab, read_QIcon("tab_receive.png"), _('Receive'))
-        tabs.addTab(self.buy_names_tab, read_QIcon("namecoin-logo.png"), _('Buy Names'))
-        tabs.addTab(self.names_tab, read_QIcon("namecoin-logo.png"), _('Manage Names'))
+        tabs.addTab(self.buy_names_tab, read_QIcon("xaya-logo.png"), _('Buy Names'))
+        tabs.addTab(self.names_tab, read_QIcon("xaya-logo.png"), _('Manage Names'))
 
         def add_optional_tab(tabs, tab, icon, description, name):
             tab.tab_icon = icon
@@ -200,7 +200,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if self.config.get("is_maximized"):
             self.showMaximized()
 
-        self.setWindowIcon(read_QIcon("electrum_nmc.png"))
+        self.setWindowIcon(read_QIcon("electrum_chi.png"))
         self.init_menubar()
 
         wrtabs = weakref.proxy(tabs)
@@ -244,9 +244,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         # If the option hasn't been set yet
         if config.get('check_updates') is None:
-            choice = self.question(title="Electrum-NMC - " + _("Enable update check"),
-                                   msg=_("For security reasons we advise that you always use the latest version of Electrum-NMC.") + " " +
-                                       _("Would you like to be notified when there is a newer version of Electrum-NMC available?"))
+            choice = self.question(title="Electrum-CHI - " + _("Enable update check"),
+                                   msg=_("For security reasons we advise that you always use the latest version of Electrum-CHI.") + " " +
+                                       _("Would you like to be notified when there is a newer version of Electrum-CHI available?"))
             config.set_key('check_updates', bool(choice), save=True)
 
         if config.get('check_updates', False):
@@ -254,7 +254,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             # to prevent GC from getting in our way.
             def on_version_received(v):
                 if UpdateCheck.is_newer(v):
-                    self.update_check_button.setText(_("Update to Electrum-NMC {} is available").format(v))
+                    self.update_check_button.setText(_("Update to Electrum-CHI {} is available").format(v))
                     self.update_check_button.clicked.connect(lambda: self.show_update_check(v))
                     self.update_check_button.show()
             self._update_check_thread = UpdateCheckThread(self)
@@ -456,7 +456,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.setGeometry(100, 100, 840, 400)
 
     def watching_only_changed(self):
-        name = "Electrum-NMC Testnet" if constants.net.TESTNET else "Electrum-NMC"
+        name = "Electrum-CHI Testnet" if constants.net.TESTNET else "Electrum-CHI"
         title = '%s %s  -  %s' % (name, ELECTRUM_VERSION,
                                         self.wallet.basename())
         extra = [self.wallet.storage.get('wallet_type', '?')]
@@ -473,8 +473,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if self.wallet.is_watching_only():
             msg = ' '.join([
                 _("This wallet is watching-only."),
-                _("This means you will not be able to spend Namecoins or update names with it."),
-                _("Make sure you own the seed phrase or the private keys, before you request Namecoins or names to be sent to this wallet.")
+                _("This means you will not be able to spend CHI or update names with it."),
+                _("Make sure you own the seed phrase or the private keys, before you request CHI or names to be sent to this wallet.")
             ])
             self.show_warning(msg, title=_('Watch-only wallet'))
 
@@ -491,7 +491,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         msg = ''.join([
             _("You are in testnet mode."), ' ',
             _("Testnet coins and names are worthless."), '\n',
-            _("Testnet is separate from the main Namecoin network. It is used for testing.")
+            _("Testnet is separate from the main Xaya network. It is used for testing.")
         ])
         cb = QCheckBox(_("Don't show this again."))
         cb_checked = False
@@ -527,7 +527,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 shutil.copy2(path, new_path)
                 self.show_message(_("A copy of your wallet file was created in")+" '%s'" % str(new_path), title=_("Wallet backup created"))
             except BaseException as reason:
-                self.show_critical(_("Electrum-NMC was unable to copy your wallet file to the specified location.") + "\n" + str(reason), title=_("Unable to create backup"))
+                self.show_critical(_("Electrum-CHI was unable to copy your wallet file to the specified location.") + "\n" + str(reason), title=_("Unable to create backup"))
 
     def update_recently_visited(self, filename):
         recent = self.config.get('recently_open', [])
@@ -621,7 +621,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         tools_menu = menubar.addMenu(_("&Tools"))
 
         # Settings / Preferences are all reserved keywords in macOS using this as work around
-        tools_menu.addAction(_("Electrum-NMC preferences") if sys.platform == 'darwin' else _("Preferences"), self.settings_dialog)
+        tools_menu.addAction(_("Electrum-CHI preferences") if sys.platform == 'darwin' else _("Preferences"), self.settings_dialog)
         tools_menu.addAction(_("&Network"), lambda: self.gui_object.show_network_dialog(self))
         tools_menu.addAction(_("&Plugins"), self.plugins_dialog)
         tools_menu.addSeparator()
@@ -642,7 +642,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         help_menu = menubar.addMenu(_("&Help"))
         help_menu.addAction(_("&About"), self.show_about)
         help_menu.addAction(_("&Check for updates"), self.show_update_check)
-        help_menu.addAction(_("&Official website"), lambda: webopen("https://www.namecoin.org"))
+        help_menu.addAction(_("&Official website"), lambda: webopen("https://www.xaya.io"))
         help_menu.addSeparator()
         help_menu.addAction(_("&Documentation"), lambda: webopen("http://docs.electrum.org/")).setShortcut(QKeySequence.HelpContents)
         help_menu.addAction(_("&Report Bug"), self.show_report_bug)
@@ -655,18 +655,18 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         d = self.network.get_donation_address()
         if d:
             host = self.network.get_parameters().host
-            self.pay_to_URI('namecoin:%s?message=donation for %s'%(d, host))
+            self.pay_to_URI('xaya:%s?message=donation for %s'%(d, host))
         else:
             self.show_error(_('No donation address for this server'))
 
     def show_about(self):
-        QMessageBox.about(self, "Electrum-NMC",
+        QMessageBox.about(self, "Electrum-CHI",
                           (_("Version")+" %s" % ELECTRUM_VERSION + "\n\n" +
-                           _("Electrum-NMC's focus is speed, with low resource usage and simplifying Namecoin.") + " " +
+                           _("Electrum-CHI's focus is speed, with low resource usage and simplifying Xaya.") + " " +
                            _("You do not need to perform regular backups, because your wallet can be "
                               "recovered from a secret phrase that you can memorize or write on paper.") + " " +
                            _("Startup times are instant because it operates in conjunction with high-performance "
-                              "servers that handle the most complicated parts of the Namecoin system.") + "\n\n" +
+                              "servers that handle the most complicated parts of the Xaya system.") + "\n\n" +
                            _("Uses icons from the Icons8 icon pack (icons8.com).")))
 
     def show_update_check(self, version=None):
@@ -676,10 +676,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         msg = ' '.join([
             _("Please report any bugs as issues on github:<br/>"),
             f'''<a href="{constants.GIT_REPO_ISSUES_URL}">{constants.GIT_REPO_ISSUES_URL}</a><br/><br/>''',
-            _("Before reporting a bug, upgrade to the most recent version of Electrum-NMC (latest release or git HEAD), and include the version number in your report."),
+            _("Before reporting a bug, upgrade to the most recent version of Electrum-CHI (latest release or git HEAD), and include the version number in your report."),
             _("Try to explain not only what the bug is, but how it occurs.")
          ])
-        self.show_message(msg, title="Electrum-NMC - " + _("Reporting Bugs"), rich_text=True)
+        self.show_message(msg, title="Electrum-CHI - " + _("Reporting Bugs"), rich_text=True)
 
     def notify_transactions(self):
         if self.tx_notification_queue.qsize() == 0:
@@ -719,9 +719,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if self.tray:
             try:
                 # this requires Qt 5.9
-                self.tray.showMessage("Electrum-NMC", message, read_QIcon("electrum_dark_icon"), 20000)
+                self.tray.showMessage("Electrum-CHI", message, read_QIcon("electrum_dark_icon"), 20000)
             except TypeError:
-                self.tray.showMessage("Electrum-NMC", message, QSystemTrayIcon.Information, 20000)
+                self.tray.showMessage("Electrum-CHI", message, QSystemTrayIcon.Information, 20000)
 
 
 
@@ -917,7 +917,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.receive_address_e = ButtonsLineEdit()
         self.receive_address_e.addCopyButton(self.app)
         self.receive_address_e.setReadOnly(True)
-        msg = _('Namecoin address where the payment should be received. Note that each payment request uses a different Namecoin address.')
+        msg = _('The address where the payment should be received. Note that each payment request uses a different address.')
         self.receive_address_label = HelpLabel(_('Receiving address'), msg)
         self.receive_address_e.textChanged.connect(self.update_receive_qr)
         self.receive_address_e.textChanged.connect(self.update_receive_address_styling)
@@ -948,8 +948,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         msg = ' '.join([
             _('Expiration date of your request.'),
             _('This information is seen by the recipient if you send them a signed payment request.'),
-            _('Expired requests have to be deleted manually from your list, in order to free the corresponding Namecoin addresses.'),
-            _('The namecoin address never expires and will always be part of this electrum-nmc wallet.'),
+            _('Expired requests have to be deleted manually from your list, in order to free the corresponding addresses.'),
+            _('The address never expires and will always be part of this electrum-chi wallet.'),
         ])
         grid.addWidget(HelpLabel(_('Request expires'), msg), 3, 0)
         grid.addWidget(self.expires_combo, 3, 1)
@@ -1191,7 +1191,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.amount_e = BTCAmountEdit(self.get_decimal_point)
         self.payto_e = PayToEdit(self)
         msg = _('Recipient of the funds.') + '\n\n'\
-              + _('You may enter a Namecoin address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Namecoin address)')
+              + _('You may enter an address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to an address)')
         payto_label = HelpLabel(_('Pay to'), msg)
         grid.addWidget(payto_label, 1, 0)
         grid.addWidget(self.payto_e, 1, 1, 1, -1)
@@ -1237,7 +1237,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         hbox.addStretch(1)
         grid.addLayout(hbox, 4, 4)
 
-        msg = _('Namecoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
+        msg = _('Xaya transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
               + _('The amount of fee can be decided freely by the sender. However, transactions with low fees take more time to be processed.') + '\n\n'\
               + _('A suggested fee is automatically added to this field. You may override it. The suggested fee increases with the size of the transaction.')
         self.fee_e_label = HelpLabel(_('Fee'), msg)
@@ -1299,7 +1299,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         def feerounding_onclick():
             text = (self.feerounding_text + '\n\n' +
-                    _('To somewhat protect your privacy, Electrum-NMC tries to create change with similar precision to other outputs.') + ' ' +
+                    _('To somewhat protect your privacy, Electrum-CHI tries to create change with similar precision to other outputs.') + ' ' +
                     _('At most 100 swartz might be lost due to this rounding.') + ' ' +
                     _("You can disable this setting in '{}'.").format(_('Preferences')) + '\n' +
                     _('Also, dust is not kept as change, but added to the fee.')  + '\n' +
@@ -1641,10 +1641,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         for o in outputs:
             if o.address is None:
-                self.show_error(_('Namecoin Address is None'))
+                self.show_error(_('Address is None'))
                 return True
             if o.type == TYPE_ADDRESS and not bitcoin.is_address(o.address):
-                self.show_error(_('Invalid Namecoin Address'))
+                self.show_error(_('Invalid Address'))
                 return True
             if o.value is None:
                 self.show_error(_('Invalid Amount'))
@@ -2349,14 +2349,14 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 "private key, and verifying with the corresponding public key. The "
                 "address you have entered does not have a unique public key, so these "
                 "operations cannot be performed.") + '\n\n' + \
-               _('The operation is undefined. Not just in Electrum-NMC, but in general.')
+               _('The operation is undefined. Not just in Electrum-CHI, but in general.')
 
     @protected
     def do_sign(self, address, message, signature, password):
         address  = address.text().strip()
         message = message.toPlainText().strip()
         if not bitcoin.is_address(address):
-            self.show_message(_('Invalid Namecoin address.'))
+            self.show_message(_('Invalid address.'))
             return
         if self.wallet.is_watching_only():
             self.show_message(_('This is a watching-only wallet.'))
@@ -2384,7 +2384,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         address  = address.text().strip()
         message = message.toPlainText().strip().encode('utf-8')
         if not bitcoin.is_address(address):
-            self.show_message(_('Invalid Namecoin address.'))
+            self.show_message(_('Invalid address.'))
             return
         try:
             # This can throw on invalid base64
@@ -2518,7 +2518,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             tx = tx_from_str(txt)
             return Transaction(tx)
         except BaseException as e:
-            self.show_critical(_("Electrum-NMC was unable to parse your transaction") + ":\n" + repr(e))
+            self.show_critical(_("Electrum-CHI was unable to parse your transaction") + ":\n" + repr(e))
             return
 
     def read_tx_from_qrcode(self):
@@ -2531,7 +2531,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if not data:
             return
         # if the user scanned a bitcoin URI
-        if str(data).startswith("namecoin:"):
+        if str(data).startswith("xaya:"):
             self.pay_to_URI(data)
             return
         # else if the user scanned an offline signed tx
@@ -2553,7 +2553,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             with open(fileName, "r") as f:
                 file_content = f.read()
         except (ValueError, IOError, os.error) as reason:
-            self.show_critical(_("Electrum-NMC was unable to open your transaction file") + "\n" + str(reason), title=_("Unable to read file or no transaction found"))
+            self.show_critical(_("Electrum-CHI was unable to open your transaction file") + "\n" + str(reason), title=_("Unable to read file or no transaction found"))
             return
         return self.tx_from_text(file_content)
 
@@ -2607,7 +2607,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         e.setReadOnly(True)
         vbox.addWidget(e)
 
-        defaultname = 'electrum-nmc-private-keys.csv'
+        defaultname = 'electrum-chi-private-keys.csv'
         select_msg = _('Select file to export your private keys to')
         hbox, filename_e, csv_button = filename_field(self, self.config, defaultname, select_msg)
         vbox.addLayout(hbox)
@@ -2665,7 +2665,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.do_export_privkeys(filename, private_keys, csv_button.isChecked())
         except (IOError, os.error) as reason:
             txt = "\n".join([
-                _("Electrum-NMC was unable to produce a private key-export."),
+                _("Electrum-CHI was unable to produce a private key-export."),
                 str(reason)
             ])
             self.show_critical(txt, title=_("Unable to create csv"))
@@ -2976,7 +2976,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         units = base_units_list
         msg = (_('Base unit of your wallet.')
-               + '\n1 NMC = 1000 mNMC. 1 mNMC = 1000 uNMC. 1 uNMC = 100 swartz.\n'
+               + '\n1 CHI = 1000 mCHI. 1 mCHI = 1000 uCHI. 1 uCHI = 100 satoshi.\n'
                + _('This setting affects the Send tab, and all balance related fields.'))
         unit_label = HelpLabel(_('Base unit') + ':', msg)
         unit_combo = QComboBox()
@@ -3262,7 +3262,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         run_hook('close_settings_dialog')
         if self.need_restart:
-            self.show_warning(_('Please restart Electrum-NMC to activate the new GUI settings'), title=_('Success'))
+            self.show_warning(_('Please restart Electrum-CHI to activate the new GUI settings'), title=_('Success'))
 
 
     def closeEvent(self, event):
@@ -3293,7 +3293,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.gui_object.close_window(self)
 
     def plugins_dialog(self):
-        self.pluginsdialog = d = WindowModalDialog(self, _('Electrum-NMC Plugins'))
+        self.pluginsdialog = d = WindowModalDialog(self, _('Electrum-CHI Plugins'))
 
         plugins = self.gui_object.plugins
 
@@ -3507,7 +3507,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         # TODO: allow hex names
         self.buy_names_new_name_lineedit = QLineEdit()
-        self.buy_names_new_name_lineedit.setToolTip(_("Enter a name to be registered via Namecoin."))
+        self.buy_names_new_name_lineedit.setToolTip(_("Enter a name to be registered via Xaya."))
         self.buy_names_new_name_lineedit.textChanged.connect(self.update_buy_names_preview)
         vbox.addWidget(self.buy_names_new_name_lineedit)
 

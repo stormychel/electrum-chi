@@ -7,7 +7,7 @@ CONTRIB="$PROJECT_ROOT/contrib"
 CONTRIB_APPIMAGE="$CONTRIB/build-linux/appimage"
 DISTDIR="$PROJECT_ROOT/dist"
 BUILDDIR="$CONTRIB_APPIMAGE/build/appimage"
-APPDIR="$BUILDDIR/electrum-nmc.AppDir"
+APPDIR="$BUILDDIR/electrum-chi.AppDir"
 CACHEDIR="$CONTRIB_APPIMAGE/.cache/appimage"
 
 # pinned versions
@@ -18,7 +18,7 @@ SQUASHFSKIT_COMMIT="ae0d656efa2d0df2fcac795b6823b44462f19386"
 
 
 VERSION=`git describe --tags --dirty --always`
-APPIMAGE="$DISTDIR/electrum-nmc-$VERSION-x86_64.AppImage"
+APPIMAGE="$DISTDIR/electrum-chi-$VERSION-x86_64.AppImage"
 
 . "$CONTRIB"/build_tools_util.sh
 
@@ -132,7 +132,7 @@ info "preparing electrum-locale."
 )
 
 
-info "installing electrum-nmc and its dependencies."
+info "installing electrum-chi and its dependencies."
 mkdir -p "$CACHEDIR/pip_cache"
 "$python" -m pip install --no-warn-script-location --cache-dir "$CACHEDIR/pip_cache" -r "$CONTRIB/deterministic-build/requirements.txt"
 "$python" -m pip install --no-warn-script-location --cache-dir "$CACHEDIR/pip_cache" -r "$CONTRIB/deterministic-build/requirements-binaries.txt"
@@ -145,8 +145,8 @@ cp "/usr/lib/x86_64-linux-gnu/libzbar.so.0" "$APPDIR/usr/lib/libzbar.so.0"
 
 
 info "desktop integration."
-cp "$PROJECT_ROOT/electrum-nmc.desktop" "$APPDIR/electrum-nmc.desktop"
-cp "$PROJECT_ROOT/electrum_nmc/electrum/gui/icons/electrum_nmc.png" "$APPDIR/electrum_nmc.png"
+cp "$PROJECT_ROOT/electrum-chi.desktop" "$APPDIR/electrum-chi.desktop"
+cp "$PROJECT_ROOT/electrum_nmc/electrum/gui/icons/electrum_chi.png" "$APPDIR/electrum_chi.png"
 
 
 # add launcher

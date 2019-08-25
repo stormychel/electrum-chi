@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+shopt -s nullglob globstar
+
+if [ -d "./electrum" ]; then
+    echo "Rebranding needed"
+    exit 1
+fi
+
+for i in **/*.py; do
+    if ./contrib/print_python_strings "$i" "nmc" \
+        | grep -v 'org\.namecoin\.electrum_nmc' \
+        | grep -v 'protoc --proto_path=electrum_nmc' \
+        | grep -v "STRING.*electrum_nmc/electrum" \
+        | grep -v 'setup\.py.*electrum_nmc' \
+        | grep -v 'Electrum-NMC by the Namecoin developers'; then
+        echo "Rebranding needed"
+        exit 1
+    fi
+
+    if ./contrib/print_python_strings "$i" "namecoin" \
+        | grep -v 'org\.namecoin\.electrum_nmc' \
+        | grep -v 'electrum/tests/test_util\.py.*notnamecoin:' \
+        | grep -v 'Electrum-NMC by the Namecoin developers'; then
+        echo "Rebranding needed"
+        exit 1
+    fi
+
+    # Namecoin Bech32 addresses
+    if ./contrib/print_python_strings "$i" "['\"]nc1"; then
+        echo "Rebranding needed"
+        exit 1
+    fi
+done
+
+EXCEPTIONS="--exclude=check_chi_rebranding --exclude=RELEASE-NOTES --exclude-dir=.git"
+
+if grep -r $EXCEPTIONS 'electrum_nmc\.icns' ./; then
+    echo "Rebranding needed"
+    exit 1
+fi
+
+if grep -r $EXCEPTIONS 'electrum_nmc\.ico' ./; then
+    echo "Rebranding needed"
+    exit 1
+fi
+
+if grep -r $EXCEPTIONS 'electrum_nmc\.png' ./; then
+    echo "Rebranding needed"
+    exit 1
+fi
+
+exit 0

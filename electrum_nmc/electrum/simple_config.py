@@ -207,7 +207,7 @@ class SimpleConfig(Logger):
         base_unit = self.user_config.get('base_unit')
         if isinstance(base_unit, str):
             self._set_key_in_user_config('base_unit', None)
-            map_ = {'nmc':8, 'mnmc':5, 'unmc':2, 'bits':2, 'swartz':0}
+            map_ = {'chi':8, 'mchi':5, 'uchi':2, 'bits':2, 'satoshi':0}
             decimal_point = map_.get(base_unit.lower())
             self._set_key_in_user_config('decimal_point', decimal_point)
 

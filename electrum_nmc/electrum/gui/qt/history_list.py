@@ -485,13 +485,13 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
         grid = QGridLayout()
         grid.addWidget(QLabel(_("Start")), 0, 0)
         grid.addWidget(QLabel(self.format_date(start_date)), 0, 1)
-        grid.addWidget(QLabel(str(h.get('fiat_start_value')) + '/NMC'), 0, 2)
+        grid.addWidget(QLabel(str(h.get('fiat_start_value')) + '/CHI'), 0, 2)
         grid.addWidget(QLabel(_("Initial balance")), 1, 0)
         grid.addWidget(QLabel(format_amount(h['start_balance'])), 1, 1)
         grid.addWidget(QLabel(str(h.get('fiat_start_balance'))), 1, 2)
         grid.addWidget(QLabel(_("End")), 2, 0)
         grid.addWidget(QLabel(self.format_date(end_date)), 2, 1)
-        grid.addWidget(QLabel(str(h.get('fiat_end_value')) + '/NMC'), 2, 2)
+        grid.addWidget(QLabel(str(h.get('fiat_end_value')) + '/CHI'), 2, 2)
         grid.addWidget(QLabel(_("Final balance")), 4, 0)
         grid.addWidget(QLabel(format_amount(h['end_balance'])), 4, 1)
         grid.addWidget(QLabel(str(h.get('fiat_end_balance'))), 4, 2)
@@ -638,7 +638,7 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
         d = WindowModalDialog(self, _('Export History'))
         d.setMinimumSize(400, 200)
         vbox = QVBoxLayout(d)
-        defaultname = os.path.expanduser('~/electrum-nmc-history.csv')
+        defaultname = os.path.expanduser('~/electrum-chi-history.csv')
         select_msg = _('Select file to export your wallet transactions to')
         hbox, filename_e, csv_button = filename_field(self, self.config, defaultname, select_msg)
         vbox.addLayout(hbox)
@@ -655,7 +655,7 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
         try:
             self.do_export_history(filename, csv_button.isChecked())
         except (IOError, os.error) as reason:
-            export_error_label = _("Electrum-NMC was unable to produce a transaction export.")
+            export_error_label = _("Electrum-CHI was unable to produce a transaction export.")
             self.parent.show_critical(export_error_label + "\n" + str(reason), title=_("Unable to export history"))
             return
         self.parent.show_message(_("Your wallet history has been successfully exported."))

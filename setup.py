@@ -17,7 +17,7 @@ _min_python_version_tuple = tuple(map(int, (MIN_PYTHON_VERSION.split("."))))
 
 
 if sys.version_info[:3] < _min_python_version_tuple:
-    sys.exit("Error: Electrum-NMC requires Python version >= %s..." % MIN_PYTHON_VERSION)
+    sys.exit("Error: Electrum-CHI requires Python version >= %s..." % MIN_PYTHON_VERSION)
 
 with open('contrib/requirements/requirements.txt') as f:
     requirements = f.read().splitlines()
@@ -46,8 +46,8 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
         else:
             usr_share = os.path.expanduser('~/.local/share')
     data_files += [
-        (os.path.join(usr_share, 'applications/'), ['electrum-nmc.desktop']),
-        (os.path.join(usr_share, icons_dirname), ['electrum_nmc/electrum/gui/icons/electrum_nmc.png']),
+        (os.path.join(usr_share, 'applications/'), ['electrum-chi.desktop']),
+        (os.path.join(usr_share, icons_dirname), ['electrum_nmc/electrum/gui/icons/electrum_chi.png']),
     ]
 
 extras_require = {
@@ -59,7 +59,7 @@ extras_require['full'] = [pkg for sublist in list(extras_require.values()) for p
 
 
 setup(
-    name="Electrum-NMC",
+    name="Electrum-CHI",
     version=version.ELECTRUM_VERSION,
     python_requires='>={}'.format(MIN_PYTHON_VERSION),
     install_requires=requirements,
@@ -84,12 +84,12 @@ setup(
             'icons/*',
         ],
     },
-    scripts=['electrum_nmc/electrum/electrum-nmc'],
+    scripts=['electrum_nmc/electrum/electrum-chi'],
     data_files=data_files,
-    description="Lightweight Namecoin Wallet",
-    author="The Namecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors",
-    author_email="jeremy@namecoin.org",
+    description="Lightweight Xaya Wallet",
+    author="The Xaya developers; based on Electrum by Thomas Voegtlin, Electrum-DOGE by The Electrum-DOGE contributors and Electrum-NMC by the Namecoin developers",
+    author_email="info@xaya.io",
     license="GNU GPLv3+ for Electrum-DOGE components; MIT Licence for all other components",
-    url="https://www.namecoin.org/",
-    long_description="""Lightweight Namecoin Wallet""",
+    url="https://www.xaya.io/",
+    long_description="""Lightweight Xaya Wallet""",
 )

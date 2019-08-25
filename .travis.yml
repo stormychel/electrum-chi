@@ -12,9 +12,12 @@ addons:
     packages:
       - libsecp256k1-0
 before_install:
-  - sudo add-apt-repository -y ppa:bitcoin/bitcoin
-  - sudo apt-get -qq update
-  - sudo apt-get install -yq bitcoind
+  # TODO: switch back to apt-get after Namecoin Core has a PPA
+  #- sudo add-apt-repository -y ppa:bitcoin/bitcoin
+  #- sudo apt-get -qq update
+  #- sudo apt-get install -yq bitcoind
+  - curl https://www.namecoin.org/files/namecoin-core/namecoin-core-0.18.0/namecoin-0.18.0-x86_64-linux-gnu.tar.gz | tar -xz
+  - sudo cp -a namecoin-0.18.0/* /usr/
   - git tag
 install:
   - pip install -r contrib/requirements/requirements-travis.txt

@@ -96,10 +96,7 @@ class BitcoinMainnet(AbstractNet):
     XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
     BIP44_COIN_TYPE = 7
     LN_REALM_BYTE = 0
-    LN_DNS_SEEDS = [
-        'nodes.lightning.directory.',
-        'lseed.bitcoinstats.com.',
-    ]
+    LN_DNS_SEEDS = []
 
 
 class BitcoinTestnet(AbstractNet):
@@ -132,10 +129,7 @@ class BitcoinTestnet(AbstractNet):
     XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
     BIP44_COIN_TYPE = 1
     LN_REALM_BYTE = 1
-    LN_DNS_SEEDS = [
-        'test.nodes.lightning.directory.',
-        'lseed.bitcoinstats.com.',
-    ]
+    LN_DNS_SEEDS = []
 
 
 class BitcoinRegtest(BitcoinTestnet):

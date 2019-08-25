@@ -24,8 +24,8 @@ cache:
   - directories:
     - /tmp/electrum-build
 before_script:
-    - electrum/tests/regtest/start_bitcoind.sh
-    - electrum/tests/regtest/start_electrumx.sh
+    - electrum_nmc/electrum/tests/regtest/start_bitcoind.sh
+    - electrum_nmc/electrum/tests/regtest/start_electrumx.sh
 script:
     - tox
     - ./contrib/check_nmc_rebranding

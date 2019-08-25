@@ -78,7 +78,7 @@ def bitarray_to_u5(barr):
 def encode_fallback(fallback, currency):
     """ Encode all supported fallback addresses.
     """
-    if currency == 'bc' or currency == 'tb':
+    if currency == 'nc' or currency == 'tn':
         fbhrp, witness = bech32_decode(fallback, ignore_long_length=True)
         if fbhrp:
             if fbhrp != currency:
@@ -101,7 +101,7 @@ def encode_fallback(fallback, currency):
         raise NotImplementedError("Support for currency {} not implemented".format(currency))
 
 def parse_fallback(fallback, currency):
-    if currency == 'bc' or currency == 'tb':
+    if currency == 'nc' or currency == 'tn':
         wver = fallback[0:5].uint
         if wver == 17:
             addr=hash160_to_b58_address(fallback[5:].tobytes(), base58_prefix_map[currency][0])
@@ -118,8 +118,8 @@ def parse_fallback(fallback, currency):
 
 # Map of classical and witness address prefixes
 base58_prefix_map = {
-    'bc' : (0, 5),
-    'tb' : (111, 196)
+    'nc' : (52, 13),
+    'tn' : (111, 196)
 }
 
 def is_p2pkh(currency, prefix):

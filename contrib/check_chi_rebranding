@@ -3,7 +3,7 @@
 set -eu -o pipefail
 shopt -s nullglob globstar
 
-if [ -d "./electrum" ]; then
+if [ -d "./electrum_nmc" ]; then
     echo "Rebranding needed"
     exit 1
 fi

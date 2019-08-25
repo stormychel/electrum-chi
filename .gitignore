@@ -4,8 +4,8 @@
 build/
 dist/
 *.egg/
-Electrum_NMC.egg-info/
-electrum_nmc/electrum/locale/
+Electrum_CHI.egg-info/
+electrum_chi/electrum/locale/
 .devlocaltmp/
 *_trial_temp
 packages
@@ -16,8 +16,8 @@ bin/
 .idea
 
 # icons
-electrum_nmc/electrum/gui/kivy/theming/light-0.png
-electrum_nmc/electrum/gui/kivy/theming/light.atlas
+electrum_chi/electrum/gui/kivy/theming/light-0.png
+electrum_chi/electrum/gui/kivy/theming/light.atlas
 
 # tests/tox
 .tox/

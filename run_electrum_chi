@@ -46,13 +46,13 @@ if is_local:  # running from source
     warnings.simplefilter('default', DeprecationWarning)
 
 # move this back to gui/kivy/__init.py once plugins are moved
-os.environ['KIVY_DATA_DIR'] = os.path.abspath(os.path.dirname(__file__)) + '/electrum_nmc/electrum/gui/kivy/data/'
+os.environ['KIVY_DATA_DIR'] = os.path.abspath(os.path.dirname(__file__)) + '/electrum_chi/electrum/gui/kivy/data/'
 
 if is_local or is_android:
     sys.path.insert(0, os.path.join(script_dir, 'packages'))
 
 # Namecoin import aliasing
-sys.path = [os.path.join(p, 'electrum_nmc') for p in sys.path] + sys.path
+sys.path = [os.path.join(p, 'electrum_chi') for p in sys.path] + sys.path
 
 
 def check_imports():

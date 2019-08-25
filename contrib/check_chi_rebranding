@@ -11,9 +11,6 @@ fi
 for i in **/*.py; do
     if ./contrib/print_python_strings "$i" "nmc" \
         | grep -v 'org\.namecoin\.electrum_nmc' \
-        | grep -v 'protoc --proto_path=electrum_nmc' \
-        | grep -v "STRING.*electrum_nmc/electrum" \
-        | grep -v 'setup\.py.*electrum_nmc' \
         | grep -v 'Electrum-NMC by the Namecoin developers'; then
         echo "Rebranding needed"
         exit 1

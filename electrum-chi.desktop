@@ -14,7 +14,7 @@ StartupNotify=true
 StartupWMClass=electrum-chi
 Terminal=false
 Type=Application
-MimeType=x-scheme-handler/namecoin;
+MimeType=x-scheme-handler/xaya;
 Actions=Testnet;
 
 [Desktop Action Testnet]

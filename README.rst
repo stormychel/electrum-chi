@@ -1,19 +1,19 @@
-Electrum-NMC - Lightweight Namecoin client
+Electrum-CHI - Lightweight Xaya client
 =====================================
 
 ::
 
   Licence: GNU GPLv3+ for Electrum-DOGE components; CC BY 4.0 for Namecoin logo, MIT Licence for all other components
-  Author: The Namecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors
+  Author: The Xaya developers; based on Electrum by Thomas Voegtlin, Electrum-DOGE by The Electrum-DOGE contributors and Electrum-NMC by the Namecoin developers
   Language: Python (>= 3.6)
-  Homepage: https://www.namecoin.org/ ; original Electrum Homepage at https://electrum.org/
+  Homepage: https://www.xaya.io/ ; original Electrum Homepage at https://electrum.org/
 
 
-.. image:: https://travis-ci.org/namecoin/electrum-nmc.svg?branch=master
-    :target: https://travis-ci.org/namecoin/electrum-nmc
+.. image:: https://travis-ci.org/xaya/electrum-chi.svg?branch=master
+    :target: https://travis-ci.org/xaya/electrum-chi
     :alt: Build Status
-.. image:: https://coveralls.io/repos/github/namecoin/electrum-nmc/badge.svg?branch=master
-    :target: https://coveralls.io/github/namecoin/electrum-nmc?branch=master
+.. image:: https://coveralls.io/repos/github/xaya/electrum-chi/badge.svg?branch=master
+    :target: https://coveralls.io/github/xaya/electrum-chi?branch=master
     :alt: Test coverage statistics
 .. image:: https://d322cqt584bo4o.cloudfront.net/electrum/localized.svg
     :target: https://crowdin.com/project/electrum
@@ -26,30 +26,30 @@ Electrum-NMC - Lightweight Namecoin client
 Getting started
 ===============
 
-Electrum-NMC is a pure python application. If you want to use the
+Electrum-CHI is a pure python application. If you want to use the
 Qt interface, install the Qt dependencies::
 
     sudo apt-get install python3-pyqt5
 
 If you downloaded the official package (tar.gz), you can run
-Electrum-NMC from its root directory without installing it on your
+Electrum-CHI from its root directory without installing it on your
 system; all the python dependencies are included in the 'packages'
-directory. To run Electrum-NMC from its root directory, just do::
+directory. To run Electrum-CHI from its root directory, just do::
 
-    ./run_electrum_nmc
+    ./run_electrum_chi
 
-You can also install Electrum-NMC on your system, by running this command::
+You can also install Electrum-CHI on your system, by running this command::
 
     sudo apt-get install python3-setuptools
     python3 -m pip install .[fast]
 
 This will download and install the Python dependencies used by
-Electrum-NMC instead of using the 'packages' directory.
+Electrum-CHI instead of using the 'packages' directory.
 The 'fast' extra contains some optional dependencies that we think
 are often useful but they are not strictly needed.
 
 If you cloned the git repository, you need to compile extra files
-before you can run Electrum-NMC. Read the next section, "Development
+before you can run Electrum-CHI. Read the next section, "Development
 Version".
 
 
@@ -59,8 +59,8 @@ Development version
 
 Check out the code from GitHub::
 
-    git clone git://github.com/namecoin/electrum-nmc.git
-    cd electrum-nmc
+    git clone git://github.com/xaya/electrum-chi.git
+    cd electrum-chi
 
 Run install (this should install dependencies)::
 
@@ -70,7 +70,7 @@ Run install (this should install dependencies)::
 Compile the protobuf description file::
 
     sudo apt-get install protobuf-compiler
-    protoc --proto_path=electrum_nmc/electrum --python_out=electrum_nmc/electrum electrum_nmc/electrum/paymentrequest.proto
+    protoc --proto_path=electrum_chi/electrum --python_out=electrum_chi/electrum electrum_chi/electrum/paymentrequest.proto
 
 Create translations (optional)::
 
@@ -110,11 +110,4 @@ See :code:`contrib/build-wine/README.md`.
 Android
 -------
 
-See :code:`electrum_nmc/electrum/gui/kivy/Readme.md`.
-
-
-
-AuxPoW Branch
-=============
-
-Electrum-NMC also maintains an ``auxpow`` branch.  This branch is identical to the upstream Bitcoin version of Electrum (e.g. it doesn't have any name support or Namecoin rebranding), except that it supports AuxPoW (merged mining).  It may be useful as a starting point for porting Electrum to other AuxPoW-based cryptocurrencies.
+See :code:`electrum_chi/electrum/gui/kivy/Readme.md`.

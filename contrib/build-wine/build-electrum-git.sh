@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAME_ROOT=electrum-nmc
+NAME_ROOT=electrum-chi
 
 # These settings probably don't need any change
 export WINEPREFIX=/opt/wine64
@@ -19,7 +19,7 @@ here="$(dirname "$(readlink -e "$0")")"
 
 . "$CONTRIB"/build_tools_util.sh
 
-pushd $WINEPREFIX/drive_c/electrum-nmc
+pushd $WINEPREFIX/drive_c/electrum-chi
 
 VERSION=`git describe --tags --dirty --always`
 info "Last commit: $VERSION"
@@ -32,7 +32,7 @@ if ! which msgfmt > /dev/null 2>&1; then
     fail "Please install gettext"
 fi
 for i in ./locale/*; do
-    dir=$WINEPREFIX/drive_c/electrum-nmc/electrum_nmc/electrum/$i/LC_MESSAGES
+    dir=$WINEPREFIX/drive_c/electrum-chi/electrum_chi/electrum/$i/LC_MESSAGES
     mkdir -p $dir
     msgfmt --output-file=$dir/electrum.mo $i/electrum.po || true
 done
@@ -47,9 +47,9 @@ $PYTHON -m pip install --no-warn-script-location -r "$CONTRIB"/deterministic-bui
 
 $PYTHON -m pip install --no-warn-script-location -r "$CONTRIB"/deterministic-build/requirements-hw.txt
 
-pushd $WINEPREFIX/drive_c/electrum-nmc
+pushd $WINEPREFIX/drive_c/electrum-chi
 # see https://github.com/pypa/pip/issues/2195 -- pip makes a copy of the entire directory
-info "Pip installing Electrum-NMC. This might take a long time if the project folder is large."
+info "Pip installing Electrum-CHI. This might take a long time if the project folder is large."
 $PYTHON -m pip install --no-dependencies --no-warn-script-location .
 popd
 
@@ -70,7 +70,7 @@ info "building NSIS installer"
 wine "$WINEPREFIX/drive_c/Program Files (x86)/NSIS/makensis.exe" /DPRODUCT_VERSION=$VERSION electrum.nsi
 
 cd dist
-mv electrum-nmc-setup.exe $NAME_ROOT-$VERSION-setup.exe
+mv electrum-chi-setup.exe $NAME_ROOT-$VERSION-setup.exe
 cd ..
 
 info "Padding binaries to 8-byte boundaries, and fixing COFF image checksum in PE header"
@@ -115,4 +115,4 @@ EOF
     done
 )
 
-sha256sum dist/electrum-nmc*.exe
+sha256sum dist/electrum-chi*.exe

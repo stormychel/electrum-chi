@@ -20,7 +20,7 @@ folder.
 2. Build image
 
     ```
-    $ sudo docker build -t electrum-nmc-wine-builder-img contrib/build-wine
+    $ sudo docker build -t electrum-chi-wine-builder-img contrib/build-wine
     ```
 
     Note: see [this](https://stackoverflow.com/a/40516974/7499128) if having dns problems
@@ -35,19 +35,19 @@ folder.
         sudo rm -rf $FRESH_CLONE && \
         mkdir -p $FRESH_CLONE && \
         cd $FRESH_CLONE  && \
-        git clone https://github.com/namecoin/electrum-nmc.git && \
-        cd electrum-nmc
+        git clone https://github.com/xaya/electrum-chi.git && \
+        cd electrum-chi
     ```
 
     And then build from this directory:
     ```
     $ git checkout $REV
     $ sudo docker run -it \
-        --name electrum-nmc-wine-builder-cont \
-        -v $PWD:/opt/wine64/drive_c/electrum-nmc \
+        --name electrum-chi-wine-builder-cont \
+        -v $PWD:/opt/wine64/drive_c/electrum-chi \
         --rm \
-        --workdir /opt/wine64/drive_c/electrum-nmc/contrib/build-wine \
-        electrum-nmc-wine-builder-img \
+        --workdir /opt/wine64/drive_c/electrum-chi/contrib/build-wine \
+        electrum-chi-wine-builder-img \
         ./build.sh
     ```
 4. The generated binaries are in `./contrib/build-wine/dist`.
@@ -57,10 +57,10 @@ folder.
 Code Signing
 ============
 
-Electrum-NMC Windows builds are signed with a Microsoft Authenticode™ code signing
+Electrum-CHI Windows builds are signed with a Microsoft Authenticode™ code signing
 certificate in addition to the GPG-based signatures.
 
-The advantage of using Authenticode is that Electrum-NMC users won't receive a 
+The advantage of using Authenticode is that Electrum-CHI users won't receive a 
 Windows SmartScreen warning when starting it.
 
 The release signing procedure involves a signer (the holder of the
@@ -78,7 +78,7 @@ certificate/key) and one or multiple trusted verifiers:
 
 | Signer and verifiers:                                                                         |
 |-----------------------------------------------------------------------------------------------|
-| Upload signatures to 'electrum-nmc-signatures' repo, as `$version/$filename.$builder.asc`         |
+| Upload signatures to 'electrum-chi-signatures' repo, as `$version/$filename.$builder.asc`         |
 
 
 

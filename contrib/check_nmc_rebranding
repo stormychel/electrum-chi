@@ -21,13 +21,15 @@ for i in **/*.py; do
     # main_window.py contains 'bitcoin' in its console namespace
     # Payment Protocol is a known possible bug: https://github.com/namecoin/electrum-nmc/issues/108
     # Ledger rebranding is a known bug: https://github.com/namecoin/electrum-nmc/issues/105
+    # bitcoin.png should be rebranded via the file contents, not the path.
     if ./contrib/print_python_strings "$i" "bitcoin" \
         | grep -v "'b\"Bitcoin seed\"'" \
         | grep -v "main_window.py.*\"'bitcoin'\"" \
         | grep -v 'address_conversion\.py' \
         | grep -v 'electrum/tests/.*\.py.*bitcoin:' \
         | grep -v "org.bitcoin.protocols.payments" \
-        | grep -v "electrum_nmc/electrum/plugins/ledger/"; then
+        | grep -v "electrum_nmc/electrum/plugins/ledger/" \
+        | grep -v "bitcoin.png"; then
         echo "Rebranding needed"
         exit 1
     fi

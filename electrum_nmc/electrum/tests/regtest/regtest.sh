@@ -4,9 +4,9 @@ set -eu
 
 # alice -> bob -> carol
 
-alice="./run_electrum --regtest --lightning -D /tmp/alice"
-bob="./run_electrum --regtest --lightning -D /tmp/bob"
-carol="./run_electrum --regtest --lightning -D /tmp/carol"
+alice="./run_electrum_nmc --regtest --lightning -D /tmp/alice"
+bob="./run_electrum_nmc --regtest --lightning -D /tmp/bob"
+carol="./run_electrum_nmc --regtest --lightning -D /tmp/carol"
 
 bitcoin_cli="namecoin-cli -rpcuser=doggman -rpcpassword=donkey -rpcport=18554 -regtest"
 

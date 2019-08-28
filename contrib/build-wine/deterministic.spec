@@ -12,7 +12,7 @@ else:
 
 PYHOME = 'c:/python3'
 
-home = 'C:\\electrum-nmc\\'
+home = 'C:\\electrum-chi\\'
 
 # see https://github.com/pyinstaller/pyinstaller/issues/2005
 hiddenimports = []
@@ -38,12 +38,12 @@ binaries += [b for b in collect_dynamic_libs('PyQt5') if 'qwindowsvista' in b[0]
 binaries += [('C:/tmp/libsecp256k1.dll', '.')]
 
 datas = [
-    (home+'electrum_nmc/electrum/*.json', 'electrum'),
-    (home+'electrum_nmc/electrum/wordlist/english.txt', 'electrum/wordlist'),
-    (home+'electrum_nmc/electrum/locale', 'electrum/locale'),
-    (home+'electrum_nmc/electrum/plugins', 'electrum/plugins'),
+    (home+'electrum_chi/electrum/*.json', 'electrum'),
+    (home+'electrum_chi/electrum/wordlist/english.txt', 'electrum/wordlist'),
+    (home+'electrum_chi/electrum/locale', 'electrum/locale'),
+    (home+'electrum_chi/electrum/plugins', 'electrum/plugins'),
     ('C:\\Program Files (x86)\\ZBar\\bin\\', '.'),
-    (home+'electrum_nmc/electrum/gui/icons', 'electrum/gui/icons'),
+    (home+'electrum_chi/electrum/gui/icons', 'electrum/gui/icons'),
 ]
 datas += collect_data_files('trezorlib')
 datas += collect_data_files('safetlib')
@@ -52,23 +52,23 @@ datas += collect_data_files('keepkeylib')
 datas += collect_data_files('ckcc')
 
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
-a = Analysis([home+'run_electrum_nmc',
-              home+'electrum_nmc/electrum/gui/qt/main_window.py',
-              home+'electrum_nmc/electrum/gui/text.py',
-              home+'electrum_nmc/electrum/util.py',
-              home+'electrum_nmc/electrum/wallet.py',
-              home+'electrum_nmc/electrum/simple_config.py',
-              home+'electrum_nmc/electrum/bitcoin.py',
-              home+'electrum_nmc/electrum/dnssec.py',
-              home+'electrum_nmc/electrum/commands.py',
-              home+'electrum_nmc/electrum/plugins/cosigner_pool/qt.py',
-              home+'electrum_nmc/electrum/plugins/email_requests/qt.py',
-              home+'electrum_nmc/electrum/plugins/trezor/qt.py',
-              home+'electrum_nmc/electrum/plugins/safe_t/client.py',
-              home+'electrum_nmc/electrum/plugins/safe_t/qt.py',
-              home+'electrum_nmc/electrum/plugins/keepkey/qt.py',
-              home+'electrum_nmc/electrum/plugins/ledger/qt.py',
-              home+'electrum_nmc/electrum/plugins/coldcard/qt.py',
+a = Analysis([home+'run_electrum_chi',
+              home+'electrum_chi/electrum/gui/qt/main_window.py',
+              home+'electrum_chi/electrum/gui/text.py',
+              home+'electrum_chi/electrum/util.py',
+              home+'electrum_chi/electrum/wallet.py',
+              home+'electrum_chi/electrum/simple_config.py',
+              home+'electrum_chi/electrum/bitcoin.py',
+              home+'electrum_chi/electrum/dnssec.py',
+              home+'electrum_chi/electrum/commands.py',
+              home+'electrum_chi/electrum/plugins/cosigner_pool/qt.py',
+              home+'electrum_chi/electrum/plugins/email_requests/qt.py',
+              home+'electrum_chi/electrum/plugins/trezor/qt.py',
+              home+'electrum_chi/electrum/plugins/safe_t/client.py',
+              home+'electrum_chi/electrum/plugins/safe_t/qt.py',
+              home+'electrum_chi/electrum/plugins/keepkey/qt.py',
+              home+'electrum_chi/electrum/plugins/ledger/qt.py',
+              home+'electrum_chi/electrum/plugins/coldcard/qt.py',
               #home+'packages/requests/utils.py'
               ],
              binaries=binaries,
@@ -116,11 +116,11 @@ exe_standalone = EXE(
     a.scripts,
     a.binaries,
     a.datas, 
-    name=os.path.join('build\\pyi.win32\\electrum-nmc', cmdline_name + ".exe"),
+    name=os.path.join('build\\pyi.win32\\electrum-chi', cmdline_name + ".exe"),
     debug=False,
     strip=None,
     upx=False,
-    icon=home+'electrum_nmc/electrum/gui/icons/electrum_nmc.ico',
+    icon=home+'electrum_chi/electrum/gui/icons/electrum_chi.ico',
     console=False)
     # console=True makes an annoying black box pop up, but it does make Electrum output command line commands, with this turned off no output will be given but commands can still be used
 
@@ -129,11 +129,11 @@ exe_portable = EXE(
     a.scripts,
     a.binaries,
     a.datas + [ ('is_portable', 'README.md', 'DATA' ) ],
-    name=os.path.join('build\\pyi.win32\\electrum-nmc', cmdline_name + "-portable.exe"),
+    name=os.path.join('build\\pyi.win32\\electrum-chi', cmdline_name + "-portable.exe"),
     debug=False,
     strip=None,
     upx=False,
-    icon=home+'electrum_nmc/electrum/gui/icons/electrum_nmc.ico',
+    icon=home+'electrum_chi/electrum/gui/icons/electrum_chi.ico',
     console=False)
 
 #####
@@ -143,11 +143,11 @@ exe_dependent = EXE(
     pyz,
     a.scripts,
     exclude_binaries=True,
-    name=os.path.join('build\\pyi.win32\\electrum-nmc', cmdline_name),
+    name=os.path.join('build\\pyi.win32\\electrum-chi', cmdline_name),
     debug=False,
     strip=None,
     upx=False,
-    icon=home+'electrum_nmc/electrum/gui/icons/electrum_nmc.ico',
+    icon=home+'electrum_chi/electrum/gui/icons/electrum_chi.ico',
     console=False)
 
 coll = COLLECT(
@@ -158,6 +158,6 @@ coll = COLLECT(
     strip=None,
     upx=True,
     debug=False,
-    icon=home+'electrum_nmc/electrum/gui/icons/electrum_nmc.ico',
+    icon=home+'electrum_chi/electrum/gui/icons/electrum_chi.ico',
     console=False,
-    name=os.path.join('dist', 'electrum-nmc'))
+    name=os.path.join('dist', 'electrum-chi'))

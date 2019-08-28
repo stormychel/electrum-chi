@@ -1,0 +1,22 @@
+# If you want Electrum to appear in a Linux app launcher ("start menu"), install this by doing:
+# sudo desktop-file-install electrum-chi.desktop
+
+[Desktop Entry]
+Comment=Lightweight Xaya Client
+Exec=sh -c "PATH=\"\\$HOME/.local/bin:\\$PATH\"; electrum-chi %u"
+GenericName[en_US]=Xaya Wallet
+GenericName=Xaya Wallet
+Icon=electrum_chi
+Name[en_US]=Electrum Xaya Wallet
+Name=Electrum Xaya Wallet
+Categories=Finance;Network;
+StartupNotify=true
+StartupWMClass=electrum-chi
+Terminal=false
+Type=Application
+MimeType=x-scheme-handler/xaya;
+Actions=Testnet;
+
+[Desktop Action Testnet]
+Exec=sh -c "PATH=\"\\$HOME/.local/bin:\\$PATH\"; electrum-chi --testnet %u"
+Name=Testnet mode

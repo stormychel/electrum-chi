@@ -1,4 +1,4 @@
-AppImage binary for Electrum-NMC
+AppImage binary for Electrum-CHI
 ============================
 
 ✓ _This binary should be reproducible, meaning you should be able to generate
@@ -25,18 +25,18 @@ see [issue #5159](https://github.com/spesmilo/electrum/issues/5159).
 2. Build image
 
     ```
-    $ sudo docker build -t electrum-nmc-appimage-builder-img contrib/build-linux/appimage
+    $ sudo docker build -t electrum-chi-appimage-builder-img contrib/build-linux/appimage
     ```
 
 3. Build binary
 
     ```
     $ sudo docker run -it \
-        --name electrum-nmc-appimage-builder-cont \
-        -v $PWD:/opt/electrum-nmc \
+        --name electrum-chi-appimage-builder-cont \
+        -v $PWD:/opt/electrum-chi \
         --rm \
-        --workdir /opt/electrum-nmc/contrib/build-linux/appimage \
-        electrum-nmc-appimage-builder-img \
+        --workdir /opt/electrum-chi/contrib/build-linux/appimage \
+        electrum-chi-appimage-builder-img \
         ./build.sh
     ```
 
@@ -46,4 +46,4 @@ see [issue #5159](https://github.com/spesmilo/electrum/issues/5159).
 ## FAQ
 
 ### How can I see what is included in the AppImage?
-Execute the binary as follows: `./electrum-nmc*.AppImage --appimage-extract`
+Execute the binary as follows: `./electrum-chi*.AppImage --appimage-extract`

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 export HOME=~
 set -eux pipefail
-mkdir -p ~/.namecoin
-cat > ~/.namecoin/namecoin.conf <<EOF
+mkdir -p ~/.xaya
+cat > ~/.xaya/xaya.conf <<EOF
 regtest=1
 txindex=1
 printtoconsole=1
@@ -15,9 +15,9 @@ zmqpubrawtx=tcp://127.0.0.1:28333
 rpcbind=0.0.0.0
 rpcport=18554
 EOF
-rm -rf ~/.namecoin/regtest
-screen -S namecoind -X quit || true
-screen -S namecoind -m -d namecoind -regtest
+rm -rf ~/.xaya/regtest
+screen -S xayad -X quit || true
+screen -S xayad -m -d xayad -regtest
 sleep 6
-addr=$(namecoin-cli getnewaddress)
-namecoin-cli generatetoaddress 150 $addr > /dev/null
+addr=$(xaya-cli getnewaddress)
+xaya-cli generatetoaddress 150 $addr > /dev/null

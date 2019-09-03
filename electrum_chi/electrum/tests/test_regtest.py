@@ -7,7 +7,7 @@ class TestLightning(unittest.TestCase):
 
     @staticmethod
     def run_shell(args, timeout=30):
-        process = subprocess.Popen(['electrum_nmc/electrum/tests/regtest/regtest.sh'] + args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+        process = subprocess.Popen(['electrum_chi/electrum/tests/regtest/regtest.sh'] + args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
         for line in iter(process.stdout.readline, b''):
             sys.stdout.write(line.decode(sys.stdout.encoding))
         process.wait(timeout=timeout)

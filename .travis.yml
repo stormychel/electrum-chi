@@ -12,13 +12,23 @@ addons:
     packages:
       - libsecp256k1-0
 before_install:
+  # TODO: switch back to apt-get after Namecoin Core has a PPA
+  #- sudo add-apt-repository -y ppa:bitcoin/bitcoin
+  #- sudo apt-get -qq update
+  #- sudo apt-get install -yq bitcoind
+  - curl https://www.namecoin.org/files/namecoin-core/namecoin-core-0.18.0/namecoin-0.18.0-x86_64-linux-gnu.tar.gz | tar -xz
+  - sudo cp -a namecoin-0.18.0/* /usr/
   - git tag
 install:
   - pip install -r contrib/requirements/requirements-travis.txt
+  - pip install electrumx
 cache:
   - pip: true
   - directories:
     - /tmp/electrum-build
+before_script:
+    - electrum_nmc/electrum/tests/regtest/start_bitcoind.sh
+    - electrum_nmc/electrum/tests/regtest/start_electrumx.sh
 script:
     - tox
     - ./contrib/check_nmc_rebranding
@@ -27,7 +37,8 @@ after_success:
     - coveralls
 jobs:
   include:
-    - stage: binary builds
+    - if: branch = master  # don't build binaries on lightning branch
+      stage: binary builds
       name: "Windows build"
       language: c
       python: false
@@ -40,7 +51,8 @@ jobs:
       script:
         - sudo docker run --name electrum-nmc-wine-builder-cont -v $PWD:/opt/wine64/drive_c/electrum-nmc --rm --workdir /opt/wine64/drive_c/electrum-nmc/contrib/build-wine electrum-nmc-wine-builder-img ./build.sh
       after_success: true
-    - name: "Android build"
+    - if: branch = master  # don't build binaries on lightning branch
+      name: "Android build"
       language: python
       python: 3.7
       services:
@@ -59,7 +71,8 @@ jobs:
         - ls -la bin
         - if [ $(ls bin | grep -c Electrum-*) -eq 0 ]; then exit 1; fi
       after_success: true
-    - name: "MacOS build"
+    - if: branch = master  # don't build binaries on lightning branch
+      name: "MacOS build"
       os: osx
       language: c
       env:
@@ -70,7 +83,8 @@ jobs:
       script: ./contrib/osx/make_osx
       after_script: ls -lah dist && md5 dist/*
       after_success: true
-    - name: "AppImage build"
+    - if: branch = master  # don't build binaries on lightning branch
+      name: "AppImage build"
       language: c
       python: false
       services:

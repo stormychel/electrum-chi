@@ -34,37 +34,26 @@ Xaya Core JSON-RPC interface.
 from . import bitcoin
 from . import crypto
 from . import ecc
-from .jsonrpc import VerifyingJSONRPCServer
 from . import util
 
 import base64
 
 
-class Server(VerifyingJSONRPCServer):
+class Logic ():
   """
-  The compatibility JSON-RPC server instance.
+  The implementation of the actual RPC methods, but separated from the
+  server itself.
   """
 
-  def __init__ (self, *args, cmd_runner, **kwargs):
+  def __init__ (self, cmd_runner):
     self.cmd_runner = cmd_runner
-    VerifyingJSONRPCServer.__init__ (self, *args, **kwargs)
 
-    self.register_function (self.getbalance, "getbalance")
-    self.register_function (self.getnewaddress, "getnewaddress")
-    self.register_function (self.signmessage, "signmessage")
-    self.register_function (self.verifymessage, "verifymessage")
-
-    self.register_function (self.name_list, "name_list")
-    self.register_function (self.name_pending, "name_pending")
-    self.register_function (self.name_register, "name_register")
-    self.register_function (self.name_update, "name_update")
-
-  def getbalance (self):
-    bal = self.cmd_runner.getbalance ()
+  async def getbalance (self):
+    bal = await self.cmd_runner.getbalance ()
     return bal["confirmed"]
 
-  def getnewaddress (self, label="", address_type=None):
-    addr = self.cmd_runner.createnewaddress ()
+  async def getnewaddress (self, label="", address_type=None):
+    addr = await self.cmd_runner.createnewaddress ()
 
     if address_type is None:
       return addr
@@ -76,10 +65,10 @@ class Server(VerifyingJSONRPCServer):
 
     raise RuntimeError (f"Unsupported address type: {address_type}")
 
-  def signmessage (self, address, message):
-    return self.cmd_runner.signmessage (address, message)
+  async def signmessage (self, address, message):
+    return await self.cmd_runner.signmessage (address, message)
 
-  def verifymessage (self, address, signature, message):
+  async def verifymessage (self, address, signature, message):
     # We need to handle the special form with address recovery supported
     # by Xaya Core.
     if address == "":
@@ -91,24 +80,24 @@ class Server(VerifyingJSONRPCServer):
     else:
       addr_recovery = False
 
-    res = self.cmd_runner.verifymessage (address, signature, message)
+    res = await self.cmd_runner.verifymessage (address, signature, message)
     if not addr_recovery:
       return res
 
     return {"valid": res, "address": address}
 
-  def name_list (self, name=None):
-    return self.cmd_runner.name_list (name)
+  async def name_list (self, name=None):
+    return await self.cmd_runner.name_list (name)
 
-  def name_pending (self, name=None):
+  async def name_pending (self, name=None):
     self.logger.warning ("name_pending is not supported properly,"
                          " returning empty mempool")
     return []
 
-  def name_register (self, name, value):
-    tx = self.cmd_runner.name_register (name, value)
-    return self.cmd_runner.broadcast (tx["hex"])
+  async def name_register (self, name, value):
+    tx = await self.cmd_runner.name_register (name, value)
+    return await self.cmd_runner.broadcast (tx["hex"])
 
-  def name_update (self, name, value):
-    tx = self.cmd_runner.name_update (name, value)
-    return self.cmd_runner.broadcast (tx["hex"])
+  async def name_update (self, name, value):
+    tx = await self.cmd_runner.name_update (name, value)
+    return await self.cmd_runner.broadcast (tx["hex"])

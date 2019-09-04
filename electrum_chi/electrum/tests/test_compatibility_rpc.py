@@ -25,9 +25,12 @@
 
 from electrum.commands import Commands
 from electrum import compatibility_rpc
+from electrum import util
 
 from . import SequentialTestCase
 from . import FAST_TESTS
+
+import asyncio
 
 
 # Test address and valid signature.
@@ -43,24 +46,41 @@ class Test_compatibility_rpc (SequentialTestCase):
 
   def setUp (self):
     super ().setUp ()
-    self.cmd = Commands (config=None, wallet=None, network=None)
-    self.server = compatibility_rpc.Server (("localhost", 0),
-                                            cmd_runner=self.cmd,
-                                            rpc_user="user",
-                                            rpc_password="")
+    cmd = Commands (config=None, wallet=None, network=None)
+    self.logic = compatibility_rpc.Logic (cmd)
+    self.asyncio_loop, self._stop_loop, self._loop_thread \
+        = util.create_and_start_event_loop ()
+
+  def tearDown (self):
+    super ().tearDown ()
+    self.asyncio_loop.call_soon_threadsafe (self._stop_loop.set_result, 1)
+    self._loop_thread.join (timeout=1)
+
+  def eval (self, method, *args):
+    """
+    Runs the given command name on our logic instance, using asyncio properly
+    to resolve the coroutines.
+    """
+
+    fcn = getattr (self.logic, method)
+    coro = fcn (*args)
+
+    future = asyncio.run_coroutine_threadsafe (coro, asyncio.get_event_loop ())
+    return future.result ()
 
   def test_verifymessage_with_address (self):
-    self.assertEqual (self.server.verifymessage (ADDR, SGN, MSG), True)
-    self.assertEqual (self.server.verifymessage (OTHER_ADDR, SGN, MSG), False)
-    self.assertEqual (self.server.verifymessage ("invalid", SGN, MSG), False)
-    self.assertEqual (self.server.verifymessage (ADDR, SGN, "wrong msg"), False)
+    self.assertEqual (self.eval ("verifymessage", ADDR, SGN, MSG), True)
+    self.assertEqual (self.eval ("verifymessage", OTHER_ADDR, SGN, MSG), False)
+    self.assertEqual (self.eval ("verifymessage", "invalid", SGN, MSG), False)
+    self.assertEqual (self.eval ("verifymessage", ADDR, SGN, "wrong msg"),
+                      False)
 
   def test_verifymessage_address_recovery (self):
-    self.assertEqual (self.server.verifymessage ("", SGN, MSG), {
+    self.assertEqual (self.eval ("verifymessage", "", SGN, MSG), {
       "valid": True,
       "address": ADDR,
     })
 
-    data = self.server.verifymessage ("", SGN, "wrong msg")
+    data = self.eval ("verifymessage", "", SGN, "wrong msg")
     self.assertEqual (data["valid"], True)
     self.assertNotEqual (data["address"], ADDR)

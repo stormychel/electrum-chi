@@ -3,12 +3,12 @@ from decimal import Decimal
 from electrum.util import (format_satoshis, format_fee_satoshis, parse_URI,
                            is_hash256_str, chunks, is_ip_address, list_enabled_bits)
 
-from . import SequentialTestCase
+from . import ElectrumTestCase
 
 from .address_conversion import frombtc
 
 
-class TestUtil(SequentialTestCase):
+class TestUtil(ElectrumTestCase):
 
     def test_format_satoshis(self):
         self.assertEqual("0.00001234", format_satoshis(1234))

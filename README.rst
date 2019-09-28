@@ -61,6 +61,7 @@ Check out the code from GitHub::
 
     git clone git://github.com/namecoin/electrum-nmc.git
     cd electrum-nmc
+    git submodule update --init
 
 Run install (this should install dependencies)::
 

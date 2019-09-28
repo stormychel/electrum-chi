@@ -346,7 +346,7 @@ class TestVerifyHeader(ElectrumTestCase):
 
     def setUp(self):
         super().setUp()
-        self.header = deserialize_header(bfh(self.valid_header), 100)
+        self.header = deserialize_pure_header(bfh(self.valid_header), 100)
 
     def test_valid_header(self):
         Blockchain.verify_header(self.header, self.prev_hash, self.target)

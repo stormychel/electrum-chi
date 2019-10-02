@@ -25,9 +25,10 @@
 
 from electrum.commands import Commands
 from electrum import compatibility_rpc
+from electrum.simple_config import SimpleConfig
 from electrum import util
 
-from . import SequentialTestCase
+from . import ElectrumTestCase
 from . import FAST_TESTS
 
 import asyncio
@@ -42,14 +43,15 @@ MSG = "test message"
 OTHER_ADDR = "CM6FDmteB7o3wJ3KiX3o4L66XJ97T3TMDe"
 
 
-class Test_compatibility_rpc (SequentialTestCase):
+class Test_compatibility_rpc (ElectrumTestCase):
 
   def setUp (self):
     super ().setUp ()
-    cmd = Commands (config=None, wallet=None, network=None)
-    self.logic = compatibility_rpc.Logic (cmd)
     self.asyncio_loop, self._stop_loop, self._loop_thread \
         = util.create_and_start_event_loop ()
+    self.config = SimpleConfig({'electrum_path': self.electrum_path})
+    cmd = Commands (config=self.config)
+    self.logic = compatibility_rpc.Logic (cmd)
 
   def tearDown (self):
     super ().tearDown ()

@@ -30,7 +30,7 @@ from electrum import powdata
 import json
 import os
 
-from . import SequentialTestCase
+from . import ElectrumTestCase
 from . import FAST_TESTS
 
 
@@ -44,7 +44,7 @@ def int_algo (algo: str) -> int:
   raise AssertionError (f"Invalid algo string: {algo}")
 
 
-class Test_difficulty (SequentialTestCase):
+class Test_difficulty (ElectrumTestCase):
 
   @classmethod
   def setUpClass (cls):

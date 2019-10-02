@@ -67,7 +67,7 @@ class TestBolt11(ElectrumTestCase):
             LnAddr(RHASH, tags=[('d', '')]),
             LnAddr(RHASH, amount=Decimal('0.001'), tags=[('d', '1 cup coffee'), ('x', 60)]),
             LnAddr(RHASH, amount=Decimal('1'), tags=[('h', longdescription)]),
-            LnAddr(RHASH, currency=BitcoinTestnet.SEGWIT_HRP, tags=[('f', 'mk2QpYatsKicvFVuTAQLBryyccRXMUaGHP'), ('h', longdescription)]),
+            LnAddr(RHASH, currency=BitcoinTestnet.SEGWIT_HRP, tags=[('f', frombtc('mk2QpYatsKicvFVuTAQLBryyccRXMUaGHP')), ('h', longdescription)]),
             LnAddr(RHASH, amount=24, tags=[
                 ('r', [(unhexlify('029e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255'), unhexlify('0102030405060708'), 1, 20, 3), (unhexlify('039e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255'), unhexlify('030405060708090a'), 2, 30, 4)]), ('f', frombtc('1RustyRX2oai4EYYDpQGWvEL62BBGqN9T')), ('h', longdescription)]),
             LnAddr(RHASH, amount=24, tags=[('f', frombtc('3EktnHQD7RiAE6uzMj2ZifT9YgRrkSgzQX')), ('h', longdescription)]),

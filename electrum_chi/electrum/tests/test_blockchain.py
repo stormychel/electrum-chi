@@ -385,16 +385,16 @@ class TestBlockchain(ElectrumTestCase):
 
 class TestVerifyHeader(ElectrumTestCase):
 
-    # Data for Bitcoin block header #100.
-    valid_header = "0100000095194b8567fe2e8bbda931afd01a7acd399b9325cb54683e64129bcd00000000660802c98f18fd34fd16d61c63cf447568370124ac5f3be626c2e1c3c9f0052d19a76949ffff001d33f3c25d"
-    target = Blockchain.bits_to_target(0x1d00ffff)
-    prev_hash = "00000000cd9b12643e6854cb25939b39cd7a1ad0af31a9bd8b2efe67854b1995"
+    # Data for Xaya block header #100.
+    valid_header = "00000020fc0261d5ae27dfbfed6e429b73fb7dad01b7d9274e63bbf2736a44912948b6fdbd982b64718798c3ddb1039e386ba4bf42663465c76a2d80440468bc72d1fb3903a9485b000000000000000002c1b64e1d000000000000000000000000000000000000000000000000000000000000000000000000f4613e4c8bafeff8f90324301345ae8b6c912583235b4b344bb226fbb7226c200000000000000000014e95f2"
+    target = Blockchain.bits_to_target(0x1d4eb6c1)
+    prev_hash = "fdb6482991446a73f2bb634e27d9b701ad7dfb739b426eedbfdf27aed56102fc"
 
     def setUp(self):
         super().setUp()
         # Height must be above the checkpoint, because the AuxPoW branch
         # doesn't verify PoW below the checkpoint.
-        self.header = deserialize_pure_header(bfh(self.valid_header), constants.net.max_checkpoint() + 100)
+        self.header = deserialize_full_header(bfh(self.valid_header), constants.net.max_checkpoint() + 100)
 
     def test_valid_header(self):
         Blockchain.verify_header(self.header, self.prev_hash, self.target)

@@ -29,7 +29,7 @@ from electrum import constants
 from electrum import powdata
 from electrum.util import bfh
 
-from . import SequentialTestCase
+from . import ElectrumTestCase
 from . import FAST_TESTS
 
 
@@ -46,7 +46,7 @@ prev_hash_sha256d \
     = "8acbc6b31dabb5b3a224d9e4e55e2bd766882f07b2c592e1a101ab7a6e59cd6b"
 
 
-class Test_powdata (SequentialTestCase):
+class Test_powdata (ElectrumTestCase):
 
   def check_deserialization (self, fcn, hex_data):
     """

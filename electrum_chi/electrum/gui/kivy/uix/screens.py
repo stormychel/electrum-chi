@@ -292,7 +292,7 @@ class SendScreen(CScreen):
     def read_invoice(self):
         address = str(self.screen.address)
         if not address:
-            self.app.show_error(_('Recipient not specified.') + ' ' + _('Please scan a Namecoin address or a payment request'))
+            self.app.show_error(_('Recipient not specified.') + ' ' + _('Please scan an address or a payment request'))
             return
         if not self.screen.amount:
             self.app.show_error(_('Please enter an amount'))

@@ -282,7 +282,7 @@ open. For this to work, your computer needs to be online regularly.""")
         # units
         units = base_units_list
         msg = (_('Base unit of your wallet.')
-               + '\n1 NMC = 1000 mNMC. 1 mNMC = 1000 uNMC. 1 uNMC = 100 swartz.\n'
+               + '\n1 CHI = 1000 mCHI. 1 mCHI = 1000 uCHI. 1 uCHI = 100 sat.\n'
                + _('This setting affects the Send tab, and all balance related fields.'))
         unit_label = HelpLabel(_('Base unit') + ':', msg)
         unit_combo = QComboBox()

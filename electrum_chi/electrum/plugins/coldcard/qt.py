@@ -141,7 +141,7 @@ class Plugin(ColdcardPlugin, QtPluginBase):
 
                     psbts.append(psbt)
             except (AssertionError, ValueError, IOError, os.error) as reason:
-                window.show_critical(_("Electrum-NMC was unable to open your PSBT file") + "\n" + str(reason), title=_("Unable to read file"))
+                window.show_critical(_("Electrum-CHI was unable to open your PSBT file") + "\n" + str(reason), title=_("Unable to read file"))
                 return
 
         warn = []

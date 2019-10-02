@@ -61,6 +61,7 @@ Check out the code from GitHub::
 
     git clone git://github.com/xaya/electrum-chi.git
     cd electrum-chi
+    git submodule update --init
 
 Run install (this should install dependencies)::
 

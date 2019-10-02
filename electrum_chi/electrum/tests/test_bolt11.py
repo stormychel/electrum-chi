@@ -1,18 +1,25 @@
 from hashlib import sha256
-from electrum.lnaddr import shorten_amount, unshorten_amount, LnAddr, lnencode, lndecode, u5_to_bitarray, bitarray_to_u5
 from decimal import Decimal
 from binascii import unhexlify, hexlify
 from electrum.constants import BitcoinTestnet
-from electrum.segwit_addr import bech32_encode, bech32_decode
 import pprint
 import unittest
+
+from electrum.lnaddr import shorten_amount, unshorten_amount, LnAddr, lnencode, lndecode, u5_to_bitarray, bitarray_to_u5
+from electrum.segwit_addr import bech32_encode, bech32_decode
+
+from . import ElectrumTestCase
+
+from .address_conversion import frombtc
+
 
 RHASH=unhexlify('0001020304050607080900010203040506070809000102030405060708090102')
 CONVERSION_RATE=1200
 PRIVKEY=unhexlify('e126f68f7eafcc8b74f54d269fe206be715000f94dac067d1c04a8ca3b2db734')
 PUBKEY=unhexlify('03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad')
 
-class TestBolt11(unittest.TestCase):
+
+class TestBolt11(ElectrumTestCase):
     def test_shorten_amount(self):
         tests = {
             Decimal(10)/10**12: '10p',
@@ -62,10 +69,10 @@ class TestBolt11(unittest.TestCase):
             LnAddr(RHASH, amount=Decimal('1'), tags=[('h', longdescription)]),
             LnAddr(RHASH, currency=BitcoinTestnet.SEGWIT_HRP, tags=[('f', 'mk2QpYatsKicvFVuTAQLBryyccRXMUaGHP'), ('h', longdescription)]),
             LnAddr(RHASH, amount=24, tags=[
-                ('r', [(unhexlify('029e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255'), unhexlify('0102030405060708'), 1, 20, 3), (unhexlify('039e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255'), unhexlify('030405060708090a'), 2, 30, 4)]), ('f', '1RustyRX2oai4EYYDpQGWvEL62BBGqN9T'), ('h', longdescription)]),
-            LnAddr(RHASH, amount=24, tags=[('f', '3EktnHQD7RiAE6uzMj2ZifT9YgRrkSgzQX'), ('h', longdescription)]),
-            LnAddr(RHASH, amount=24, tags=[('f', 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'), ('h', longdescription)]),
-            LnAddr(RHASH, amount=24, tags=[('f', 'bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3'), ('h', longdescription)]),
+                ('r', [(unhexlify('029e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255'), unhexlify('0102030405060708'), 1, 20, 3), (unhexlify('039e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255'), unhexlify('030405060708090a'), 2, 30, 4)]), ('f', frombtc('1RustyRX2oai4EYYDpQGWvEL62BBGqN9T')), ('h', longdescription)]),
+            LnAddr(RHASH, amount=24, tags=[('f', frombtc('3EktnHQD7RiAE6uzMj2ZifT9YgRrkSgzQX')), ('h', longdescription)]),
+            LnAddr(RHASH, amount=24, tags=[('f', frombtc('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4')), ('h', longdescription)]),
+            LnAddr(RHASH, amount=24, tags=[('f', frombtc('bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3')), ('h', longdescription)]),
             LnAddr(RHASH, amount=24, tags=[('n', PUBKEY), ('h', longdescription)]),
         ]
 

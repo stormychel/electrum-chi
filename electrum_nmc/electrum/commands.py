@@ -689,7 +689,7 @@ class Commands:
         return tx.as_dict()
 
     @command('wp')
-    async def name_new(self, identifier, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False):
+    async def name_new(self, identifier, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
         """Create a name_new transaction. """
         if not allow_existing:
             name_exists = True
@@ -710,7 +710,8 @@ class Commands:
         name_op, rand = build_name_new(identifier_bytes)
         memo = "Pre-Registration: " + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([],
+        tx = self._mktx(wallet,
+                        [],
                         fee=tx_fee,
                         feerate=feerate,
                         change_addr=change_addr,
@@ -725,7 +726,7 @@ class Commands:
         return {"tx": tx.as_dict(), "txid": tx.txid(), "rand": bh2u(rand)}
 
     @command('wp')
-    async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False):
+    async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False, wallet: Abstract_Wallet = None):
         """Create a name_firstupdate transaction. """
         if not allow_early:
             conf = self.wallet.get_tx_height(name_new_txid).conf
@@ -746,7 +747,8 @@ class Commands:
         name_op = {"op": OP_NAME_FIRSTUPDATE, "name": identifier_bytes, "rand": rand_bytes, "value": value_bytes}
         memo = "Registration: " + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([],
+        tx = self._mktx(wallet,
+                        [],
                         fee=tx_fee,
                         feerate=feerate,
                         change_addr=change_addr,
@@ -762,7 +764,7 @@ class Commands:
         return tx.as_dict()
 
     @command('wpn')
-    async def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None):
+    async def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
         """Create a name_update transaction. """
 
         tx_fee = satoshis(fee)
@@ -794,7 +796,8 @@ class Commands:
         name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": value_bytes}
         memo = ("Renew: " if renew else "Update: ") + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([],
+        tx = self._mktx(wallet,
+                        [],
                         fee=tx_fee,
                         feerate=feerate,
                         change_addr=change_addr,
@@ -810,7 +813,7 @@ class Commands:
         return tx.as_dict()
 
     @command('wpn')
-    async def name_autoregister(self, identifier, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, rbf=None, password=None, locktime=None, allow_existing=False):
+    async def name_autoregister(self, identifier, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
         """Creates a name_new transaction, broadcasts it, creates a corresponding name_firstupdate transaction, and queues it. """
 
         # Validate the value before we try to pre-register the name.  That way,
@@ -830,7 +833,8 @@ class Commands:
                                    rbf=rbf,
                                    password=password,
                                    locktime=locktime,
-                                   allow_existing=allow_existing)
+                                   allow_existing=allow_existing,
+                                   wallet=wallet)
         new_txid = new_result["txid"]
         new_rand = new_result["rand"]
         new_tx = new_result["tx"]["hex"]
@@ -865,7 +869,8 @@ class Commands:
                                                    rbf=rbf,
                                                    password=password,
                                                    locktime=locktime,
-                                                   allow_early=True)
+                                                   allow_early=True,
+                                                   wallet=wallet)
         firstupdate_tx = firstupdate_result["hex"]
 
         self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid)

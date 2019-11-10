@@ -689,7 +689,7 @@ class Commands:
         return tx.as_dict()
 
     @command('wp')
-    async def name_new(self, identifier, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False):
+    async def name_new(self, identifier, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False):
         """Create a name_new transaction. """
         if not allow_existing:
             name_exists = True
@@ -711,6 +711,7 @@ class Commands:
 
         tx = self._mktx([],
                         fee=tx_fee,
+                        feerate=feerate,
                         change_addr=change_addr,
                         domain_addr=domain,
                         nocheck=nocheck,
@@ -722,7 +723,7 @@ class Commands:
         return {"tx": tx.as_dict(), "txid": tx.txid(), "rand": bh2u(rand)}
 
     @command('wp')
-    async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False):
+    async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False):
         """Create a name_firstupdate transaction. """
         if not allow_early:
             conf = self.wallet.get_tx_height(name_new_txid).conf
@@ -744,6 +745,7 @@ class Commands:
 
         tx = self._mktx([],
                         fee=tx_fee,
+                        feerate=feerate,
                         change_addr=change_addr,
                         domain_addr=domain,
                         nocheck=nocheck,
@@ -756,7 +758,7 @@ class Commands:
         return tx.as_dict()
 
     @command('wpn')
-    async def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None):
+    async def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None):
         """Create a name_update transaction. """
 
         tx_fee = satoshis(fee)
@@ -789,6 +791,7 @@ class Commands:
 
         tx = self._mktx([],
                         fee=tx_fee,
+                        feerate=feerate,
                         change_addr=change_addr,
                         domain_addr=domain,
                         nocheck=nocheck,
@@ -801,7 +804,7 @@ class Commands:
         return tx.as_dict()
 
     @command('wpn')
-    async def name_autoregister(self, identifier, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, rbf=None, password=None, locktime=None, allow_existing=False):
+    async def name_autoregister(self, identifier, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, change_addr=None, nocheck=False, rbf=None, password=None, locktime=None, allow_existing=False):
         """Creates a name_new transaction, broadcasts it, creates a corresponding name_firstupdate transaction, and queues it. """
 
         # Validate the value before we try to pre-register the name.  That way,
@@ -813,6 +816,7 @@ class Commands:
         new_result = self.name_new(identifier,
                                    amount=amount+0.005,
                                    fee=fee,
+                                   feerate=feerate,
                                    from_addr=from_addr,
                                    change_addr=change_addr,
                                    nocheck=nocheck,
@@ -847,6 +851,7 @@ class Commands:
                                                    destination=destination,
                                                    amount=amount,
                                                    fee=fee,
+                                                   feerate=feerate,
                                                    from_addr=new_addr,
                                                    change_addr=change_addr,
                                                    nocheck=nocheck,

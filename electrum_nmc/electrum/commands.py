@@ -709,7 +709,16 @@ class Commands:
         name_op, rand = build_name_new(identifier_bytes)
         memo = "Pre-Registration: " + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_outputs=[(destination, amount, name_op, memo)])
+        tx = self._mktx([],
+                        fee=tx_fee,
+                        change_addr=change_addr,
+                        domain_addr=domain,
+                        nocheck=nocheck,
+                        unsigned=unsigned,
+                        rbf=rbf,
+                        password=password,
+                        locktime=locktime,
+                        name_outputs=[(destination, amount, name_op, memo)])
         return {"tx": tx.as_dict(), "txid": tx.txid(), "rand": bh2u(rand)}
 
     @command('wp')
@@ -733,7 +742,17 @@ class Commands:
         name_op = {"op": OP_NAME_FIRSTUPDATE, "name": identifier_bytes, "rand": rand_bytes, "value": value_bytes}
         memo = "Registration: " + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_txids=[name_new_txid], name_outputs=[(destination, amount, name_op, memo)])
+        tx = self._mktx([],
+                        fee=tx_fee,
+                        change_addr=change_addr,
+                        domain_addr=domain,
+                        nocheck=nocheck,
+                        unsigned=unsigned,
+                        rbf=rbf,
+                        password=password,
+                        locktime=locktime,
+                        name_input_txids=[name_new_txid],
+                        name_outputs=[(destination, amount, name_op, memo)])
         return tx.as_dict()
 
     @command('wpn')
@@ -768,7 +787,17 @@ class Commands:
         name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": value_bytes}
         memo = ("Renew: " if renew else "Update: ") + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_identifiers=[identifier_bytes], name_outputs=[(destination, amount, name_op, memo)])
+        tx = self._mktx([],
+                        fee=tx_fee,
+                        change_addr=change_addr,
+                        domain_addr=domain,
+                        nocheck=nocheck,
+                        unsigned=unsigned,
+                        rbf=rbf,
+                        password=password,
+                        locktime=locktime,
+                        name_input_identifiers=[identifier_bytes],
+                        name_outputs=[(destination, amount, name_op, memo)])
         return tx.as_dict()
 
     @command('wpn')
@@ -781,7 +810,16 @@ class Commands:
         validate_value_length(value)
 
         # TODO: Don't hardcode the 0.005 name_firstupdate fee
-        new_result = self.name_new(identifier, amount=amount+0.005, fee=fee, from_addr=from_addr, change_addr=change_addr, nocheck=nocheck, rbf=rbf, password=password, locktime=locktime, allow_existing=allow_existing)
+        new_result = self.name_new(identifier,
+                                   amount=amount+0.005,
+                                   fee=fee,
+                                   from_addr=from_addr,
+                                   change_addr=change_addr,
+                                   nocheck=nocheck,
+                                   rbf=rbf,
+                                   password=password,
+                                   locktime=locktime,
+                                   allow_existing=allow_existing)
         new_txid = new_result["txid"]
         new_rand = new_result["rand"]
         new_tx = new_result["tx"]["hex"]
@@ -802,7 +840,20 @@ class Commands:
                 new_addr = o.address
                 break
 
-        firstupdate_result = self.name_firstupdate(identifier, new_rand, new_txid, value, destination=destination, amount=amount, fee=fee, from_addr=new_addr, change_addr=change_addr, nocheck=nocheck, rbf=rbf, password=password, locktime=locktime, allow_early=True)
+        firstupdate_result = self.name_firstupdate(identifier,
+                                                   new_rand,
+                                                   new_txid,
+                                                   value,
+                                                   destination=destination,
+                                                   amount=amount,
+                                                   fee=fee,
+                                                   from_addr=new_addr,
+                                                   change_addr=change_addr,
+                                                   nocheck=nocheck,
+                                                   rbf=rbf,
+                                                   password=password,
+                                                   locktime=locktime,
+                                                   allow_early=True)
         firstupdate_tx = firstupdate_result["hex"]
 
         self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid)

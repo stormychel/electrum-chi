@@ -694,7 +694,7 @@ class Commands:
         if not allow_existing:
             name_exists = True
             try:
-                show = self.name_show(identifier)
+                show = await self.name_show(identifier)
             except NameNotFoundError:
                 name_exists = False
             if name_exists:
@@ -775,7 +775,7 @@ class Commands:
         # value.
         renew = False
         if value is None:
-            list_results = self.name_list(identifier)[0]
+            list_results = await self.name_list(identifier)[0]
 
             # This check is in place to prevent an attack where an ElectrumX
             # server supplies an unconfirmed name_update transaction with a
@@ -822,7 +822,7 @@ class Commands:
         validate_value_length(value)
 
         # TODO: Don't hardcode the 0.005 name_firstupdate fee
-        new_result = self.name_new(identifier,
+        new_result = await self.name_new(identifier,
                                    amount=amount+0.005,
                                    fee=fee,
                                    feerate=feerate,
@@ -844,7 +844,7 @@ class Commands:
         # ElectrumX server sends us a copy of the transaction, which is several
         # seconds later, which will cause the wallet to fail to spend the
         # name_new when we immediately create the name_firstupdate.
-        status = self.addtransaction(new_tx)
+        status = await self.addtransaction(new_tx)
         if not status:
             raise Exception("Error adding name pre-registration to wallet")
 
@@ -854,7 +854,7 @@ class Commands:
                 break
 
         try:
-            firstupdate_result = self.name_firstupdate(identifier,
+            firstupdate_result = await self.name_firstupdate(identifier,
                                                        new_rand,
                                                        new_txid,
                                                        value,
@@ -871,12 +871,12 @@ class Commands:
                                                        allow_early=True,
                                                        wallet=wallet)
             firstupdate_tx = firstupdate_result["hex"]
-            self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid)
+            await self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid)
         except Exception as e:
-            self.removelocaltx(new_txid, wallet=wallet)
+            await self.removelocaltx(new_txid, wallet=wallet)
             raise e
 
-        self.broadcast(new_tx)
+        await self.broadcast(new_tx)
 
     @command('w')
     async def onchain_history(self, year=None, show_addresses=False, show_fiat=False, wallet: Abstract_Wallet = None):
@@ -1114,7 +1114,7 @@ class Commands:
             if trigger_name is not None:
                 # TODO: handle non-ASCII trigger_name
                 try:
-                    current_height = self.name_show(trigger_name)["height"]
+                    current_height = await self.name_show(trigger_name)["height"]
                     current_depth = chain_height - current_height + 1
                 except NameNotFoundError:
                     current_depth = 36000
@@ -1127,7 +1127,7 @@ class Commands:
             if current_depth >= trigger_depth:
                 tx = queue_item["tx"]
                 try:
-                    self.broadcast(tx)
+                    await self.broadcast(tx)
                 except Exception as e:
                     errors[txid] = str(e)
 
@@ -1204,7 +1204,7 @@ class Commands:
         identifier_bytes = identifier.encode("ascii")
         sh = name_identifier_to_scripthash(identifier_bytes)
 
-        txs = self.network.run_from_another_thread(self.network.get_history_for_scripthash(sh))
+        txs = await self.network.get_history_for_scripthash(sh)
 
         # Check the blockchain height (local and server chains)
         local_chain_height = self.network.get_local_height()
@@ -1256,10 +1256,10 @@ class Commands:
         header = self.network.blockchain().read_header(height)
         if header is None:
             if height < constants.net.max_checkpoint():
-                self.network.run_from_another_thread(self.network.request_chunk(height, None))
+                await self.network.request_chunk(height, None)
 
         # (from verifier._request_and_verify_single_proof)
-        merkle = self.network.run_from_another_thread(self.network.get_merkle_for_transaction(txid, height))
+        merkle = await self.network.get_merkle_for_transaction(txid, height)
         if height != merkle.get('block_height'):
             raise Exception('requested height {} differs from received height {} for txid {}'
                             .format(height, merkle.get('block_height'), txid))
@@ -1269,7 +1269,7 @@ class Commands:
             # we need to wait if header sync/reorg is still ongoing, hence lock:
             async with self.network.bhi_lock:
                 return self.network.blockchain().read_header(height)
-        header = self.network.run_from_another_thread(wait_for_header())
+        header = await wait_for_header()
         verify_tx_is_in_block(txid, merkle_branch, pos, header, height)
 
         # The txid is now verified to come from a safe height in the blockchain.
@@ -1277,7 +1277,7 @@ class Commands:
         if self.wallet and txid in self.wallet.db.transactions:
             tx = self.wallet.db.transactions[txid]
         else:
-            raw = self.network.run_from_another_thread(self.network.get_transaction(txid))
+            raw = await self.network.get_transaction(txid)
             if raw:
                 tx = Transaction(raw)
             else:

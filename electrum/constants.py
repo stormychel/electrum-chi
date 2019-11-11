@@ -93,6 +93,9 @@ class BitcoinMainnet(AbstractNet):
         'lseed.bitcoinstats.com.',
     ]
 
+    AUXPOW_CHAIN_ID = 0x0001
+    AUXPOW_START_HEIGHT = 19200
+
 
 class BitcoinTestnet(AbstractNet):
 
@@ -128,6 +131,9 @@ class BitcoinTestnet(AbstractNet):
         'test.nodes.lightning.directory.',
         'lseed.bitcoinstats.com.',
     ]
+
+    AUXPOW_CHAIN_ID = 0x0001
+    AUXPOW_START_HEIGHT = 0
 
 
 class BitcoinRegtest(BitcoinTestnet):

@@ -321,16 +321,16 @@ class Commands:
         return l
 
     @command('wn')
-    async def name_list(self, identifier=None):
+    async def name_list(self, identifier=None, wallet: Abstract_Wallet = None):
         """List unspent name outputs. Returns the list of unspent name_anyupdate
         outputs in your wallet."""
-        l = copy.deepcopy(self.wallet.get_utxos())
+        l = copy.deepcopy(wallet.get_utxos())
 
         result = []
 
         for i in l:
             txid = i["prevout_hash"]
-            tx = self.wallet.db.transactions[txid]
+            tx = wallet.db.transactions[txid]
 
             vout = i["prevout_n"]
             o = tx.outputs()[vout]
@@ -729,7 +729,7 @@ class Commands:
     async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False, wallet: Abstract_Wallet = None):
         """Create a name_firstupdate transaction. """
         if not allow_early:
-            conf = self.wallet.get_tx_height(name_new_txid).conf
+            conf = wallet.get_tx_height(name_new_txid).conf
             if conf < 12:
                 remaining_conf = 12 - conf
                 raise NamePreRegistrationPendingError("The name pre-registration is still pending; wait " + str(remaining_conf) + "more blocks")
@@ -1069,7 +1069,7 @@ class Commands:
         return tx.txid()
 
     @command('w')
-    async def queuetransaction(self, tx, trigger_depth, trigger_txid = None, trigger_name = None):
+    async def queuetransaction(self, tx, trigger_depth, trigger_txid = None, trigger_name = None, wallet: Abstract_Wallet = None):
         """ Queue a transaction for later broadcast """
         if trigger_txid is None and trigger_name is None:
             raise Exception("You must specify exactly one of trigger_txid or trigger_name.")
@@ -1088,19 +1088,19 @@ class Commands:
             "tx": tx,
             "sendWhen": send_when
         }
-        if not self.wallet.queue_transaction(txid, queue_item):
+        if not wallet.queue_transaction(txid, queue_item):
             return False
-        self.wallet.storage.write()
+        wallet.storage.write()
         return txid
 
     @command('wn')
-    async def updatequeuedtransactions(self):
+    async def updatequeuedtransactions(self, wallet: Abstract_Wallet = None):
         errors = {}
 
         to_unqueue = []
 
-        for txid in self.wallet.db.queued_transactions:
-            queue_item = self.wallet.db.queued_transactions[txid]
+        for txid in wallet.db.queued_transactions:
+            queue_item = wallet.db.queued_transactions[txid]
             send_when = queue_item["sendWhen"]
 
             trigger_txid = send_when["txid"]
@@ -1122,7 +1122,7 @@ class Commands:
                     continue
 
             if trigger_txid is not None:
-                current_depth = self.wallet.get_tx_height(trigger_txid).conf
+                current_depth = wallet.get_tx_height(trigger_txid).conf
 
             if current_depth >= trigger_depth:
                 tx = queue_item["tx"]
@@ -1134,8 +1134,8 @@ class Commands:
                 to_unqueue.append(txid)
 
         for txid in to_unqueue:
-            self.wallet.unqueue_transaction(txid)
-        self.wallet.storage.write()
+            wallet.unqueue_transaction(txid)
+        wallet.storage.write()
 
         success = (errors == {})
         return success, errors
@@ -1199,7 +1199,7 @@ class Commands:
         return self.config.fee_per_kb(dyn=dyn, mempool=mempool, fee_level=fee_level)
 
     @command('n')
-    async def name_show(self, identifier):
+    async def name_show(self, identifier, wallet: Abstract_Wallet = None):
         # TODO: support non-ASCII encodings
         identifier_bytes = identifier.encode("ascii")
         sh = name_identifier_to_scripthash(identifier_bytes)
@@ -1274,8 +1274,8 @@ class Commands:
 
         # The txid is now verified to come from a safe height in the blockchain.
 
-        if self.wallet and txid in self.wallet.db.transactions:
-            tx = self.wallet.db.transactions[txid]
+        if wallet and txid in wallet.db.transactions:
+            tx = wallet.db.transactions[txid]
         else:
             raw = await self.network.get_transaction(txid)
             if raw:
@@ -1303,8 +1303,8 @@ class Commands:
                     # safe height in the blockchain
 
                     is_mine = None
-                    if self.wallet:
-                        is_mine = self.wallet.is_mine(o.address)
+                    if wallet:
+                        is_mine = wallet.is_mine(o.address)
 
                     return {
                         "name": o.name_op["name"].decode("ascii"),

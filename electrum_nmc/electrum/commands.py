@@ -689,19 +689,20 @@ class Commands:
         return tx.as_dict()
 
     @command('wp')
-    async def name_new(self, identifier, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False):
+    async def name_new(self, identifier, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
         """Create a name_new transaction. """
         if not allow_existing:
             name_exists = True
             try:
-                show = self.name_show(identifier)
+                show = await self.name_show(identifier)
             except NameNotFoundError:
                 name_exists = False
             if name_exists:
                 raise NameAlreadyExistsError("The name is already registered")
 
         tx_fee = satoshis(fee)
-        domain = from_addr.split(',') if from_addr else None
+        domain_addr = from_addr.split(',') if from_addr else None
+        domain_coins = from_coins.split(',') if from_coins else None
 
         # TODO: support non-ASCII encodings
         # TODO: enforce length limit on identifier
@@ -709,11 +710,23 @@ class Commands:
         name_op, rand = build_name_new(identifier_bytes)
         memo = "Pre-Registration: " + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_outputs=[(destination, amount, name_op, memo)])
+        tx = self._mktx(wallet,
+                        [],
+                        fee=tx_fee,
+                        feerate=feerate,
+                        change_addr=change_addr,
+                        domain_addr=domain_addr,
+                        domain_coins=domain_coins,
+                        nocheck=nocheck,
+                        unsigned=unsigned,
+                        rbf=rbf,
+                        password=password,
+                        locktime=locktime,
+                        name_outputs=[(destination, amount, name_op, memo)])
         return {"tx": tx.as_dict(), "txid": tx.txid(), "rand": bh2u(rand)}
 
     @command('wp')
-    async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False):
+    async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False, wallet: Abstract_Wallet = None):
         """Create a name_firstupdate transaction. """
         if not allow_early:
             conf = self.wallet.get_tx_height(name_new_txid).conf
@@ -722,7 +735,8 @@ class Commands:
                 raise NamePreRegistrationPendingError("The name pre-registration is still pending; wait " + str(remaining_conf) + "more blocks")
 
         tx_fee = satoshis(fee)
-        domain = from_addr.split(',') if from_addr else None
+        domain_addr = from_addr.split(',') if from_addr else None
+        domain_coins = from_coins.split(',') if from_coins else None
 
         # TODO: support non-ASCII encodings
         # TODO: enforce length limits on identifier and value
@@ -733,21 +747,35 @@ class Commands:
         name_op = {"op": OP_NAME_FIRSTUPDATE, "name": identifier_bytes, "rand": rand_bytes, "value": value_bytes}
         memo = "Registration: " + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_txids=[name_new_txid], name_outputs=[(destination, amount, name_op, memo)])
+        tx = self._mktx(wallet,
+                        [],
+                        fee=tx_fee,
+                        feerate=feerate,
+                        change_addr=change_addr,
+                        domain_addr=domain_addr,
+                        domain_coins=domain_coins,
+                        nocheck=nocheck,
+                        unsigned=unsigned,
+                        rbf=rbf,
+                        password=password,
+                        locktime=locktime,
+                        name_input_txids=[name_new_txid],
+                        name_outputs=[(destination, amount, name_op, memo)])
         return tx.as_dict()
 
     @command('wpn')
-    async def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None):
+    async def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
         """Create a name_update transaction. """
 
         tx_fee = satoshis(fee)
-        domain = from_addr.split(',') if from_addr else None
+        domain_addr = from_addr.split(',') if from_addr else None
+        domain_coins = from_coins.split(',') if from_coins else None
 
         # Allow renewing a name without any value changes by omitting the
         # value.
         renew = False
         if value is None:
-            list_results = self.name_list(identifier)[0]
+            list_results = await self.name_list(identifier)[0]
 
             # This check is in place to prevent an attack where an ElectrumX
             # server supplies an unconfirmed name_update transaction with a
@@ -768,11 +796,24 @@ class Commands:
         name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": value_bytes}
         memo = ("Renew: " if renew else "Update: ") + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_identifiers=[identifier_bytes], name_outputs=[(destination, amount, name_op, memo)])
+        tx = self._mktx(wallet,
+                        [],
+                        fee=tx_fee,
+                        feerate=feerate,
+                        change_addr=change_addr,
+                        domain_addr=domain_addr,
+                        domain_coins=domain_coins,
+                        nocheck=nocheck,
+                        unsigned=unsigned,
+                        rbf=rbf,
+                        password=password,
+                        locktime=locktime,
+                        name_input_identifiers=[identifier_bytes],
+                        name_outputs=[(destination, amount, name_op, memo)])
         return tx.as_dict()
 
     @command('wpn')
-    async def name_autoregister(self, identifier, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, rbf=None, password=None, locktime=None, allow_existing=False):
+    async def name_autoregister(self, identifier, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
         """Creates a name_new transaction, broadcasts it, creates a corresponding name_firstupdate transaction, and queues it. """
 
         # Validate the value before we try to pre-register the name.  That way,
@@ -781,19 +822,29 @@ class Commands:
         validate_value_length(value)
 
         # TODO: Don't hardcode the 0.005 name_firstupdate fee
-        new_result = self.name_new(identifier, amount=amount+0.005, fee=fee, from_addr=from_addr, change_addr=change_addr, nocheck=nocheck, rbf=rbf, password=password, locktime=locktime, allow_existing=allow_existing)
+        new_result = await self.name_new(identifier,
+                                   amount=amount+0.005,
+                                   fee=fee,
+                                   feerate=feerate,
+                                   from_addr=from_addr,
+                                   from_coins=from_coins,
+                                   change_addr=change_addr,
+                                   nocheck=nocheck,
+                                   rbf=rbf,
+                                   password=password,
+                                   locktime=locktime,
+                                   allow_existing=allow_existing,
+                                   wallet=wallet)
         new_txid = new_result["txid"]
         new_rand = new_result["rand"]
         new_tx = new_result["tx"]["hex"]
-
-        self.broadcast(new_tx)
 
         # We add the name_new transaction to the wallet explicitly because
         # otherwise, the wallet will only learn about the name_new once the
         # ElectrumX server sends us a copy of the transaction, which is several
         # seconds later, which will cause the wallet to fail to spend the
         # name_new when we immediately create the name_firstupdate.
-        status = self.addtransaction(new_tx)
+        status = await self.addtransaction(new_tx)
         if not status:
             raise Exception("Error adding name pre-registration to wallet")
 
@@ -802,10 +853,30 @@ class Commands:
                 new_addr = o.address
                 break
 
-        firstupdate_result = self.name_firstupdate(identifier, new_rand, new_txid, value, destination=destination, amount=amount, fee=fee, from_addr=new_addr, change_addr=change_addr, nocheck=nocheck, rbf=rbf, password=password, locktime=locktime, allow_early=True)
-        firstupdate_tx = firstupdate_result["hex"]
+        try:
+            firstupdate_result = await self.name_firstupdate(identifier,
+                                                       new_rand,
+                                                       new_txid,
+                                                       value,
+                                                       destination=destination,
+                                                       amount=amount,
+                                                       fee=fee,
+                                                       feerate=feerate,
+                                                       from_addr=new_addr,
+                                                       change_addr=change_addr,
+                                                       nocheck=nocheck,
+                                                       rbf=rbf,
+                                                       password=password,
+                                                       locktime=locktime,
+                                                       allow_early=True,
+                                                       wallet=wallet)
+            firstupdate_tx = firstupdate_result["hex"]
+            await self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid)
+        except Exception as e:
+            await self.removelocaltx(new_txid, wallet=wallet)
+            raise e
 
-        self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid)
+        await self.broadcast(new_tx)
 
     @command('w')
     async def onchain_history(self, year=None, show_addresses=False, show_fiat=False, wallet: Abstract_Wallet = None):
@@ -1043,7 +1114,7 @@ class Commands:
             if trigger_name is not None:
                 # TODO: handle non-ASCII trigger_name
                 try:
-                    current_height = self.name_show(trigger_name)["height"]
+                    current_height = await self.name_show(trigger_name)["height"]
                     current_depth = chain_height - current_height + 1
                 except NameNotFoundError:
                     current_depth = 36000
@@ -1056,7 +1127,7 @@ class Commands:
             if current_depth >= trigger_depth:
                 tx = queue_item["tx"]
                 try:
-                    self.broadcast(tx)
+                    await self.broadcast(tx)
                 except Exception as e:
                     errors[txid] = str(e)
 
@@ -1133,7 +1204,7 @@ class Commands:
         identifier_bytes = identifier.encode("ascii")
         sh = name_identifier_to_scripthash(identifier_bytes)
 
-        txs = self.network.run_from_another_thread(self.network.get_history_for_scripthash(sh))
+        txs = await self.network.get_history_for_scripthash(sh)
 
         # Check the blockchain height (local and server chains)
         local_chain_height = self.network.get_local_height()
@@ -1185,10 +1256,10 @@ class Commands:
         header = self.network.blockchain().read_header(height)
         if header is None:
             if height < constants.net.max_checkpoint():
-                self.network.run_from_another_thread(self.network.request_chunk(height, None))
+                await self.network.request_chunk(height, None)
 
         # (from verifier._request_and_verify_single_proof)
-        merkle = self.network.run_from_another_thread(self.network.get_merkle_for_transaction(txid, height))
+        merkle = await self.network.get_merkle_for_transaction(txid, height)
         if height != merkle.get('block_height'):
             raise Exception('requested height {} differs from received height {} for txid {}'
                             .format(height, merkle.get('block_height'), txid))
@@ -1198,7 +1269,7 @@ class Commands:
             # we need to wait if header sync/reorg is still ongoing, hence lock:
             async with self.network.bhi_lock:
                 return self.network.blockchain().read_header(height)
-        header = self.network.run_from_another_thread(wait_for_header())
+        header = await wait_for_header()
         verify_tx_is_in_block(txid, merkle_branch, pos, header, height)
 
         # The txid is now verified to come from a safe height in the blockchain.
@@ -1206,7 +1277,7 @@ class Commands:
         if self.wallet and txid in self.wallet.db.transactions:
             tx = self.wallet.db.transactions[txid]
         else:
-            raw = self.network.run_from_another_thread(self.network.get_transaction(txid))
+            raw = await self.network.get_transaction(txid)
             if raw:
                 tx = Transaction(raw)
             else:

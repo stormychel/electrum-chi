@@ -321,16 +321,16 @@ class Commands:
         return l
 
     @command('wn')
-    async def name_list(self, identifier=None):
+    async def name_list(self, identifier=None, wallet: Abstract_Wallet = None):
         """List unspent name outputs. Returns the list of unspent name_anyupdate
         outputs in your wallet."""
-        l = copy.deepcopy(self.wallet.get_utxos())
+        l = copy.deepcopy(wallet.get_utxos())
 
         result = []
 
         for i in l:
             txid = i["prevout_hash"]
-            tx = self.wallet.db.transactions[txid]
+            tx = wallet.db.transactions[txid]
 
             vout = i["prevout_n"]
             o = tx.outputs()[vout]
@@ -615,9 +615,7 @@ class Commands:
         name_identifier_domain = None if name_identifier_domain is None else map(self._resolver, name_identifier_domain)
         final_outputs = []
         for address, amount, name_op, memo in name_outputs:
-            if address is None:
-                address = self.addrequest(None, memo=memo)['address']
-            address = self._resolver(address)
+            address = self._resolver(address, wallet)
             amount = satoshis(amount)
             final_outputs.append(TxOutput(TYPE_ADDRESS, address, amount, name_op))
         for address, amount in outputs:
@@ -710,6 +708,10 @@ class Commands:
         name_op, rand = build_name_new(identifier_bytes)
         memo = "Pre-Registration: " + format_name_identifier(identifier_bytes)
 
+        if destination is None:
+            request = await self.add_request(None, memo=memo, wallet=wallet)
+            destination = request['address']
+
         tx = self._mktx(wallet,
                         [],
                         fee=tx_fee,
@@ -729,7 +731,7 @@ class Commands:
     async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False, wallet: Abstract_Wallet = None):
         """Create a name_firstupdate transaction. """
         if not allow_early:
-            conf = self.wallet.get_tx_height(name_new_txid).conf
+            conf = wallet.get_tx_height(name_new_txid).conf
             if conf < 12:
                 remaining_conf = 12 - conf
                 raise NamePreRegistrationPendingError("The name pre-registration is still pending; wait " + str(remaining_conf) + "more blocks")
@@ -746,6 +748,10 @@ class Commands:
         rand_bytes = bfh(rand)
         name_op = {"op": OP_NAME_FIRSTUPDATE, "name": identifier_bytes, "rand": rand_bytes, "value": value_bytes}
         memo = "Registration: " + format_name_identifier(identifier_bytes)
+
+        if destination is None:
+            request = await self.add_request(None, memo=memo, wallet=wallet)
+            destination = request['address']
 
         tx = self._mktx(wallet,
                         [],
@@ -796,6 +802,10 @@ class Commands:
         name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": value_bytes}
         memo = ("Renew: " if renew else "Update: ") + format_name_identifier(identifier_bytes)
 
+        if destination is None:
+            request = await self.add_request(None, memo=memo, wallet=wallet)
+            destination = request['address']
+
         tx = self._mktx(wallet,
                         [],
                         fee=tx_fee,
@@ -844,7 +854,7 @@ class Commands:
         # ElectrumX server sends us a copy of the transaction, which is several
         # seconds later, which will cause the wallet to fail to spend the
         # name_new when we immediately create the name_firstupdate.
-        status = await self.addtransaction(new_tx)
+        status = await self.addtransaction(new_tx, wallet=wallet)
         if not status:
             raise Exception("Error adding name pre-registration to wallet")
 
@@ -871,7 +881,7 @@ class Commands:
                                                        allow_early=True,
                                                        wallet=wallet)
             firstupdate_tx = firstupdate_result["hex"]
-            await self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid)
+            await self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid, wallet=wallet)
         except Exception as e:
             await self.removelocaltx(new_txid, wallet=wallet)
             raise e
@@ -1069,7 +1079,7 @@ class Commands:
         return tx.txid()
 
     @command('w')
-    async def queuetransaction(self, tx, trigger_depth, trigger_txid = None, trigger_name = None):
+    async def queuetransaction(self, tx, trigger_depth, trigger_txid = None, trigger_name = None, wallet: Abstract_Wallet = None):
         """ Queue a transaction for later broadcast """
         if trigger_txid is None and trigger_name is None:
             raise Exception("You must specify exactly one of trigger_txid or trigger_name.")
@@ -1088,19 +1098,19 @@ class Commands:
             "tx": tx,
             "sendWhen": send_when
         }
-        if not self.wallet.queue_transaction(txid, queue_item):
+        if not wallet.queue_transaction(txid, queue_item):
             return False
-        self.wallet.storage.write()
+        wallet.storage.write()
         return txid
 
     @command('wn')
-    async def updatequeuedtransactions(self):
+    async def updatequeuedtransactions(self, wallet: Abstract_Wallet = None):
         errors = {}
 
         to_unqueue = []
 
-        for txid in self.wallet.db.queued_transactions:
-            queue_item = self.wallet.db.queued_transactions[txid]
+        for txid in wallet.db.queued_transactions:
+            queue_item = wallet.db.queued_transactions[txid]
             send_when = queue_item["sendWhen"]
 
             trigger_txid = send_when["txid"]
@@ -1122,7 +1132,7 @@ class Commands:
                     continue
 
             if trigger_txid is not None:
-                current_depth = self.wallet.get_tx_height(trigger_txid).conf
+                current_depth = wallet.get_tx_height(trigger_txid).conf
 
             if current_depth >= trigger_depth:
                 tx = queue_item["tx"]
@@ -1134,8 +1144,8 @@ class Commands:
                 to_unqueue.append(txid)
 
         for txid in to_unqueue:
-            self.wallet.unqueue_transaction(txid)
-        self.wallet.storage.write()
+            wallet.unqueue_transaction(txid)
+        wallet.storage.write()
 
         success = (errors == {})
         return success, errors
@@ -1199,7 +1209,7 @@ class Commands:
         return self.config.fee_per_kb(dyn=dyn, mempool=mempool, fee_level=fee_level)
 
     @command('n')
-    async def name_show(self, identifier):
+    async def name_show(self, identifier, wallet: Abstract_Wallet = None):
         # TODO: support non-ASCII encodings
         identifier_bytes = identifier.encode("ascii")
         sh = name_identifier_to_scripthash(identifier_bytes)
@@ -1274,8 +1284,8 @@ class Commands:
 
         # The txid is now verified to come from a safe height in the blockchain.
 
-        if self.wallet and txid in self.wallet.db.transactions:
-            tx = self.wallet.db.transactions[txid]
+        if wallet and txid in wallet.db.transactions:
+            tx = wallet.db.transactions[txid]
         else:
             raw = await self.network.get_transaction(txid)
             if raw:
@@ -1303,8 +1313,8 @@ class Commands:
                     # safe height in the blockchain
 
                     is_mine = None
-                    if self.wallet:
-                        is_mine = self.wallet.is_mine(o.address)
+                    if wallet:
+                        is_mine = wallet.is_mine(o.address)
 
                     return {
                         "name": o.name_op["name"].decode("ascii"),

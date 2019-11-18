@@ -615,9 +615,7 @@ class Commands:
         name_identifier_domain = None if name_identifier_domain is None else map(self._resolver, name_identifier_domain)
         final_outputs = []
         for address, amount, name_op, memo in name_outputs:
-            if address is None:
-                address = self.addrequest(None, memo=memo)['address']
-            address = self._resolver(address)
+            address = self._resolver(address, wallet)
             amount = satoshis(amount)
             final_outputs.append(TxOutput(TYPE_ADDRESS, address, amount, name_op))
         for address, amount in outputs:
@@ -710,6 +708,10 @@ class Commands:
         name_op, rand = build_name_new(identifier_bytes)
         memo = "Pre-Registration: " + format_name_identifier(identifier_bytes)
 
+        if destination is None:
+            request = await self.add_request(None, memo=memo, wallet=wallet)
+            destination = request['address']
+
         tx = self._mktx(wallet,
                         [],
                         fee=tx_fee,
@@ -746,6 +748,10 @@ class Commands:
         rand_bytes = bfh(rand)
         name_op = {"op": OP_NAME_FIRSTUPDATE, "name": identifier_bytes, "rand": rand_bytes, "value": value_bytes}
         memo = "Registration: " + format_name_identifier(identifier_bytes)
+
+        if destination is None:
+            request = await self.add_request(None, memo=memo, wallet=wallet)
+            destination = request['address']
 
         tx = self._mktx(wallet,
                         [],
@@ -795,6 +801,10 @@ class Commands:
         value_bytes = value.encode("ascii")
         name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": value_bytes}
         memo = ("Renew: " if renew else "Update: ") + format_name_identifier(identifier_bytes)
+
+        if destination is None:
+            request = await self.add_request(None, memo=memo, wallet=wallet)
+            destination = request['address']
 
         tx = self._mktx(wallet,
                         [],

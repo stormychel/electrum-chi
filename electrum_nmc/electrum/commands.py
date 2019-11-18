@@ -854,7 +854,7 @@ class Commands:
         # ElectrumX server sends us a copy of the transaction, which is several
         # seconds later, which will cause the wallet to fail to spend the
         # name_new when we immediately create the name_firstupdate.
-        status = await self.addtransaction(new_tx)
+        status = await self.addtransaction(new_tx, wallet=wallet)
         if not status:
             raise Exception("Error adding name pre-registration to wallet")
 
@@ -881,7 +881,7 @@ class Commands:
                                                        allow_early=True,
                                                        wallet=wallet)
             firstupdate_tx = firstupdate_result["hex"]
-            await self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid)
+            await self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid, wallet=wallet)
         except Exception as e:
             await self.removelocaltx(new_txid, wallet=wallet)
             raise e

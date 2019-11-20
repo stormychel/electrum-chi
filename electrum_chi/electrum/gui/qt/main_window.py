@@ -375,8 +375,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         elif event == 'blockchain_updated':
             # to update number of confirmations in history
             self.need_update.set()
-            # Also handle in GUI thread
-            self.network_signal.emit(event, args)
+            self.update_queued_transactions()
         elif event == 'new_transaction':
             wallet, tx = args
             if wallet == self.wallet:
@@ -413,8 +412,6 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             wallet, key, status = args
             if wallet == self.wallet:
                 self.notify(_('Payment received') + '\n' + key)
-        elif event == 'blockchain_updated':
-            self.update_queued_transactions()
         else:
             self.logger.info(f"unexpected network event: {event} {args}")
 
@@ -3373,6 +3370,6 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
     def update_queued_transactions(self):
         updatequeuedtransactions = self.console.namespace.get('updatequeuedtransactions')
-        status, msg = updatequeuedtransactions()
+        status, msg = updatequeuedtransactions(wallet=self.wallet)
         if not status:
             self.show_error(_("Error broadcasting the following queued transactions (you'll need to manually broadcast them): ") + str(msg))

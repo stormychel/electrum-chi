@@ -90,6 +90,8 @@ class BitcoinMainnet(AbstractNet):
     LN_REALM_BYTE = 0
     LN_DNS_SEEDS = []
 
+    AUXPOW_CHAIN_ID = 1829
+
 
 class BitcoinTestnet(AbstractNet):
 
@@ -122,6 +124,9 @@ class BitcoinTestnet(AbstractNet):
     BIP44_COIN_TYPE = 1
     LN_REALM_BYTE = 1
     LN_DNS_SEEDS = []
+
+    AUXPOW_CHAIN_ID = 0x0001
+    AUXPOW_START_HEIGHT = 0
 
 
 class BitcoinRegtest(BitcoinTestnet):

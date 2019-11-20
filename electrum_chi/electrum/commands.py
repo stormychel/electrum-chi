@@ -315,16 +315,16 @@ class Commands:
         return l
 
     @command('wn')
-    async def name_list(self, identifier=None):
+    async def name_list(self, identifier=None, wallet: Abstract_Wallet = None):
         """List unspent name outputs. Returns the list of unspent name_anyupdate
         outputs in your wallet."""
-        l = copy.deepcopy(self.wallet.get_utxos())
+        l = copy.deepcopy(wallet.get_utxos())
 
         result = []
 
         for i in l:
             txid = i["prevout_hash"]
-            tx = self.wallet.db.transactions[txid]
+            tx = wallet.db.transactions[txid]
 
             vout = i["prevout_n"]
             o = tx.outputs()[vout]
@@ -357,7 +357,7 @@ class Commands:
                 "vout": vout,
                 "address": address,
                 "height": height,
-                "ismine": self.wallet.is_mine(address),
+                "ismine": wallet.is_mine(address),
             }
             result.append(result_item)
         return result
@@ -606,9 +606,7 @@ class Commands:
         name_identifier_domain = None if name_identifier_domain is None else map(self._resolver, name_identifier_domain)
         final_outputs = []
         for address, amount, name_op, memo in name_outputs:
-            if address is None:
-                address = self.addrequest(None, memo=memo)['address']
-            address = self._resolver(address)
+            address = self._resolver(address, wallet)
             amount = satoshis(amount)
             final_outputs.append(TxOutput(TYPE_ADDRESS, address, amount, name_op))
         for address, amount in outputs:
@@ -680,19 +678,20 @@ class Commands:
         return tx.as_dict()
 
     @command('wp')
-    async def name_register(self, identifier, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False):
+    async def name_register(self, identifier, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
         """Create a name_register transaction. """
         if not allow_existing:
             name_exists = True
             try:
-                show = self.name_show(identifier)
+                show = await self.name_show(identifier)
             except NameNotFoundError:
                 name_exists = False
             if name_exists:
                 raise NameAlreadyExistsError("The name is already registered")
 
         tx_fee = satoshis(fee)
-        domain = from_addr.split(',') if from_addr else None
+        domain_addr = from_addr.split(',') if from_addr else None
+        domain_coins = from_coins.split(',') if from_coins else None
 
         # TODO: support non-ASCII encodings
         # TODO: enforce length limits on identifier and value
@@ -701,15 +700,32 @@ class Commands:
         name_op = {"op": OP_NAME_REGISTER, "name": identifier_bytes, "value": value_bytes}
         memo = "Registration: " + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_outputs=[(destination, amount, name_op, memo)])
+        if destination is None:
+            request = await self.add_request(None, memo=memo, wallet=wallet)
+            destination = request['address']
+
+        tx = self._mktx(wallet,
+                        [],
+                        fee=tx_fee,
+                        feerate=feerate,
+                        change_addr=change_addr,
+                        domain_addr=domain_addr,
+                        domain_coins=domain_coins,
+                        nocheck=nocheck,
+                        unsigned=unsigned,
+                        rbf=rbf,
+                        password=password,
+                        locktime=locktime,
+                        name_outputs=[(destination, amount, name_op, memo)])
         return tx.as_dict()
 
     @command('wpn')
-    async def name_update(self, identifier, value, destination=None, amount=0.0, fee=None, from_addr=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None):
+    async def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
         """Create a name_update transaction. """
 
         tx_fee = satoshis(fee)
-        domain = from_addr.split(',') if from_addr else None
+        domain_addr = from_addr.split(',') if from_addr else None
+        domain_coins = from_coins.split(',') if from_coins else None
 
         # TODO: support non-ASCII encodings
         # TODO: enforce length limits on identifier and value
@@ -718,7 +734,24 @@ class Commands:
         name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": value_bytes}
         memo = "Update: " + format_name_identifier(identifier_bytes)
 
-        tx = self._mktx([], tx_fee, change_addr, domain, nocheck, unsigned, rbf, password, locktime, name_input_identifiers=[identifier_bytes], name_outputs=[(destination, amount, name_op, memo)])
+        if destination is None:
+            request = await self.add_request(None, memo=memo, wallet=wallet)
+            destination = request['address']
+
+        tx = self._mktx(wallet,
+                        [],
+                        fee=tx_fee,
+                        feerate=feerate,
+                        change_addr=change_addr,
+                        domain_addr=domain_addr,
+                        domain_coins=domain_coins,
+                        nocheck=nocheck,
+                        unsigned=unsigned,
+                        rbf=rbf,
+                        password=password,
+                        locktime=locktime,
+                        name_input_identifiers=[identifier_bytes],
+                        name_outputs=[(destination, amount, name_op, memo)])
         return tx.as_dict()
 
     @command('w')
@@ -912,7 +945,7 @@ class Commands:
         return tx.txid()
 
     @command('w')
-    async def queuetransaction(self, tx, trigger_depth, trigger_txid = None, trigger_name = None):
+    async def queuetransaction(self, tx, trigger_depth, trigger_txid = None, trigger_name = None, wallet: Abstract_Wallet = None):
         """ Queue a transaction for later broadcast """
         if trigger_txid is None and trigger_name is None:
             raise Exception("You must specify exactly one of trigger_txid or trigger_name.")
@@ -931,19 +964,19 @@ class Commands:
             "tx": tx,
             "sendWhen": send_when
         }
-        if not self.wallet.queue_transaction(txid, queue_item):
+        if not wallet.queue_transaction(txid, queue_item):
             return False
-        self.wallet.storage.write()
+        wallet.storage.write()
         return txid
 
     @command('wn')
-    async def updatequeuedtransactions(self):
+    async def updatequeuedtransactions(self, wallet: Abstract_Wallet = None):
         errors = {}
 
         to_unqueue = []
 
-        for txid in self.wallet.db.queued_transactions:
-            queue_item = self.wallet.db.queued_transactions[txid]
+        for txid in wallet.db.queued_transactions:
+            queue_item = wallet.db.queued_transactions[txid]
             send_when = queue_item["sendWhen"]
 
             trigger_txid = send_when["txid"]
@@ -957,7 +990,7 @@ class Commands:
             if trigger_name is not None:
                 # TODO: handle non-ASCII trigger_name
                 try:
-                    current_height = self.name_show(trigger_name)["height"]
+                    current_height = await self.name_show(trigger_name)["height"]
                     current_depth = chain_height - current_height + 1
                 except NameNotFoundError:
                     current_depth = 36000
@@ -965,20 +998,20 @@ class Commands:
                     continue
 
             if trigger_txid is not None:
-                current_depth = self.wallet.get_tx_height(trigger_txid).conf
+                current_depth = wallet.get_tx_height(trigger_txid).conf
 
             if current_depth >= trigger_depth:
                 tx = queue_item["tx"]
                 try:
-                    self.broadcast(tx)
+                    await self.broadcast(tx)
                 except Exception as e:
                     errors[txid] = str(e)
 
                 to_unqueue.append(txid)
 
         for txid in to_unqueue:
-            self.wallet.unqueue_transaction(txid)
-        self.wallet.storage.write()
+            wallet.unqueue_transaction(txid)
+        wallet.storage.write()
 
         success = (errors == {})
         return success, errors
@@ -1042,23 +1075,26 @@ class Commands:
         return self.config.fee_per_kb(dyn=dyn, mempool=mempool, fee_level=fee_level)
 
     @command('n')
-    async def name_show(self, identifier):
+    async def name_show(self, identifier, wallet: Abstract_Wallet = None):
         # TODO: support non-ASCII encodings
         identifier_bytes = identifier.encode("utf-8")
         sh = name_identifier_to_scripthash(identifier_bytes)
 
-        txs = self.network.run_from_another_thread(self.network.get_history_for_scripthash(sh))
+        txs = await self.network.get_history_for_scripthash(sh)
+
+        # Check the blockchain height (local and server chains)
+        local_chain_height = self.network.get_local_height()
+        server_chain_height = self.network.get_server_height()
+        max_chain_height = max(local_chain_height, server_chain_height)
 
         # Pick the most recent name op that's confirmed
-        chain_height = self.network.blockchain().height()
-        safe_height_max = chain_height
-        safe_height_min = 0
+        unmined_height = max_chain_height
 
         tx_best = None
         for tx_candidate in txs[::-1]:
-            if tx_candidate["height"] <= safe_height_max and tx_candidate["height"] >= safe_height_min:
-                tx_best = tx_candidate
-                break
+            tx_best = tx_candidate
+            break
+
         if tx_best is None:
             raise NameNotFoundError("Name never existed, or is unconfirmed")
         txid = tx_best["tx_hash"]
@@ -1070,10 +1106,10 @@ class Commands:
         header = self.network.blockchain().read_header(height)
         if header is None:
             if height < constants.net.max_checkpoint():
-                self.network.run_from_another_thread(self.network.request_chunk(height, None))
+                await self.network.request_chunk(height, None)
 
         # (from verifier._request_and_verify_single_proof)
-        merkle = self.network.run_from_another_thread(self.network.get_merkle_for_transaction(txid, height))
+        merkle = await self.network.get_merkle_for_transaction(txid, height)
         if height != merkle.get('block_height'):
             raise Exception('requested height {} differs from received height {} for txid {}'
                             .format(height, merkle.get('block_height'), txid))
@@ -1083,15 +1119,15 @@ class Commands:
             # we need to wait if header sync/reorg is still ongoing, hence lock:
             async with self.network.bhi_lock:
                 return self.network.blockchain().read_header(height)
-        header = self.network.run_from_another_thread(wait_for_header())
+        header = await wait_for_header()
         verify_tx_is_in_block(txid, merkle_branch, pos, header, height)
 
         # The txid is now verified to come from a safe height in the blockchain.
 
-        if self.wallet and txid in self.wallet.db.transactions:
-            tx = self.wallet.db.transactions[txid]
+        if wallet and txid in wallet.db.transactions:
+            tx = wallet.db.transactions[txid]
         else:
-            raw = self.network.run_from_another_thread(self.network.get_transaction(txid))
+            raw = await self.network.get_transaction(txid)
             if raw:
                 tx = Transaction(raw)
             else:
@@ -1117,8 +1153,8 @@ class Commands:
                     # safe height in the blockchain
 
                     is_mine = None
-                    if self.wallet:
-                        is_mine = self.wallet.is_mine(o.address)
+                    if wallet:
+                        is_mine = wallet.is_mine(o.address)
 
                     return {
                         "name": o.name_op["name"].decode("utf-8"),

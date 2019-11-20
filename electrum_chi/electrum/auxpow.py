@@ -47,6 +47,7 @@ import binascii
 
 from . import blockchain
 from .bitcoin import hash_encode, hash_decode
+from . import constants
 from .crypto import sha256d
 from . import transaction
 from .transaction import BCDataStream, Transaction, TYPE_SCRIPT
@@ -59,8 +60,6 @@ MAX_INDEX_PC_BACKWARDS_COMPATIBILITY = 20
 # Header for merge-mining data in the coinbase.
 COINBASE_MERGED_MINING_HEADER = bfh('fabe') + b'mm'
 
-# TODO: move this to network constants
-CHAIN_ID = 1829
 
 class AuxPowVerifyError(Exception):
     pass
@@ -316,7 +315,7 @@ def verify_auxpow(auxpow, auxhash):
     #if (nChainIndex != (rand % nSize))
         #return error("Aux POW wrong index");
 
-    index = calc_merkle_index(CHAIN_ID, nonce, size)
+    index = calc_merkle_index(constants.net.AUXPOW_CHAIN_ID, nonce, size)
     #print 'index', index
 
     if (chain_index != index):

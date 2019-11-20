@@ -52,6 +52,8 @@ from .simple_config import SimpleConfig
 from .exchange_rate import FxThread
 from .logging import get_logger, Logger
 
+from . import compatibility_rpc
+
 
 _logger = get_logger(__name__)
 
@@ -286,6 +288,9 @@ class Daemon(Logger):
         # Setup JSONRPC server
         if listen_jsonrpc:
             jobs.append(self.start_jsonrpc(config, fd))
+            if self.config.get('rpcportcompat'):
+                self.compat_rpc = compatibility_rpc.Server(self)
+                jobs.append(self.compat_rpc.run())
         # request server
         if self.config.get('run_payserver'):
             self.pay_server = PayServer(self)

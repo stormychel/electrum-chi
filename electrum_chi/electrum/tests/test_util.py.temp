@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from electrum_nmc.util import (format_satoshis, format_fee_satoshis, parse_URI,
+from electrum_chi.util import (format_satoshis, format_fee_satoshis, parse_URI,
                                is_hash256_str)
 
 from . import SequentialTestCase

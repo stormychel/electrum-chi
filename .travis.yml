@@ -58,9 +58,9 @@ jobs:
       services:
         - docker
       install:
-        - sudo docker build --no-cache -t electrum-nmc-wine-builder-img ./contrib/build-wine/
+        - sudo docker build --no-cache -t electrum-chi-wine-builder-img ./contrib/build-wine/
       script:
-        - sudo docker run --name electrum-nmc-wine-builder-cont -v $PWD:/opt/wine64/drive_c/electrum-nmc --rm --workdir /opt/wine64/drive_c/electrum-nmc/contrib/build-wine electrum-nmc-wine-builder-img ./build.sh
+        - sudo docker run --name electrum-chi-wine-builder-cont -v $PWD:/opt/wine64/drive_c/electrum-chi --rm --workdir /opt/wine64/drive_c/electrum-chi/contrib/build-wine electrum-chi-wine-builder-img ./build.sh
       after_success: true
     - if: branch = master
       name: "Android build"
@@ -71,12 +71,12 @@ jobs:
       install:
         - pip install requests && ./contrib/pull_locale
         - ./contrib/make_packages
-        - sudo docker build --no-cache -t electrum-nmc-android-builder-img electrum_nmc/electrum/gui/kivy/tools
+        - sudo docker build --no-cache -t electrum-chi-android-builder-img electrum_chi/electrum/gui/kivy/tools
       script:
         - sudo chown -R 1000:1000 .
         # Output something every minute or Travis kills the job
         - while sleep 60; do echo "=====[ $SECONDS seconds still running ]====="; done &
-        - sudo docker run -it -u 1000:1000 --rm --name electrum-nmc-android-builder-cont --env CI=true -v $PWD:/home/user/wspace/electrum --workdir /home/user/wspace/electrum electrum-nmc-android-builder-img ./contrib/make_apk
+        - sudo docker run -it -u 1000:1000 --rm --name electrum-chi-android-builder-cont --env CI=true -v $PWD:/home/user/wspace/electrum --workdir /home/user/wspace/electrum electrum-chi-android-builder-img ./contrib/make_apk
         # kill background sleep loop
         - kill %1
         - ls -la bin
@@ -101,9 +101,9 @@ jobs:
       services:
         - docker
       install:
-        - sudo docker build --no-cache -t electrum-nmc-appimage-builder-img ./contrib/build-linux/appimage/
+        - sudo docker build --no-cache -t electrum-chi-appimage-builder-img ./contrib/build-linux/appimage/
       script:
-        - sudo docker run --name electrum-nmc-appimage-builder-cont -v $PWD:/opt/electrum-nmc --rm --workdir /opt/electrum-nmc/contrib/build-linux/appimage electrum-nmc-appimage-builder-img ./build.sh
+        - sudo docker run --name electrum-chi-appimage-builder-cont -v $PWD:/opt/electrum-chi --rm --workdir /opt/electrum-chi/contrib/build-linux/appimage electrum-chi-appimage-builder-img ./build.sh
       after_success: true
     - stage: release check
       install:

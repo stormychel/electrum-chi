@@ -24,7 +24,7 @@ folder.
 2. Build image
 
     ```
-    $ sudo docker build -t electrum-nmc-android-builder-img electrum_nmc/electrum/gui/kivy/tools
+    $ sudo docker build -t electrum-chi-android-builder-img electrum_chi/electrum/gui/kivy/tools
     ```
 
 3. Build locale files
@@ -44,12 +44,12 @@ folder.
     ```
     $ mkdir --parents $PWD/.buildozer/.gradle
     $ sudo docker run -it --rm \
-        --name electrum-nmc-android-builder-cont \
+        --name electrum-chi-android-builder-cont \
         -v $PWD:/home/user/wspace/electrum \
         -v $PWD/.buildozer/.gradle:/home/user/.gradle \
         -v ~/.keystore:/home/user/.keystore \
         --workdir /home/user/wspace/electrum \
-        electrum-nmc-android-builder-img \
+        electrum-chi-android-builder-img \
         ./contrib/make_apk
     ```
     This mounts the project dir inside the container,
@@ -70,7 +70,7 @@ You probably need to clear the cache: `rm -rf .buildozer/android/platform/build/
 Assuming `adb` is installed:
 ```
 $ adb -d install -r bin/Electrum-*-arm64-v8a-debug.apk
-$ adb shell monkey -p org.namecoin.electrum_nmc.electrum_nmc 1
+$ adb shell monkey -p io.xaya.electrum_chi.electrum_chi 1
 ```
 
 
@@ -80,7 +80,7 @@ $ sudo docker run -it --rm \
     -v $PWD:/home/user/wspace/electrum \
     -v $PWD/.buildozer/.gradle:/home/user/.gradle \
     --workdir /home/user/wspace/electrum \
-    electrum-nmc-android-builder-img
+    electrum-chi-android-builder-img
 ```
 
 
@@ -102,9 +102,9 @@ adb logcat | grep -F "`adb shell ps | grep org.electrum.electrum | cut -c14-19`"
 ### Kivy can be run directly on Linux Desktop. How?
 Install Kivy.
 
-Build atlas: `(cd electrum_nmc/electrum/gui/kivy/; make theming)`
+Build atlas: `(cd electrum_chi/electrum/gui/kivy/; make theming)`
 
-Run electrum-nmc with the `-g` switch: `electrum-nmc -g kivy`
+Run electrum-chi with the `-g` switch: `electrum-chi -g kivy`
 
 ### debug vs release build
 If you just follow the instructions above, you will build the apk

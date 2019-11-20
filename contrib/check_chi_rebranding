@@ -10,14 +10,12 @@ fi
 
 for i in **/*.py; do
     if ./contrib/print_python_strings "$i" "nmc" \
-        | grep -v 'org\.namecoin\.electrum_nmc' \
         | grep -v 'Electrum-NMC by the Namecoin developers'; then
         echo "Rebranding needed"
         exit 1
     fi
 
     if ./contrib/print_python_strings "$i" "namecoin" \
-        | grep -v 'org\.namecoin\.electrum_nmc' \
         | grep -v 'electrum/tests/test_util\.py.*notnamecoin:' \
         | grep -v 'Electrum-NMC by the Namecoin developers'; then
         echo "Rebranding needed"

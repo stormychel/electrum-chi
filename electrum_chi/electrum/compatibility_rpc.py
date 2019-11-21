@@ -58,6 +58,7 @@ class Logic (Logger):
     self.commands = [
       "getbalance",
       "getnewaddress",
+      "sendtoaddress",
       "signmessage",
       "verifymessage",
       "name_list",
@@ -82,6 +83,10 @@ class Logic (Logger):
       return addr
 
     raise RuntimeError (f"Unsupported address type: {address_type}")
+
+  async def sendtoaddress (self, address, amount):
+    tx = await self.cmd_runner.payto (address, amount)
+    return await self.cmd_runner.broadcast (tx["hex"])
 
   async def signmessage (self, address, message):
     return await self.cmd_runner.signmessage (address, message)

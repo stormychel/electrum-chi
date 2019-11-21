@@ -42,6 +42,9 @@ MSG = "test message"
 # Another address (for which the signature is invalid).
 OTHER_ADDR = "CM6FDmteB7o3wJ3KiX3o4L66XJ97T3TMDe"
 
+# Bech32 test address.
+BECH32_ADDR = "chi1qwjrgdwunjdan4h2twcrkmcdxzw65gk3zfcgrx0"
+
 
 class Test_compatibility_rpc (ElectrumTestCase):
 
@@ -69,6 +72,11 @@ class Test_compatibility_rpc (ElectrumTestCase):
 
     future = asyncio.run_coroutine_threadsafe (coro, asyncio.get_event_loop ())
     return future.result ()
+
+  def test_validateaddress (self):
+    self.assertEqual (self.eval ("validateaddress", ADDR), True)
+    self.assertEqual (self.eval ("validateaddress", BECH32_ADDR), True)
+    self.assertEqual (self.eval ("validateaddress", "foo"), False)
 
   def test_verifymessage_with_address (self):
     self.assertEqual (self.eval ("verifymessage", ADDR, SGN, MSG), True)

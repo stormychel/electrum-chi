@@ -59,6 +59,7 @@ class Logic (Logger):
       "getbalance",
       "getnewaddress",
       "sendtoaddress",
+      "validateaddress",
       "signmessage",
       "verifymessage",
       "name_list",
@@ -87,6 +88,9 @@ class Logic (Logger):
   async def sendtoaddress (self, address, amount):
     tx = await self.cmd_runner.payto (address, amount)
     return await self.cmd_runner.broadcast (tx["hex"])
+
+  async def validateaddress (self, address):
+    return await self.cmd_runner.validateaddress (address)
 
   async def signmessage (self, address, message):
     return await self.cmd_runner.signmessage (address, message)

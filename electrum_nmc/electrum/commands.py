@@ -687,7 +687,7 @@ class Commands:
         return tx.as_dict()
 
     @command('wp')
-    async def name_new(self, identifier, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
+    async def name_new(self, identifier, destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
         """Create a name_new transaction. """
         if not allow_existing:
             name_exists = True
@@ -713,7 +713,7 @@ class Commands:
             destination = request['address']
 
         tx = self._mktx(wallet,
-                        [],
+                        outputs,
                         fee=tx_fee,
                         feerate=feerate,
                         change_addr=change_addr,
@@ -728,7 +728,7 @@ class Commands:
         return {"tx": tx.as_dict(), "txid": tx.txid(), "rand": bh2u(rand)}
 
     @command('wp')
-    async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False, wallet: Abstract_Wallet = None):
+    async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False, wallet: Abstract_Wallet = None):
         """Create a name_firstupdate transaction. """
         if not allow_early:
             conf = wallet.get_tx_height(name_new_txid).conf
@@ -754,7 +754,7 @@ class Commands:
             destination = request['address']
 
         tx = self._mktx(wallet,
-                        [],
+                        outputs,
                         fee=tx_fee,
                         feerate=feerate,
                         change_addr=change_addr,
@@ -770,7 +770,7 @@ class Commands:
         return tx.as_dict()
 
     @command('wpn')
-    async def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
+    async def name_update(self, identifier, value=None, destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
         """Create a name_update transaction. """
 
         tx_fee = satoshis(fee)
@@ -807,7 +807,7 @@ class Commands:
             destination = request['address']
 
         tx = self._mktx(wallet,
-                        [],
+                        outputs,
                         fee=tx_fee,
                         feerate=feerate,
                         change_addr=change_addr,
@@ -1502,6 +1502,7 @@ command_options = {
     'to_height':   (None, "Only show transactions that confirmed before given block height"),
     'destination': (None, "Namecoin address, contact or alias"),
     'amount':      (None, "Amount to be sent (in NMC). Type \'!\' to send the maximum available."),
+    'outputs':     (None, "Currency outputs to add to a transaction in addition to a name operation."),
     'allow_existing': (None, "Allow pre-registering a name that already is registered.  Your registration fee will be forfeited until you can register the name after it expires."),
     'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
     'identifier':  (None, "The requested name identifier"),

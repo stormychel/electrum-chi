@@ -73,6 +73,27 @@ class Logic (Logger):
     for cmdname in self.commands:
       self.methods.add (getattr (self, cmdname))
 
+  def interpretNameOpOptions (self, opt):
+    """
+    Interprets the "options" argument to a name operation RPC and
+    translates it to a dict of keyword arguments that should be passed
+    to the corresponding Electrum command.
+    """
+
+    if opt is None:
+      return {}
+
+    res = {}
+    for nm, val in opt.items ():
+      if nm == "destAddress":
+        res["destination"] = val
+      elif nm == "sendCoins":
+        res["outputs"] = list (val.items ())
+      else:
+        self.logger.warning (f"Unknown name-operation option: {nm}")
+
+    return res
+
   async def getbalance (self):
     bal = await self.cmd_runner.getbalance ()
     return bal["confirmed"]
@@ -126,10 +147,12 @@ class Logic (Logger):
                          " returning empty mempool")
     return []
 
-  async def name_register (self, name, value):
-    tx = await self.cmd_runner.name_register (name, value)
+  async def name_register (self, name, value, options=None):
+    opts = self.interpretNameOpOptions (options)
+    tx = await self.cmd_runner.name_register (name, value, **opts)
     return await self.cmd_runner.broadcast (tx["hex"])
 
-  async def name_update (self, name, value):
-    tx = await self.cmd_runner.name_update (name, value)
+  async def name_update (self, name, value, options=None):
+    opts = self.interpretNameOpOptions (options)
+    tx = await self.cmd_runner.name_update (name, value, **opts)
     return await self.cmd_runner.broadcast (tx["hex"])

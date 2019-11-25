@@ -288,9 +288,6 @@ class Daemon(Logger):
         # Setup JSONRPC server
         if listen_jsonrpc:
             jobs.append(self.start_jsonrpc(config, fd))
-            if self.config.get('rpcportcompat'):
-                self.compat_rpc = compatibility_rpc.Server(self)
-                jobs.append(self.compat_rpc.run())
         # request server
         if self.config.get('run_payserver'):
             self.pay_server = PayServer(self)
@@ -320,14 +317,16 @@ class Daemon(Logger):
             await asyncio.sleep(0.050)
             raise AuthenticationError('Invalid Credentials')
 
-    async def handle(self, request):
+    async def handle(self, request, methods=None):
         async with self.auth_lock:
             try:
                 await self.authenticate(request.headers)
             except AuthenticationError:
                 return web.Response(text='Forbidden', status=403)
         request = await request.text()
-        response = await jsonrpcserver.async_dispatch(request, methods=self.methods)
+        if methods is None:
+            methods = self.methods
+        response = await jsonrpcserver.async_dispatch(request, methods=methods)
         if isinstance(response, jsonrpcserver.response.ExceptionResponse):
             self.logger.error(f"error handling request: {request}", exc_info=response.exc)
             # this exposes the error message to the client
@@ -350,6 +349,12 @@ class Daemon(Logger):
         self.methods.add(self.run_cmdline)
         self.host = config.get('rpchost', '127.0.0.1')
         self.port = config.get('rpcport', 0)
+
+        self.compat = compatibility_rpc.Logic (self.cmd_runner)
+        async def handleCompat(request):
+            return await self.handle(request, methods=self.compat.methods)
+        self.app.router.add_post("/xaya/compatibility", handleCompat)
+
         self.runner = web.AppRunner(self.app)
         await self.runner.setup()
         site = web.TCPSite(self.runner, self.host, self.port)

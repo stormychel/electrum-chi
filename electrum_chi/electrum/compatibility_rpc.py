@@ -52,21 +52,26 @@ class Logic (Logger):
   server itself.
   """
 
+  commands = [
+    "getbalance",
+    "getnewaddress",
+    "sendtoaddress",
+    "validateaddress",
+    "signmessage",
+    "verifymessage",
+    "name_list",
+    "name_pending",
+    "name_register",
+    "name_update",
+  ]
+
   def __init__ (self, cmd_runner):
     Logger.__init__ (self)
     self.cmd_runner = cmd_runner
-    self.commands = [
-      "getbalance",
-      "getnewaddress",
-      "sendtoaddress",
-      "validateaddress",
-      "signmessage",
-      "verifymessage",
-      "name_list",
-      "name_pending",
-      "name_register",
-      "name_update",
-    ]
+
+    self.methods = jsonrpcserver.methods.Methods ()
+    for cmdname in self.commands:
+      self.methods.add (getattr (self, cmdname))
 
   async def getbalance (self):
     bal = await self.cmd_runner.getbalance ()
@@ -128,51 +133,3 @@ class Logic (Logger):
   async def name_update (self, name, value):
     tx = await self.cmd_runner.name_update (name, value)
     return await self.cmd_runner.broadcast (tx["hex"])
-
-
-class Server (Logger):
-  """
-  The actual JSON-RPC server handling the authentication and requests.
-  """
-
-  def __init__ (self, daemon):
-    Logger.__init__ (self)
-    self.daemon = daemon
-    self.config = self.daemon.config
-    cmd_runner = Commands (config=self.config, network=self.daemon.network,
-                           daemon=self.daemon)
-    self.logic = Logic (cmd_runner)
-
-  async def run (self):
-    host = self.config.get ('rpchost', 'localhost')
-    port = self.config.get ('rpcportcompat')
-
-    self.methods = jsonrpcserver.methods.Methods ()
-    for cmdname in self.logic.commands:
-      self.methods.add (getattr (self.logic, cmdname))
-
-    app = web.Application ()
-    app.router.add_post ("/", self.handle)
-    runner = web.AppRunner (app)
-    await runner.setup ()
-    site = web.TCPSite (runner, host, port)
-    await site.start ()
-
-  async def handle (self, request):
-    async with self.daemon.auth_lock:
-      try:
-        await self.daemon.authenticate (request.headers)
-      except:
-        return web.Response (text='Forbidden', status=403)
-    request = await request.text ()
-    response = await jsonrpcserver.async_dispatch (request,
-                                                   methods=self.methods)
-    if isinstance (response, jsonrpcserver.response.ExceptionResponse):
-        self.logger.error (f"error handling request: {request}",
-                           exc_info=response.exc)
-        # this exposes the error message to the client
-        response.message = str (response.exc)
-    if not response.wanted:
-      return web.Response ()
-    return web.json_response (response.deserialized (),
-                              status=response.http_status)

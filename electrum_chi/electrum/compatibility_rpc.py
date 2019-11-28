@@ -116,7 +116,11 @@ class Logic (Logger):
     return await self.cmd_runner.broadcast (tx["hex"])
 
   async def validateaddress (self, address):
-    return await self.cmd_runner.validateaddress (address)
+    valid = await self.cmd_runner.validateaddress (address)
+    return {
+      "address": address,
+      "isvalid": valid,
+    }
 
   async def signmessage (self, address, message):
     return await self.cmd_runner.signmessage (address, message)

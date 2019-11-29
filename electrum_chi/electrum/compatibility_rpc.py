@@ -59,6 +59,7 @@ class Logic (Logger):
     "validateaddress",
     "signmessage",
     "verifymessage",
+    "name_show",
     "name_list",
     "name_pending",
     "name_register",
@@ -142,6 +143,9 @@ class Logic (Logger):
       return res
 
     return {"valid": res, "address": address}
+
+  async def name_show (self, name):
+    return await self.cmd_runner.name_show (name)
 
   async def name_list (self, name=None):
     return await self.cmd_runner.name_list (name)

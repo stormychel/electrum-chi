@@ -33,8 +33,8 @@ from typing import List, TYPE_CHECKING, Tuple, NamedTuple, Any, Dict, Optional
 from . import bitcoin
 from . import keystore
 from . import mnemonic
-from .bip32 import is_bip32_derivation, xpub_type, normalize_bip32_derivation
-from .keystore import bip44_derivation, purpose48_derivation
+from .bip32 import is_bip32_derivation, xpub_type, normalize_bip32_derivation, BIP32Node
+from .keystore import bip44_derivation, purpose48_derivation, Hardware_KeyStore
 from .wallet import (Imported_Wallet, Standard_Wallet, Multisig_Wallet,
                      wallet_types, Wallet, Abstract_Wallet)
 from .storage import (WalletStorage, StorageEncryptionVersion,
@@ -47,7 +47,7 @@ from .logging import Logger
 from .plugins.hw_wallet.plugin import OutdatedHwFirmwareException, HW_PluginBase
 
 if TYPE_CHECKING:
-    from .plugin import DeviceInfo
+    from .plugin import DeviceInfo, BasePlugin
 
 
 # hardware device setup purpose
@@ -84,7 +84,7 @@ class BaseWizard(Logger):
         self.data = {}
         self.pw_args = None  # type: Optional[WizardWalletPasswordSetting]
         self._stack = []  # type: List[WizardStackItem]
-        self.plugin = None
+        self.plugin = None  # type: Optional[BasePlugin]
         self.keystores = []
         self.is_kivy = config.get('gui') == 'kivy'
         self.seed_type = None
@@ -230,7 +230,7 @@ class BaseWizard(Logger):
                 assert bitcoin.is_private_key(pk)
                 txin_type, pubkey = k.import_privkey(pk, None)
                 addr = bitcoin.pubkey_to_address(txin_type, pubkey)
-                self.data['addresses'][addr] = {'type':txin_type, 'pubkey':pubkey, 'redeem_script':None}
+                self.data['addresses'][addr] = {'type':txin_type, 'pubkey':pubkey}
             self.keystores.append(k)
         else:
             return self.terminate()
@@ -394,7 +394,7 @@ class BaseWizard(Logger):
             # For segwit, a custom path is used, as there is no standard at all.
             default_choice_idx = 2
             choices = [
-                ('standard',   'legacy multisig (p2sh)',            "m/45'/0"),
+                ('standard',   'legacy multisig (p2sh)',            normalize_bip32_derivation("m/45'/0")),
                 ('p2wsh-p2sh', 'p2sh-segwit multisig (p2wsh-p2sh)', purpose48_derivation(0, xtype='p2wsh-p2sh')),
                 ('p2wsh',      'native segwit multisig (p2wsh)',    purpose48_derivation(0, xtype='p2wsh')),
             ]
@@ -420,16 +420,19 @@ class BaseWizard(Logger):
         from .keystore import hardware_keystore
         try:
             xpub = self.plugin.get_xpub(device_info.device.id_, derivation, xtype, self)
+            root_xpub = self.plugin.get_xpub(device_info.device.id_, 'm', 'standard', self)
         except ScriptTypeNotSupported:
             raise  # this is handled in derivation_dialog
         except BaseException as e:
             self.logger.exception('')
             self.show_error(e)
             return
+        xfp = BIP32Node.from_xkey(root_xpub).calc_fingerprint_of_this_node().hex().lower()
         d = {
             'type': 'hardware',
             'hw_type': name,
             'derivation': derivation,
+            'root_fingerprint': xfp,
             'xpub': xpub,
             'label': device_info.label,
         }
@@ -529,9 +532,9 @@ class BaseWizard(Logger):
         encrypt_keystore = any(k.may_have_password() for k in self.keystores)
         # note: the following condition ("if") is duplicated logic from
         # wallet.get_available_storage_encryption_version()
-        if self.wallet_type == 'standard' and isinstance(self.keystores[0], keystore.Hardware_KeyStore):
+        if self.wallet_type == 'standard' and isinstance(self.keystores[0], Hardware_KeyStore):
             # offer encrypting with a pw derived from the hw device
-            k = self.keystores[0]
+            k = self.keystores[0]  # type: Hardware_KeyStore
             try:
                 k.handler = self.plugin.create_handler(self)
                 password = k.get_password_for_storage_encryption()

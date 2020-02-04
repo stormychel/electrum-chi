@@ -33,12 +33,14 @@ from PyQt5.QtWidgets import *
 from electrum.bitcoin import TYPE_ADDRESS
 from electrum.commands import NameAlreadyExistsError
 from electrum.i18n import _
-from electrum.names import format_name_identifier
+from electrum.names import format_name_identifier, identifier_to_namespace
 from electrum.network import TxBroadcastError, BestEffortRequestFailed
 from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates
 from electrum.wallet import InternalAddressCorruption
 
 from .paytoedit import PayToEdit
+from .configure_dns_dialog import show_configure_dns
+from .util import MessageBoxMixin
 
 dialogs = []  # Otherwise python randomly garbage collects the dialogs...
 
@@ -50,7 +52,7 @@ def show_configure_name(identifier, value, parent, is_new):
     d.show()
 
 
-class ConfigureNameDialog(QDialog):
+class ConfigureNameDialog(QDialog, MessageBoxMixin):
     def __init__(self, identifier, value, parent, is_new):
         # We want to be a top-level window
         QDialog.__init__(self, parent=None)
@@ -71,9 +73,28 @@ class ConfigureNameDialog(QDialog):
         form_layout.addRow(QLabel(formatted_name))
 
         self.dataEdit = QLineEdit()
-        # TODO: support non-ASCII encodings
-        self.dataEdit.setText(value.decode('ascii'))
-        form_layout.addRow(_("Data:"), self.dataEdit)
+        self.set_value(value)
+
+        self.namespace = identifier_to_namespace(identifier)
+        self.namespace_is_dns = self.namespace in ["d", "dd"]
+
+        if self.namespace_is_dns:
+            self.dnsButton = QPushButton(_('DNS Editor...'))
+            self.dnsButton.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            self.dnsButton.setMinimumSize(150, 0)
+            # TODO: tooltip?
+            self.dnsButton.clicked.connect(lambda: show_configure_dns(self.dataEdit.text().encode('ascii'), self))
+
+        data_layout = QHBoxLayout()
+        data_layout.setContentsMargins(0, 0, 0, 0)
+        data_layout.addWidget(self.dataEdit)
+        if self.namespace_is_dns:
+            data_layout.addWidget(self.dnsButton)
+
+        self.data = QWidget()
+        self.data.setLayout(data_layout)
+
+        form_layout.addRow(_("Data:"), self.data)
 
         self.transferTo = PayToEdit(self.main_window)
         form_layout.addRow(_("Transfer to:"), self.transferTo)
@@ -91,6 +112,7 @@ class ConfigureNameDialog(QDialog):
         buttons.setLayout(buttons_hbox)
 
         vbox = QVBoxLayout()
+
         vbox.addWidget(form)
         vbox.addWidget(buttons)
         self.setLayout(vbox)
@@ -103,6 +125,10 @@ class ConfigureNameDialog(QDialog):
         else:
             # TODO: handle non-ASCII encodings
             self.accepted.connect(lambda: self.update_and_broadcast(self.identifier, self.dataEdit.text().encode('ascii'), self.transferTo))
+
+    def set_value(self, value):
+        # TODO: support non-ASCII encodings
+        self.dataEdit.setText(value.decode('ascii'))
 
     def register_and_broadcast(self, identifier, value, transfer_to):
         if transfer_to.toPlainText() == "":

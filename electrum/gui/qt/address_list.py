@@ -246,16 +246,16 @@ class AddressList(MyTreeView):
 
         coins = self.wallet.get_spendable_coins(addrs)
         if coins:
-            menu.addAction(_("Spend from"), lambda: self.parent.spend_coins(coins))
+            menu.addAction(_("Spend from"), lambda: self.parent.utxo_list.set_spend_list(coins))
 
         run_hook('receive_menu', menu, addrs, self.wallet)
         menu.exec_(self.viewport().mapToGlobal(position))
 
-    def place_text_on_clipboard(self, text):
+    def place_text_on_clipboard(self, text: str, *, title: str = None) -> None:
         if is_address(text):
             try:
                 self.wallet.check_address(text)
             except InternalAddressCorruption as e:
                 self.parent.show_error(str(e))
                 raise
-        self.parent.app.clipboard().setText(text)
+        super().place_text_on_clipboard(text, title=title)

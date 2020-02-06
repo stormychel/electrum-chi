@@ -104,6 +104,18 @@ class TxOutput:
         return cls(scriptpubkey=bfh(bitcoin.address_to_script(address)),
                    value=value)
 
+    def add_name_op(self, name_op: dict) -> None:
+        if self.name_op is not None:
+            raise Exception("TxOutput already has a name operation")
+
+        # Serialize the name script, and prepend it to the scriptpubkey
+        name_script = bfh(name_op_to_script(name_op))
+        self.scriptpubkey = name_script + self.scriptpubkey
+
+        # Name ops include an extra 0.01 NMC locked inside the output
+        if type(self.value) is int:
+            self.value += COIN // 100
+
     def serialize_to_network(self) -> bytes:
         buf = int.to_bytes(self.value, 8, byteorder="little", signed=False)
         script = self.scriptpubkey
@@ -136,6 +148,10 @@ class TxOutput:
     @property
     def address(self) -> Optional[str]:
         return get_address_from_output_script(self.scriptpubkey)  # TODO cache this?
+
+    @property
+    def name_op(self) -> Optional[dict]:
+        return get_name_op_from_output_script(self.scriptpubkey)  # TODO cache this?
 
     def get_ui_address_str(self) -> str:
         addr = self.address

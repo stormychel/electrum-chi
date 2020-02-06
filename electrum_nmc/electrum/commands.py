@@ -631,7 +631,9 @@ class Commands:
         for address, amount, name_op, memo in name_outputs:
             address = self._resolver(address, wallet)
             amount = satoshis(amount)
-            final_outputs.append(TxOutput(TYPE_ADDRESS, address, amount, name_op))
+            output = PartialTxOutput.from_address_and_value(address, amount)
+            output.add_name_op(name_op)
+            final_outputs.append(output)
         for address, amount in outputs:
             address = self._resolver(address, wallet)
             amount = satoshis(amount)

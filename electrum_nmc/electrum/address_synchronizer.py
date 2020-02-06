@@ -825,8 +825,8 @@ class AddressSynchronizer(Logger):
                         and utxo.block_height + COINBASE_MATURITY > mempool_height):
                     continue
                 if not include_names:
-                    txid = utxo['prevout_hash']
-                    vout = utxo['prevout_n']
+                    txid = utxo.prevout.txid
+                    vout = utxo.prevout.out_idx
                     name_op = self.db.transactions[txid].outputs()[vout].name_op
                     if name_op is not None:
                         continue
@@ -837,16 +837,16 @@ class AddressSynchronizer(Logger):
                 # name_firstupdate syntax (where only a txid is specified, not
                 # a txid+vout) we don't do that right now.
                 if only_uno_txids is not None:
-                    txid = utxo['prevout_hash']
-                    vout = utxo['prevout_n']
+                    txid = utxo.prevout.txid
+                    vout = utxo.prevout.out_idx
                     name_op = self.db.transactions[txid].outputs()[vout].name_op
                     if name_op is None:
                         continue
                     if txid not in only_uno_txids:
                         continue
                 if only_uno_identifiers is not None:
-                    txid = utxo['prevout_hash']
-                    vout = utxo['prevout_n']
+                    txid = utxo.prevout.txid
+                    vout = utxo.prevout.out_idx
                     name_op = self.db.transactions[txid].outputs()[vout].name_op
                     if name_op is None:
                         continue

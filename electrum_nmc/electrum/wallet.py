@@ -1023,8 +1023,8 @@ class Abstract_Wallet(AddressSynchronizer):
 
                 # Namecoin: remove any new name inputs if the existing
                 # transaction already has a name input.
-                if any([self.db.transactions[i["prevout_hash"]].outputs()[i["prevout_n"]].name_op is not None for i in txi]):
-                    name_inputs = list(filter(lambda i: self.db.transactions[i["prevout_hash"]].outputs()[i["prevout_n"]].name_op is None, name_inputs))
+                if any([i.name_op is not None for i in txi]):
+                    name_inputs = []
             else:
                 txi = []
                 txo = []

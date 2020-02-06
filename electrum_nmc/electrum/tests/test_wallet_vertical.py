@@ -1448,7 +1448,7 @@ class TestWalletSending(TestCaseForTestnet):
         wallet2.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # wallet1 creates tx1, with output back to himself
-        outputs = [PartialTxOutput.from_address_and_value("tb1qhye4wfp26kn0l7ynpn5a4hvt539xc3zf0n76t3", 10_000_000)]
+        outputs = [PartialTxOutput.from_address_and_value(frombtc("tb1qhye4wfp26kn0l7ynpn5a4hvt539xc3zf0n76t3"), 10_000_000)]
         tx1 = wallet1.mktx(outputs=outputs, fee=5000, tx_version=2, rbf=True, sign=False)
         tx1.locktime = 1607022
         partial_tx1 = tx1.serialize_as_bytes().hex()
@@ -1460,7 +1460,7 @@ class TestWalletSending(TestCaseForTestnet):
                          partial_tx1)
 
         # wallet2 creates tx2, with output back to himself
-        outputs = [PartialTxOutput.from_address_and_value("tb1qufnj5k2rrsnpjq7fg6d2pq3q9um6skdyyehw5m", 10_000_000)]
+        outputs = [PartialTxOutput.from_address_and_value(frombtc("tb1qufnj5k2rrsnpjq7fg6d2pq3q9um6skdyyehw5m"), 10_000_000)]
         tx2 = wallet2.mktx(outputs=outputs, fee=5000, tx_version=2, rbf=True, sign=False)
         tx2.locktime = 1607023
         partial_tx2 = tx2.serialize_as_bytes().hex()

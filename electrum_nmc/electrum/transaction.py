@@ -1291,6 +1291,13 @@ class PartialTxInput(TxInput, PSBTSection):
         return None
 
     @property
+    def name_op(self) -> Optional[dict]:
+        scriptpubkey = self.scriptpubkey
+        if scriptpubkey:
+            return get_name_op_from_output_script(self.scriptpubkey)
+        return None
+
+    @property
     def scriptpubkey(self) -> Optional[bytes]:
         if self._trusted_address is not None:
             return bfh(bitcoin.address_to_script(self._trusted_address))

@@ -44,12 +44,11 @@ class Test_auxpow(SequentialTestCase):
         auxpow_header['parent_coinbase_tx']._outputs = []
 
         # Clear the cached raw serialization
-        auxpow_header['parent_coinbase_tx'].raw = None
-        auxpow_header['parent_coinbase_tx'].raw_bytes = None
+        auxpow_header['parent_coinbase_tx'].invalidate_ser_cache()
 
         # Re-serialize.  Note that our AuxPoW library won't do this for us,
         # because it optimizes via fast_txid.
-        auxpow_header['parent_coinbase_tx'].raw_bytes = bfh(auxpow_header['parent_coinbase_tx'].serialize_to_network(witness=False))
+        auxpow_header['parent_coinbase_tx']._cached_network_ser_bytes = bfh(auxpow_header['parent_coinbase_tx'].serialize_to_network(force_legacy=True))
 
         # Correct the coinbase Merkle root.
         if fix_merkle_root:
@@ -186,12 +185,12 @@ class Test_auxpow(SequentialTestCase):
     def test_should_reject_coinbase_root_too_late(self):
         header = self.deserialize_with_auxpow(namecoin_header_19414)
 
-        input_script = bfh(header['auxpow']['parent_coinbase_tx'].inputs()[0]['scriptSig'])
+        input_script = header['auxpow']['parent_coinbase_tx'].inputs()[0].script_sig
 
         padded_script = bfh('00') * (auxpow.MAX_INDEX_PC_BACKWARDS_COMPATIBILITY + 4)
         padded_script += input_script[8:]
 
-        header['auxpow']['parent_coinbase_tx']._inputs[0]['scriptSig'] = bh2u(padded_script)
+        header['auxpow']['parent_coinbase_tx']._inputs[0].script_sig = padded_script
 
         self.clear_coinbase_outputs(header['auxpow'])
 

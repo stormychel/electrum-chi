@@ -50,7 +50,7 @@ from .bitcoin import hash_encode, hash_decode
 from . import constants
 from .crypto import sha256d
 from . import transaction
-from .transaction import BCDataStream, Transaction, TYPE_SCRIPT
+from .transaction import BCDataStream, Transaction, TxOutput, TYPE_SCRIPT
 from .util import bfh, bh2u
 
 # Maximum index of the merkle root hash in the coinbase transaction script,
@@ -108,8 +108,8 @@ def deserialize_auxpow_header(base_header, s, start_position=0) -> (dict, int):
 
     # The parent coinbase transaction is first.
     # Deserialize it and save the trailing data.
-    parent_coinbase_tx = Transaction(None, expect_trailing_data=True, raw_bytes=s, expect_trailing_bytes=True, copy_input=False, start_position=start_position)
-    parent_coinbase_tx_dict, start_position = fast_tx_deserialize(parent_coinbase_tx)
+    parent_coinbase_tx = Transaction(s, expect_trailing_data=True, copy_input=False, start_position=start_position)
+    start_position = fast_tx_deserialize(parent_coinbase_tx)
     auxpow_header['parent_coinbase_tx'] = parent_coinbase_tx
 
     # Next is the parent block hash.  According to the Bitcoin.it wiki,
@@ -240,7 +240,7 @@ def verify_auxpow(header):
 
     # const CScript script = coinbaseTx->vin[0].scriptSig;
 
-    script_bytes = bfh(coinbase.inputs()[0]['scriptSig'])
+    script_bytes = coinbase.inputs()[0].script_sig
 
     #// Check that the same work is not submitted twice to our chain.
     #//
@@ -357,15 +357,15 @@ def verify_auxpow(header):
 # This is calculated the same as the Transaction.txid() method, but doesn't
 # reserialize it.
 def fast_txid(tx):
-    return bh2u(sha256d(tx.raw_bytes)[::-1])
+    return bh2u(sha256d(tx._cached_network_ser_bytes)[::-1])
 
 # Used by fast_tx_deserialize
-def stub_parse_output(vds, i):
-    vds.read_int64() # d['value']
-    vds.read_bytes(vds.read_compact_size()) # scriptPubKey
-    return {'type': TYPE_SCRIPT, 'address': None, 'value': 0, 'name_op': None}
+def stub_parse_output(vds: BCDataStream) -> TxOutput:
+    vds.read_int64() # value
+    vds.read_bytes(vds.read_compact_size()) # scriptpubkey
+    return TxOutput(value=0, scriptpubkey=b'')
 
-# This is equivalent to tx.deserialize(), but doesn't parse outputs.
+# This is equivalent to (tx.deserialize(), ), but doesn't parse outputs.
 def fast_tx_deserialize(tx):
     # Monkeypatch output address parsing with a stub, since we only care about
     # inputs.

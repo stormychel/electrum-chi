@@ -90,6 +90,10 @@ if [[ $1 == "init" ]]; then
     new_blocks 1
 fi
 
+if [[ $1 == "new_block" ]]; then
+    new_blocks 1
+fi
+
 # start daemons. Bob is started first because he is listening
 if [[ $1 == "start" ]]; then
     $bob daemon -d
@@ -109,8 +113,8 @@ fi
 
 if [[ $1 == "open" ]]; then
     bob_node=$($bob nodeid)
-    channel_id1=$($alice open_channel $bob_node 0.001 --channel_push 0.001)
-    channel_id2=$($carol open_channel $bob_node 0.001 --channel_push 0.001)
+    channel_id1=$($alice open_channel $bob_node 0.002 --push_amount 0.001)
+    channel_id2=$($carol open_channel $bob_node 0.002 --push_amount 0.001)
     echo "mining 3 blocks"
     new_blocks 3
     sleep 10 # time for channelDB
@@ -147,7 +151,7 @@ if [[ $1 == "breach" ]]; then
     echo "alice pays"
     $alice lnpay $request
     sleep 2
-    ctx=$($alice get_channel_ctx $channel | jq '.hex' | tr -d '"')
+    ctx=$($alice get_channel_ctx $channel)
     request=$($bob add_lightning_request 0.01 -m "blah2")
     echo "alice pays again"
     $alice lnpay $request
@@ -224,7 +228,7 @@ if [[ $1 == "breach_with_unspent_htlc" ]]; then
         echo "SETTLE_DELAY did not work, $settled != 0"
         exit 1
     fi
-    ctx=$($alice get_channel_ctx $channel | jq '.hex' | tr -d '"')
+    ctx=$($alice get_channel_ctx $channel)
     sleep 5
     settled=$($alice list_channels | jq '.[] | .local_htlcs | .settles | length')
     if [[ "$settled" != "1" ]]; then
@@ -251,7 +255,7 @@ if [[ $1 == "breach_with_spent_htlc" ]]; then
     echo "alice pays bob"
     invoice=$($bob add_lightning_request 0.05 -m "test")
     $alice lnpay $invoice --timeout=1 || true
-    ctx=$($alice get_channel_ctx $channel | jq '.hex' | tr -d '"')
+    ctx=$($alice get_channel_ctx $channel)
     settled=$($alice list_channels | jq '.[] | .local_htlcs | .settles | length')
     if [[ "$settled" != "0" ]]; then
         echo "SETTLE_DELAY did not work, $settled != 0"

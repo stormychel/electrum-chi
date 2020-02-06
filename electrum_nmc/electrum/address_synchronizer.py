@@ -825,10 +825,7 @@ class AddressSynchronizer(Logger):
                         and utxo.block_height + COINBASE_MATURITY > mempool_height):
                     continue
                 if not include_names:
-                    txid = utxo.prevout.txid
-                    vout = utxo.prevout.out_idx
-                    name_op = self.db.transactions[txid].outputs()[vout].name_op
-                    if name_op is not None:
+                    if utxo.name_op is not None:
                         continue
                 # The only_uno_txids argument is used to search for name outputs
                 # from a specific list of txid's, and only return those utxo's.
@@ -837,22 +834,16 @@ class AddressSynchronizer(Logger):
                 # name_firstupdate syntax (where only a txid is specified, not
                 # a txid+vout) we don't do that right now.
                 if only_uno_txids is not None:
-                    txid = utxo.prevout.txid
-                    vout = utxo.prevout.out_idx
-                    name_op = self.db.transactions[txid].outputs()[vout].name_op
-                    if name_op is None:
+                    if utxo.name_op is None:
                         continue
-                    if txid not in only_uno_txids:
+                    if utxo.prevout.txid not in only_uno_txids:
                         continue
                 if only_uno_identifiers is not None:
-                    txid = utxo.prevout.txid
-                    vout = utxo.prevout.out_idx
-                    name_op = self.db.transactions[txid].outputs()[vout].name_op
-                    if name_op is None:
+                    if utxo.name_op is None:
                         continue
-                    if "name" not in name_op:
+                    if "name" not in utxo.name_op:
                         continue
-                    if name_op["name"] not in only_uno_identifiers:
+                    if utxo.name_op["name"] not in only_uno_identifiers:
                         continue
                 coins.append(utxo)
                 continue

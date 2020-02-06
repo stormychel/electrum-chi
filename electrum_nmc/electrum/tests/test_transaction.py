@@ -89,7 +89,7 @@ class TestTransaction(ElectrumTestCase):
         self.assertEqual('3140eb24b43386f35ba69e3875eb6c93130ac66201d01c58f598defc949a5c2a:0', tx.inputs()[0].prevout.to_str())
         self.assertEqual(1, len(tx.outputs()))
         self.assertEqual(bfh('76a914230ac37834073a42146f11ef8414ae929feaafc388ac'), tx.outputs()[0].scriptpubkey)
-        self.assertEqual('14CHYaaByjJZpx4oHBpfDMdqhTyXnZ3kVs', tx.outputs()[0].address)
+        self.assertEqual(frombtc('14CHYaaByjJZpx4oHBpfDMdqhTyXnZ3kVs'), tx.outputs()[0].address)
         self.assertEqual(1000000, tx.outputs()[0].value)
 
         self.assertEqual(tx.serialize(), signed_blob)

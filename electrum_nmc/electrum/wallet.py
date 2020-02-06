@@ -1321,12 +1321,6 @@ class Abstract_Wallet(AddressSynchronizer):
             if txin.utxo is None:
                 # note: for hw wallets, for legacy inputs, ignore_network_issues used to be False
                 txin.utxo = self.get_input_tx(txin.prevout.txid.hex(), ignore_network_issues=True)
-        if 'name_op' not in txin:
-            if txin['prevout_hash'] in self.db.transactions:
-                prevouts = self.db.transactions[txin['prevout_hash']].outputs()
-                if txin['prevout_n'] < len(prevouts):
-                    prevout = prevouts[txin['prevout_n']]
-                    txin['name_op'] = prevout.name_op
         # If there is a NON-WITNESS UTXO, but we know input is segwit, add a WITNESS UTXO, based on it.
         # This could have happened if previously another wallet had put a NON-WITNESS UTXO for txin,
         # as they did not know if it was segwit. This switch is needed to interop with bitcoin core.

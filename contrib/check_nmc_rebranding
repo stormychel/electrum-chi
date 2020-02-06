@@ -12,7 +12,8 @@ for i in **/*.py; do
     if ./contrib/print_python_strings "$i" "btc" \
         | grep -v "btchip" \
         | grep -v 'electrum/tests/.*\.py.*C2YxWaiTpNPuxjSNhUlBtcJmcdkz3' \
-        | grep -v 'electrum/tests/.*\.py.*3KaBTcviBLEJajTEMstsA2GWjYoPzPK7Y7'; then
+        | grep -v 'electrum/tests/.*\.py.*3KaBTcviBLEJajTEMstsA2GWjYoPzPK7Y7' \
+        | grep -v 'electrum/tests/.*\.py.*mEIVZ1sXNObTCGD8auW4H8hAtq2H'; then
         echo "Rebranding needed"
         exit 1
     fi

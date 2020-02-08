@@ -363,14 +363,19 @@ def get_wallet_name_delta(wallet, tx):
     name_input_value = None
     name_output_value = None
 
+    # TODO: Namecoin: The PSBT merge from upstream allows us to simplify this
+    # logic substantially.  We should cast tx to a PartialTransaction, and then
+    # use wallet.add_input_info on each input to populate it.  Then use
+    # txin.name_op to get the name op instead of the stupid incantation we're
+    # currently using to get the name op of inputs.
     for txin in tx.inputs():
         addr = wallet.get_txin_address(txin)
         if wallet.is_mine(addr):
-            prev_tx = wallet.db.transactions.get(txin['prevout_hash'])
-            if prev_tx.outputs()[txin['prevout_n']].name_op is not None:
+            prev_tx = wallet.db.transactions.get(txin.prevout.txid)
+            if prev_tx.outputs()[txin.prevout.out_idx].name_op is not None:
                 name_input_is_mine = True
-                if 'value' in prev_tx.outputs()[txin['prevout_n']].name_op:
-                    name_input_value = prev_tx.outputs()[txin['prevout_n']].name_op['value']
+                if 'value' in prev_tx.outputs()[txin.prevout.out_idx].name_op:
+                    name_input_value = prev_tx.outputs()[txin.prevout.out_idx].name_op['value']
     for o in tx.outputs():
         if o.name_op is not None and wallet.is_mine(o.address):
             name_output_is_mine = True

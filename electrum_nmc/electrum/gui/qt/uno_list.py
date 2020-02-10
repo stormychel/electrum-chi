@@ -86,6 +86,9 @@ class UNOList(UTXOList):
         if name_op is None:
             return
 
+        height = utxo.block_height
+        header_at_tip = self.network.blockchain().header_at_tip()
+
         if 'name' not in name_op:
             # utxo is name_new
             firstupdate_output = get_queued_firstupdate_from_new(self.wallet, txid, vout)
@@ -93,12 +96,14 @@ class UNOList(UTXOList):
                 if firstupdate_output.name_op is not None:
                     name_op = firstupdate_output.name_op
             expires_in, expires_datetime = None, None
-            status = _('Registration Pending')
+            if height is not None and header_at_tip is not None:
+                # TODO: Namecoin: Use queued transaction's minimum
+                # confirmations instead of hardcoding to 12.
+                status = _('Registration Pending, ETA ') + str(10 * (height - header_at_tip['block_height'] + 12)) + _("min")
+            else:
+                status = _('Registration Pending')
         else:
             # utxo is name_anyupdate
-            height = utxo.block_height
-            header_at_tip = self.network.blockchain().header_at_tip()
-            #chain_height = self.network.blockchain().height()
             if header_at_tip is not None:
                 expires_in, expires_datetime = name_expiration_datetime_estimate(height, header_at_tip['block_height'], header_at_tip['timestamp'])
             else:

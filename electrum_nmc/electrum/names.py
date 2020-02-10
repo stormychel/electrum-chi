@@ -422,6 +422,9 @@ def get_wallet_name_count(wallet, network):
 
 
 def name_expires_in(name_height, chain_height):
+    if name_height is None:
+        return None
+
     if name_height <= 0:
         return None
 

@@ -363,21 +363,15 @@ def get_wallet_name_delta(wallet, tx):
     name_input_value = None
     name_output_value = None
 
-    # TODO: Namecoin: The PSBT merge from upstream allows us to simplify this
-    # logic substantially.  We should cast tx to a PartialTransaction, and then
-    # use wallet.add_input_info on each input to populate it.  Then use
-    # txin.name_op to get the name op instead of the stupid incantation we're
-    # currently using to get the name op of inputs.
+    tx = PartialTransaction.from_tx(tx)
     for txin in tx.inputs():
-        addr = wallet.get_txin_address(txin)
-        if wallet.is_mine(addr):
-            prev_tx = wallet.db.transactions.get(txin.prevout.txid)
-            if prev_tx.outputs()[txin.prevout.out_idx].name_op is not None:
-                name_input_is_mine = True
-                if 'value' in prev_tx.outputs()[txin.prevout.out_idx].name_op:
-                    name_input_value = prev_tx.outputs()[txin.prevout.out_idx].name_op['value']
+        wallet.add_input_info(txin)
+        if txin.address is not None and wallet.is_mine(txin.address) and txin.name_op is not None:
+            name_input_is_mine = True
+            if 'value' in txin.name_op:
+                name_input_value = txin.name_op['value']
     for o in tx.outputs():
-        if o.name_op is not None and wallet.is_mine(o.address):
+        if o.address is not None and wallet.is_mine(o.address) and o.name_op is not None:
             name_output_is_mine = True
             if 'value' in o.name_op:
                 name_output_value = o.name_op['value']
@@ -1289,7 +1283,7 @@ import re
 
 from .bitcoin import push_script, script_to_scripthash
 from .crypto import hash_160
-from .transaction import MalformedBitcoinScript, match_decoded, opcodes, OPPushDataGeneric, script_GetOp, Transaction
+from .transaction import MalformedBitcoinScript, match_decoded, opcodes, OPPushDataGeneric, PartialTransaction, script_GetOp, Transaction
 from .util import bh2u, BitcoinException
 
 OP_NAME_NEW = opcodes.OP_1

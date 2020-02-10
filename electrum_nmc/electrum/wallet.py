@@ -1315,8 +1315,18 @@ class Abstract_Wallet(AddressSynchronizer):
                 received, spent = self.get_addr_io(address)
                 item = received.get(txin.prevout.to_str())
                 if item:
-                    txin_value = item[1]
-                    txin.witness_utxo = TxOutput.from_address_and_value(address, txin_value)
+                    # TODO: Namecoin: Upstream Electrum constructs a TxOutput
+                    # here with the assumption that the scriptpubkey can be
+                    # derived from the address.  This isn't true for Namecoin
+                    # because doing so omits the name prefix.  We should try to
+                    # submit a PR to upstream Electrum that uses the original
+                    # scriptpubkey instead.  In the meantime, we do this stupid
+                    # hack.
+                    #txin_value = item[1]
+                    #txin.witness_utxo = TxOutput.from_address_and_value(address, txin_value)
+                    input_tx = self.get_input_tx(txin.prevout.txid.hex(), ignore_network_issues=True)
+                    input_txout = input_tx.outputs()[txin.prevout.out_idx]
+                    txin.witness_utxo = TxOutput(scriptpubkey=input_txout.scriptpubkey, value=input_txout.value)
         else:  # legacy input
             if txin.utxo is None:
                 # note: for hw wallets, for legacy inputs, ignore_network_issues used to be False

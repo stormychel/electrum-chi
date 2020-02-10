@@ -804,7 +804,8 @@ class Commands:
         # value.
         renew = False
         if value is None:
-            list_results = await self.name_list(identifier)[0]
+            list_results = await self.name_list(identifier)
+            list_results = list_results[0]
 
             # This check is in place to prevent an attack where an ElectrumX
             # server supplies an unconfirmed name_update transaction with a

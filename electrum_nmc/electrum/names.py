@@ -387,14 +387,6 @@ def get_wallet_name_count(wallet, network):
 
     utxos = wallet.get_utxos()
     for _, x in enumerate(utxos):
-        # TODO: Namecoin: Upstream Electrum only returns inputs with the
-        # "trusted address" field set, not the scriptpubkey set.  This prevents
-        # us from seeing the name prefix.  For now we manually fill in the
-        # scriptpubkey via add_input_info, but we should submit a PR to
-        # upstream Electrum that replaces "trusted addresses" with "trusted
-        # scriptpubkeys".
-        wallet.add_input_info(x)
-
         txid = x.prevout.txid
         vout = x.prevout.out_idx
         name_op = x.name_op

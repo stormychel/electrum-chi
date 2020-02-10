@@ -1370,6 +1370,18 @@ class Abstract_Wallet(AddressSynchronizer):
                 pass
         self._add_input_sig_info(txin, address, only_der_suffix=only_der_suffix)
 
+    def get_addr_utxo(self, address: str) -> Dict[TxOutpoint, PartialTxInput]:
+        utxos = super().get_addr_utxo(address)
+        for _, x in utxos.items():
+            # TODO: Namecoin: Upstream Electrum only returns inputs with the
+            # "trusted address" field set, not the scriptpubkey set.  This prevents
+            # us from seeing the name prefix.  For now we manually fill in the
+            # scriptpubkey via add_input_info, but we should submit a PR to
+            # upstream Electrum that replaces "trusted addresses" with "trusted
+            # scriptpubkeys".
+            self.add_input_info(x)
+        return utxos
+
     def can_sign(self, tx: Transaction) -> bool:
         if not isinstance(tx, PartialTransaction):
             return False

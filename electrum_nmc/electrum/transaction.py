@@ -1299,13 +1299,18 @@ class PartialTxInput(TxInput, PSBTSection):
 
     @property
     def scriptpubkey(self) -> Optional[bytes]:
-        if self._trusted_address is not None:
-            return bfh(bitcoin.address_to_script(self._trusted_address))
+        # TODO: Namecoin: Upstream Electrum assumes that a scriptpubkey can
+        # always be derived from an address.  This is false for Namecoin
+        # because of the name prefix.  For Namecoin we currently deprioritize
+        # the "trusted address" feature here, but we should submit a PR to
+        # upstream Electrum that makes it use a "trusted scriptpubkey" instead.
         if self.utxo:
             out_idx = self.prevout.out_idx
             return self.utxo.outputs()[out_idx].scriptpubkey
         if self.witness_utxo:
             return self.witness_utxo.scriptpubkey
+        if self._trusted_address is not None:
+            return bfh(bitcoin.address_to_script(self._trusted_address))
         return None
 
     def is_complete(self) -> bool:

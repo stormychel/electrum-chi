@@ -301,8 +301,8 @@ def get_default_name_tx_label(wallet, tx):
                     # Look at all the candidate's inputs to make sure it's
                     # actually spending the NAME_NEW
                     for addr_tx_input in addr_tx.inputs():
-                        if addr_tx_input['prevout_hash'] == tx.txid():
-                            if addr_tx_input['prevout_n'] == idx:
+                        if addr_tx_input.prevout.txid == tx.txid():
+                            if addr_tx_input.prevout.out_idx == idx:
                                 # We've confirmed that it spends the NAME_NEW.
                                 # Look at the outputs to find the
                                 # NAME_FIRSTUPDATE.

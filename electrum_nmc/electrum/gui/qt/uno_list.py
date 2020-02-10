@@ -81,7 +81,7 @@ class UNOList(UTXOList):
         super().update()
 
     def insert_utxo(self, idx, utxo: PartialTxInput):
-        txid = utxo.prevout.txid
+        txid = utxo.prevout.txid.hex()
         vout = utxo.prevout.out_idx
         name_op = utxo.name_op
         if name_op is None:

@@ -386,7 +386,7 @@ def get_wallet_name_count(wallet, network):
     pending_count = 0
 
     utxos = wallet.get_utxos()
-    for _, x in enumerate(utxos):
+    for x in utxos:
         txid = x.prevout.txid
         vout = x.prevout.out_idx
         name_op = x.name_op

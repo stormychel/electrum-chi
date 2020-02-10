@@ -342,8 +342,8 @@ def get_queued_firstupdate_from_new(wallet, txid, idx):
             # Look at all the candidate's inputs to make sure it's
             # actually spending the NAME_NEW
             for addr_tx_input in addr_tx.inputs():
-                if addr_tx_input['prevout_hash'] == txid:
-                    if addr_tx_input['prevout_n'] == idx:
+                if addr_tx_input.prevout.txid == txid:
+                    if addr_tx_input.prevout.out_idx == idx:
                         # We've confirmed that it spends the NAME_NEW.
                         # Look at the outputs to find the
                         # NAME_FIRSTUPDATE.
@@ -387,12 +387,12 @@ def get_wallet_name_count(wallet, network):
 
     utxos = wallet.get_utxos()
     for _, x in enumerate(utxos):
-        txid = x.get('prevout_hash')
-        vout = x.get('prevout_n')
+        txid = x.prevout.txid
+        vout = x.prevout.out_idx
         name_op = wallet.db.transactions[txid].outputs()[vout].name_op
         if name_op is None:
             continue
-        height = x.get('height')
+        height = x.block_height
         chain_height = network.blockchain().height()
         expires_in = name_expires_in(height, chain_height)
         if expires_in is None:

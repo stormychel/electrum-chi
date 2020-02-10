@@ -329,6 +329,9 @@ class Commands:
     async def name_list(self, identifier=None, wallet: Abstract_Wallet = None):
         """List unspent name outputs. Returns the list of unspent name_anyupdate
         outputs in your wallet."""
+
+        # TODO: Namecoin: Re-implement this using listunspent as a backend
+
         l = copy.deepcopy(wallet.get_utxos())
 
         result = []

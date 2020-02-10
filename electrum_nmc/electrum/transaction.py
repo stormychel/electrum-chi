@@ -174,6 +174,7 @@ class TxOutput:
         d = {
             'scriptpubkey': self.scriptpubkey.hex(),
             'address': self.address,
+            'name_op': self.name_op,
             'value_sats': self.value,
         }
         return d
@@ -1134,6 +1135,7 @@ class PartialTxInput(TxInput, PSBTSection):
             'height': self.block_height,
             'value_sats': self.value_sats(),
             'address': self.address,
+            'name_op': self.name_op,
             'utxo': str(self.utxo) if self.utxo else None,
             'witness_utxo': self.witness_utxo.serialize_to_network().hex() if self.witness_utxo else None,
             'sighash': self.sighash,

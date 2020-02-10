@@ -389,7 +389,7 @@ def get_wallet_name_count(wallet, network):
     for _, x in enumerate(utxos):
         txid = x.prevout.txid
         vout = x.prevout.out_idx
-        name_op = wallet.db.transactions[txid].outputs()[vout].name_op
+        name_op = x.name_op
         if name_op is None:
             continue
         height = x.block_height

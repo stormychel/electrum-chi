@@ -35,6 +35,7 @@ from PyQt5.QtWidgets import QAbstractItemView, QMenu
 from electrum.commands import NameUpdatedTooRecentlyError
 from electrum.i18n import _
 from electrum.names import format_name_identifier, format_name_value, get_queued_firstupdate_from_new, name_expiration_datetime_estimate
+from electrum.transaction import PartialTxInput
 from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates, bh2u
 from electrum.wallet import InternalAddressCorruption
 
@@ -78,9 +79,9 @@ class UNOList(UTXOList):
         self.network = self.parent.network
         super().update()
 
-    def insert_utxo(self, idx, x):
-        txid = x.get('prevout_hash')
-        vout = x.get('prevout_n')
+    def insert_utxo(self, idx, utxo: PartialTxInput):
+        txid = utxo.get('prevout_hash')
+        vout = utxo.get('prevout_n')
         output = self.wallet.db.transactions[txid].outputs()[vout]
         name_op = output.name_op
         if name_op is None:
@@ -96,7 +97,7 @@ class UNOList(UTXOList):
             status = _('Registration Pending')
         else:
             # utxo is name_anyupdate
-            height = x.get('height')
+            height = utxo.get('height')
             header_at_tip = self.network.blockchain().header_at_tip()
             #chain_height = self.network.blockchain().height()
             if header_at_tip is not None:
@@ -123,7 +124,7 @@ class UNOList(UTXOList):
 
         txout = txid + ":%d"%vout
 
-        self.utxo_dict[txout] = x
+        self.utxo_dict[txout] = utxo
 
         labels = [formatted_name, formatted_value, formatted_expires_datetime, status]
         utxo_item = [QStandardItem(x) for x in labels]
@@ -138,14 +139,14 @@ class UNOList(UTXOList):
 
         utxo_item[self.Columns.EXPIRES_IN].setToolTip(formatted_expires_in)
 
-        address = x.get('address')
-        if self.wallet.is_frozen_address(address) or self.wallet.is_frozen_coin(x):
+        address = utxo.get('address')
+        if self.wallet.is_frozen_address(address) or self.wallet.is_frozen_coin(utxo):
             utxo_item[self.Columns.NAME].setBackground(ColorScheme.BLUE.as_color(True))
-            if self.wallet.is_frozen_address(address) and self.wallet.is_frozen_coin(x):
+            if self.wallet.is_frozen_address(address) and self.wallet.is_frozen_coin(utxo):
                 utxo_item[self.Columns.NAME].setToolTip(_('Address and coin are frozen'))
             elif self.wallet.is_frozen_address(address):
                 utxo_item[self.Columns.NAME].setToolTip(_('Address is frozen'))
-            elif self.wallet.is_frozen_coin(x):
+            elif self.wallet.is_frozen_coin(utxo):
                 utxo_item[self.Columns.NAME].setToolTip(_('Coin is frozen'))
         self.model().appendRow(utxo_item)
 

@@ -80,10 +80,9 @@ class UNOList(UTXOList):
         super().update()
 
     def insert_utxo(self, idx, utxo: PartialTxInput):
-        txid = utxo.get('prevout_hash')
-        vout = utxo.get('prevout_n')
-        output = self.wallet.db.transactions[txid].outputs()[vout]
-        name_op = output.name_op
+        txid = utxo.prevout.txid
+        vout = utxo.prevout.out_idx
+        name_op = utxo.name_op
         if name_op is None:
             return
 
@@ -97,7 +96,7 @@ class UNOList(UTXOList):
             status = _('Registration Pending')
         else:
             # utxo is name_anyupdate
-            height = utxo.get('height')
+            height = utxo.block_height
             header_at_tip = self.network.blockchain().header_at_tip()
             #chain_height = self.network.blockchain().height()
             if header_at_tip is not None:
@@ -139,7 +138,7 @@ class UNOList(UTXOList):
 
         utxo_item[self.Columns.EXPIRES_IN].setToolTip(formatted_expires_in)
 
-        address = utxo.get('address')
+        address = utxo.address
         if self.wallet.is_frozen_address(address) or self.wallet.is_frozen_coin(utxo):
             utxo_item[self.Columns.NAME].setBackground(ColorScheme.BLUE.as_color(True))
             if self.wallet.is_frozen_address(address) and self.wallet.is_frozen_coin(utxo):

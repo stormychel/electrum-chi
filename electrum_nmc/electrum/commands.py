@@ -330,22 +330,15 @@ class Commands:
         """List unspent name outputs. Returns the list of unspent name_anyupdate
         outputs in your wallet."""
 
-        # TODO: Namecoin: Re-implement this using listunspent as a backend
-
-        l = copy.deepcopy(wallet.get_utxos())
+        coins = await self.listunspent(wallet)
 
         result = []
 
-        for i in l:
-            txid = i["prevout_hash"]
-            tx = wallet.db.transactions[txid]
-
-            vout = i["prevout_n"]
-            o = tx.outputs()[vout]
-
-            if o.name_op is None:
+        for coin in coins:
+            if "name_op" not in coin:
                 continue
-            name_op = o.name_op
+
+            name_op = coin["name_op"]
 
             if "name" not in name_op:
                 continue
@@ -359,10 +352,14 @@ class Commands:
                 if identifier != name:
                     continue
 
-            chain_height = self.network.blockchain().height()
+            txid = coin["prevout_hash"]
+            vout = coin["prevout_n"]
 
-            address = i["address"]
-            height = i["height"]
+            address = coin["address"]
+
+            height = coin["height"]
+            chain_height = self.network.get_local_height()
+
             expires_in = name_expires_in(height, chain_height)
             expired = expires_in <= 0 if expires_in is not None else None
 
@@ -377,6 +374,7 @@ class Commands:
                 "expired": expired,
             }
             result.append(result_item)
+
         return result
 
     @command('n')
@@ -1154,7 +1152,7 @@ class Commands:
             trigger_name = send_when["name"]
             trigger_depth = send_when["confirmations"]
 
-            chain_height = self.network.blockchain().height()
+            chain_height = self.network.get_local_height()
 
             current_depth = 0
 

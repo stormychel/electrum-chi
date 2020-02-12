@@ -807,7 +807,7 @@ class Commands:
         # value.
         renew = False
         if value is None:
-            list_results = await self.name_list(identifier)
+            list_results = await self.name_list(identifier, wallet=wallet)
             list_results = list_results[0]
 
             # This check is in place to prevent an attack where an ElectrumX

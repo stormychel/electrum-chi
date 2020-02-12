@@ -172,6 +172,7 @@ class TxOutput:
 
     def to_json(self):
         d = {
+            # TODO: Namecoin: Convert all name_op fields to JSON
             'scriptpubkey': self.scriptpubkey.hex(),
             'address': self.address,
             'name_op': self.name_op,
@@ -1132,6 +1133,7 @@ class PartialTxInput(TxInput, PSBTSection):
     def to_json(self):
         d = super().to_json()
         d.update({
+            # TODO: Namecoin: Convert all name_op fields to JSON
             'height': self.block_height,
             'value_sats': self.value_sats(),
             'address': self.address,

@@ -92,15 +92,15 @@ class UNOList(UTXOList):
 
         if 'name' not in name_op:
             # utxo is name_new
-            firstupdate_output = get_queued_firstupdate_from_new(self.wallet, txid, vout)
+            queue_item, firstupdate_output = get_queued_firstupdate_from_new(self.wallet, txid, vout)
             if firstupdate_output is not None:
                 if firstupdate_output.name_op is not None:
                     name_op = firstupdate_output.name_op
             expires_in, expires_datetime = None, None
-            if height is not None and header_at_tip is not None:
-                # TODO: Namecoin: Use queued transaction's minimum
-                # confirmations instead of hardcoding to 12.
-                status = _('Registration Pending, ETA ') + str(10 * (height - header_at_tip['block_height'] + 12)) + _("min")
+
+            if height is not None and header_at_tip is not None and queue_item is not None:
+                sendwhen_depth = queue_item["sendWhen"]["confirmations"]
+                status = _('Registration Pending, ETA ') + str(10 * (height - header_at_tip['block_height'] + sendwhen_depth)) + _("min")
             else:
                 status = _('Registration Pending')
         else:

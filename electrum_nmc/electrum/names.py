@@ -314,7 +314,7 @@ def get_default_name_tx_label(wallet, tx):
                                             return "Pre-Registration: " + format_name_identifier(addr_tx_output.name_op['name'])
 
                 # Look for queued transactions that spend the NAME_NEW
-                addr_tx_output = get_queued_firstupdate_from_new(wallet, tx.txid(), idx)
+                _, addr_tx_output = get_queued_firstupdate_from_new(wallet, tx.txid(), idx)
                 if addr_tx_output is not None:
                     return "Pre-Registration: " + format_name_identifier(addr_tx_output.name_op['name'])
 
@@ -352,8 +352,8 @@ def get_queued_firstupdate_from_new(wallet, txid, idx):
                                 # We've found a name output; now we
                                 # check for an identifier.
                                 if 'name' in addr_tx_output.name_op:
-                                    return addr_tx_output
-    return None
+                                    return addr_tx_queue_item, addr_tx_output
+    return None, None
 
 
 def get_wallet_name_delta(wallet, tx):

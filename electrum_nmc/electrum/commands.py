@@ -335,10 +335,10 @@ class Commands:
         result = []
 
         for coin in coins:
-            if "name_op" not in coin:
-                continue
-
             name_op = coin["name_op"]
+
+            if name_op is None:
+                continue
 
             if "name" not in name_op:
                 continue

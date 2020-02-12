@@ -206,7 +206,7 @@ class UNOList(UTXOList):
             if tx:
                 label = self.wallet.get_label(txid) or None # Prefer None if empty (None hides the Description: field in the window)
                 menu.addAction(_("Configure"), lambda: self.configure_selected_item())
-                menu.addAction(_("Transaction Details"), lambda: self.parent.show_transaction(tx, label))
+                menu.addAction(_("Transaction Details"), lambda: self.parent.show_transaction(tx, tx_desc=label))
 
         # "Copy ..."
 

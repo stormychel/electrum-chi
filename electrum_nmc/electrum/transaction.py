@@ -599,8 +599,6 @@ class Transaction:
             self.start_position = 0
             return vds.read_cursor
 
-    # TODO: Namecoin: Set Transaction nVersion to NAMECOIN_VERSION if it has a
-    # name op.
     @classmethod
     def get_siglist(self, txin: 'PartialTxInput', *, estimate_size=False):
         if txin.prevout.is_coinbase():
@@ -1644,6 +1642,9 @@ class PartialTransaction(Transaction):
             self.locktime = locktime
         if version is not None:
             self.version = version
+        # Name ops require a Namecoin-version transaction
+        if any([o.name_op is not None for o in self.outputs()]):
+            self.version = NAMECOIN_VERSION
         self.BIP69_sort()
         return self
 

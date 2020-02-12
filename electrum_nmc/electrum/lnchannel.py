@@ -248,9 +248,9 @@ class Channel(Logger):
         current_htlc_sum = (htlcsum(self.hm.htlcs_by_direction(LOCAL, SENT).values())
                             + htlcsum(self.hm.htlcs_by_direction(LOCAL, RECEIVED).values()))
         if current_htlc_sum + amount_msat > self.config[REMOTE].max_htlc_value_in_flight_msat:
-            raise PaymentFailure(f'HTLC value sum (sum of pending htlcs: {current_htlc_sum/1000} sat plus new htlc: {amount_msat/1000} sat) would exceed max allowed: {self.config[REMOTE].max_htlc_value_in_flight_msat/1000} sat')
+            raise PaymentFailure(f'HTLC value sum (sum of pending htlcs: {current_htlc_sum/1000} swartz plus new htlc: {amount_msat/1000} swartz) would exceed max allowed: {self.config[REMOTE].max_htlc_value_in_flight_msat/1000} swartz')
         if amount_msat < self.config[REMOTE].htlc_minimum_msat:
-            raise PaymentFailure(f'HTLC value too small: {amount_msat} msat')
+            raise PaymentFailure(f'HTLC value too small: {amount_msat} mswartz')
 
     def can_pay(self, amount_msat):
         try:

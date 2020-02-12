@@ -142,7 +142,7 @@ class HistoryScreen(CScreen):
             message = tx_item['label']
             fee_msat = tx_item['fee_msat']
             fee = int(fee_msat/1000) if fee_msat else None
-            fee_text = '' if fee is None else 'fee: %d sat'%fee
+            fee_text = '' if fee is None else 'fee: %d swartz'%fee
         else:
             tx_hash = tx_item['txid']
             conf = tx_item['confirmations']
@@ -155,7 +155,7 @@ class HistoryScreen(CScreen):
             icon = "atlas://electrum_nmc/electrum/gui/kivy/theming/light/" + TX_ICONS[status]
             message = tx_item['label'] or tx_hash
             fee = tx_item['fee_sat']
-            fee_text = '' if fee is None else 'fee: %d sat'%fee
+            fee_text = '' if fee is None else 'fee: %d swartz'%fee
         ri = {}
         ri['screen'] = self
         ri['key'] = key

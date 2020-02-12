@@ -698,7 +698,7 @@ class PreviewTxDialog(BaseTxDialog, TxEditor):
                and (self.feerate_e.text() or self.feerate_e.hasFocus())
 
     def set_feerounding_text(self, num_satoshis_added):
-        self.feerounding_text = (_('Additional {} satoshis are going to be added.')
+        self.feerounding_text = (_('Additional {} swartz are going to be added.')
                                  .format(num_satoshis_added))
 
     def get_fee_estimator(self):

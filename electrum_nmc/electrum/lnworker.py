@@ -1304,8 +1304,8 @@ class LNWallet(LNWorker):
                     chan_feerate = chan.get_latest_feerate(LOCAL)
                     ratio = chan_feerate / self.current_feerate_per_kw()
                     if ratio < 0.5:
-                        self.logger.warning(f"fee level for channel {bh2u(chan.channel_id)} is {chan_feerate} sat/kiloweight, "
-                                            f"current recommended feerate is {self.current_feerate_per_kw()} sat/kiloweight, consider force closing!")
+                        self.logger.warning(f"fee level for channel {bh2u(chan.channel_id)} is {chan_feerate} swartz/kiloweight, "
+                                            f"current recommended feerate is {self.current_feerate_per_kw()} swartz/kiloweight, consider force closing!")
                 # reestablish
                 if not chan.should_try_to_reestablish_peer():
                     continue

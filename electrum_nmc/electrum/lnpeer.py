@@ -535,12 +535,12 @@ class Peer(Logger):
             raise Exception(f"Remote Lightning peer reports dust_limit_sat > reserve_sat which is a BOLT-02 protocol violation.")
         htlc_min = int.from_bytes(payload['htlc_minimum_msat'], 'big')
         if htlc_min > MAXIMUM_HTLC_MINIMUM_MSAT_ACCEPTED:
-            raise Exception(f"Remote Lightning peer reports htlc_minimum_msat={htlc_min} mSAT," +
-                    f" which is above Electrums required maximum limit of that parameter ({MAXIMUM_HTLC_MINIMUM_MSAT_ACCEPTED} mSAT).")
+            raise Exception(f"Remote Lightning peer reports htlc_minimum_msat={htlc_min} mSWARTZ," +
+                    f" which is above Electrums required maximum limit of that parameter ({MAXIMUM_HTLC_MINIMUM_MSAT_ACCEPTED} mSWARTZ).")
         remote_max = int.from_bytes(payload['max_htlc_value_in_flight_msat'], 'big')
         if remote_max < MINIMUM_MAX_HTLC_VALUE_IN_FLIGHT_ACCEPTED:
-            raise Exception(f"Remote Lightning peer reports max_htlc_value_in_flight_msat at only {remote_max} mSAT" +
-                    f" which is below Electrums required minimum ({MINIMUM_MAX_HTLC_VALUE_IN_FLIGHT_ACCEPTED} mSAT).")
+            raise Exception(f"Remote Lightning peer reports max_htlc_value_in_flight_msat at only {remote_max} mSWARTZ" +
+                    f" which is below Electrums required minimum ({MINIMUM_MAX_HTLC_VALUE_IN_FLIGHT_ACCEPTED} mSWARTZ).")
         max_accepted_htlcs = int.from_bytes(payload["max_accepted_htlcs"], 'big')
         if max_accepted_htlcs > 483:
             raise Exception("Remote Lightning peer reports max_accepted_htlcs > 483, which is a BOLT-02 protocol violation.")

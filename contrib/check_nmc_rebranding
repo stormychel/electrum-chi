@@ -38,6 +38,32 @@ for i in **/*.py; do
         exit 1
     fi
 
+    if ./contrib/print_python_strings "$i" "sat" \
+        | grep -v "amount_msat" \
+        | grep -v "amount_sat" \
+        | grep -v "balance_msat" \
+        | grep -v "capacity_sat" \
+        | grep -v "channel_reserve_satoshis" \
+        | grep -v "dust_limit_sat" \
+        | grep -v "fee_msat" \
+        | grep -v "fee_sat" \
+        | grep -v "fee_base_msat" \
+        | grep -v "funding_sat" \
+        | grep -v "htlc_minimum_msat" \
+        | grep -v "htlc_maximum_msat" \
+        | grep -v "max_htlc_value_in_flight_msat" \
+        | grep -v "MAXIMUM_HTLC_MINIMUM_MSAT_ACCEPTED" \
+        | grep -v "push_msat" \
+        | grep -v "value_sats" \
+        | grep -v "satisfied" \
+        | grep -v "electrum/gui/text.py.*'satoshis'" \
+        | grep -v "electrum/old_mnemonic.py" \
+        | grep -v "electrum/util.py.*'Satoshis(%d)'" \
+        | grep -v "electrum/tests/.*\.py"; then
+        echo "Rebranding needed"
+        exit 1
+    fi
+
     # coldcard plugin uses "b'1234 Electrum Plugin 4321'" as a ping echo blob
     # keepkey plugin uses '"electrum pinging device"' as a ping echo blob
     # safe_t plugin uses '"electrum pinging device"' as a ping echo blob

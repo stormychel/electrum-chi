@@ -751,7 +751,7 @@ class Commands:
                         password=password,
                         locktime=locktime,
                         name_outputs=[(destination, amount, name_op, memo)])
-        return {"tx": tx.as_dict(), "txid": tx.txid(), "rand": bh2u(rand)}
+        return {"tx": tx.serialize(), "txid": tx.txid(), "rand": bh2u(rand)}
 
     @command('wp')
     async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False, wallet: Abstract_Wallet = None):
@@ -793,7 +793,7 @@ class Commands:
                         locktime=locktime,
                         name_input_txids=[name_new_txid],
                         name_outputs=[(destination, amount, name_op, memo)])
-        return tx.as_dict()
+        return tx.serialize()
 
     @command('wpn')
     async def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
@@ -847,7 +847,7 @@ class Commands:
                         locktime=locktime,
                         name_input_identifiers=[identifier_bytes],
                         name_outputs=[(destination, amount, name_op, memo)])
-        return tx.as_dict()
+        return tx.serialize()
 
     @command('wpn')
     async def name_autoregister(self, identifier, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
@@ -874,7 +874,7 @@ class Commands:
                                    wallet=wallet)
         new_txid = new_result["txid"]
         new_rand = new_result["rand"]
-        new_tx = new_result["tx"]["hex"]
+        new_tx = new_result["tx"]
 
         # We add the name_new transaction to the wallet explicitly because
         # otherwise, the wallet will only learn about the name_new once the
@@ -891,7 +891,7 @@ class Commands:
                 break
 
         try:
-            firstupdate_result = await self.name_firstupdate(identifier,
+            firstupdate_tx = await self.name_firstupdate(identifier,
                                                        new_rand,
                                                        new_txid,
                                                        value,
@@ -907,7 +907,6 @@ class Commands:
                                                        locktime=locktime,
                                                        allow_early=True,
                                                        wallet=wallet)
-            firstupdate_tx = firstupdate_result["hex"]
             await self.queuetransaction(firstupdate_tx, 12, trigger_txid=new_txid, wallet=wallet)
         except Exception as e:
             await self.removelocaltx(new_txid, wallet=wallet)

@@ -200,7 +200,7 @@ class ConfigureNameDialog(QDialog, MessageBoxMixin):
 
         try:
             # TODO: support non-ASCII encodings
-            tx = name_update(identifier.decode('ascii'), value.decode('ascii'), destination=recipient_address, wallet=self.wallet)['hex']
+            tx = name_update(identifier.decode('ascii'), value.decode('ascii'), destination=recipient_address, wallet=self.wallet)
         except (NotEnoughFunds, NoDynamicFeeEstimates) as e:
             formatted_name = format_name_identifier(identifier)
             self.main_window.show_message(_("Error creating update for ") + formatted_name + ": " + str(e))

@@ -986,6 +986,7 @@ class Network(Logger):
             r"non-final",
             r"txn-already-in-mempool",
             r"txn-mempool-conflict",
+            r"txn-mempool-name-error",
             r"txn-already-known",
             r"non-BIP68-final",
             r"bad-txns-nonstandard-inputs",
@@ -1006,6 +1007,60 @@ class Network(Logger):
         for substring in validation_error_messages:
             if substring in server_msg:
                 return substring
+        # https://github.com/namecoin/namecoin-core/blob/b4ffd61ac6392a47209b9067f31439f34958109e/src/names/main.cpp
+        # grep "TxValidationResult"
+        name_validation_error_messages_friendly = {
+            r"Multiple name inputs",
+            r"Multiple name outputs",
+            r"Non-name transaction has name input",
+            r"Non-name transaction has name output",
+            r"Name transaction has no name output",
+            r"Greedy name operation",
+            r"NAME_NEW with previous name input",
+            r"NAME_NEW's hash has the wrong size",
+            r"Name update has no previous name input",
+            r"Invalid name",
+            r"Invalid value",
+            r"Name input for NAME_UPDATE is not an update",
+            r"NAME_UPDATE name mismatch to name input",
+            r"NAME_UPDATE name does not exist",
+            r"NAME_UPDATE on an expired name",
+            r"NAME_FIRSTUPDATE input is not a NAME_NEW",
+            r"NAME_FIRSTUPDATE on immature NAME_NEW",
+            r"NAME_FIRSTUPDATE rand value is too large",
+            r"NAME_FIRSTUPDATE mismatch in hash / rand value",
+            r"NAME_FIRSTUPDATE on existing name",
+        }
+        for substring in name_validation_error_messages_friendly:
+            if substring in server_msg:
+                return substring
+        # https://github.com/namecoin/namecoin-core/blob/b4ffd61ac6392a47209b9067f31439f34958109e/src/names/main.cpp
+        # grep "TxValidationResult"
+        name_validation_error_messages = {
+            r"tx-multiple-name-inputs",
+            r"tx-multiple-name-outputs",
+            r"tx-nonname-with-name-input",
+            r"tx-nonname-with-name-output",
+            r"tx-name-without-name-output",
+            r"tx-name-greedy",
+            r"tx-namenew-with-name-input",
+            r"tx-namenew-wrong-size",
+            r"tx-nameupdate-without-name-input",
+            r"tx-name-invalid",
+            r"tx-value-invalid",
+            r"tx-nameupdate-invalid-prev",
+            r"tx-nameupdate-name-mismatch",
+            r"tx-nameupdate-nonexistant",
+            r"tx-nameupdate-expired",
+            r"tx-firstupdate-nonnew-input",
+            r"tx-firstupdate-immature",
+            r"tx-firstupdate-invalid-rand",
+            r"tx-firstupdate-hash-mismatch",
+            r"tx-firstupdate-existing-name",
+        }
+        for substring in name_validation_error_messages:
+            if substring in server_msg:
+                return substring
         # https://github.com/bitcoin/bitcoin/blob/cd42553b1178a48a16017eff0b70669c84c3895c/src/rpc/rawtransaction.cpp
         # grep "RPC_TRANSACTION"
         # grep "RPC_DESERIALIZATION_ERROR"
@@ -1020,6 +1075,14 @@ class Network(Logger):
             r"AcceptToMemoryPool failed",
         }
         for substring in rawtransaction_error_messages:
+            if substring in server_msg:
+                return substring
+        # https://github.com/namecoin/namecoin-core/blob/b4ffd61ac6392a47209b9067f31439f34958109e/src/rpc/names.cpp
+        # grep "RPC_DESERIALIZATION_ERROR"
+        name_rawtransaction_error_messages = {
+            r"rand must be hex",
+        }
+        for substring in name_rawtransaction_error_messages:
             if substring in server_msg:
                 return substring
         # https://github.com/bitcoin/bitcoin/blob/cd42553b1178a48a16017eff0b70669c84c3895c/src/consensus/tx_verify.cpp

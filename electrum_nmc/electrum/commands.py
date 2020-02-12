@@ -363,15 +363,20 @@ class Commands:
             expires_in = name_expires_in(height, chain_height)
             expired = expires_in <= 0 if expires_in is not None else None
 
+            is_mine = wallet.is_mine(address)
+
             result_item = {
                 "name": name,
+                "name_encoding": "ascii",
                 "value": value,
+                "value_encoding": "ascii",
                 "txid": txid,
                 "vout": vout,
                 "address": address,
                 "height": height,
                 "expires_in": expires_in,
                 "expired": expired,
+                "ismine": is_mine,
             }
             result.append(result_item)
 

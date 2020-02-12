@@ -58,6 +58,7 @@ class ConfigureNameDialog(QDialog, MessageBoxMixin):
         QDialog.__init__(self, parent=None)
 
         self.main_window = parent
+        self.wallet = self.main_window.wallet
 
         self.setMinimumWidth(545)
         self.setMinimumHeight(245)
@@ -152,7 +153,7 @@ class ConfigureNameDialog(QDialog, MessageBoxMixin):
 
         try:
             # TODO: support non-ASCII encodings
-            name_autoregister(identifier.decode('ascii'), value.decode('ascii'), recipient_address)
+            name_autoregister(identifier.decode('ascii'), value.decode('ascii'), destination=recipient_address, wallet=self.wallet)
         except NameAlreadyExistsError as e:
             self.main_window.show_message(_("Error registering ") + formatted_name + ": " + str(e))
             return
@@ -199,7 +200,7 @@ class ConfigureNameDialog(QDialog, MessageBoxMixin):
 
         try:
             # TODO: support non-ASCII encodings
-            tx = name_update(identifier.decode('ascii'), value.decode('ascii'), recipient_address)['hex']
+            tx = name_update(identifier.decode('ascii'), value.decode('ascii'), destination=recipient_address, wallet=self.wallet)['hex']
         except (NotEnoughFunds, NoDynamicFeeEstimates) as e:
             formatted_name = format_name_identifier(identifier)
             self.main_window.show_message(_("Error creating update for ") + formatted_name + ": " + str(e))

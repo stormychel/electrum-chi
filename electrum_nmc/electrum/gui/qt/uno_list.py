@@ -254,7 +254,7 @@ class UNOList(UTXOList):
 
             try:
                 # TODO: support non-ASCII encodings
-                tx = name_update(identifier.decode('ascii'))['hex']
+                tx = name_update(identifier.decode('ascii'), wallet=self.wallet)['hex']
             except NameUpdatedTooRecentlyError:
                 # The name was recently updated, so skip it and don't renew.
                 continue

@@ -3094,8 +3094,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         name_exists = True
         name_valid = True
+        name_mine = False
         try:
-            name_show(identifier_ascii)
+            name_show_result = name_show(identifier_ascii, wallet=self.wallet)
+            name_mine = name_show_result["ismine"]
         except commands.NameNotFoundError:
             name_exists = False
         except util.BitcoinException:
@@ -3109,6 +3111,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if not name_valid:
             self.buy_names_available_widget.hide()
             self.buy_names_already_exists_label.setText(_("That name is invalid (probably exceeded the 255-byte limit) and therefore cannot be registered."))
+            self.buy_names_already_exists_widget.show()
+        elif name_mine:
+            self.buy_names_available_widget.hide()
+            self.buy_names_already_exists_label.setText(_("You already own ") + identifier_formatted + _("!"))
             self.buy_names_already_exists_widget.show()
         elif name_exists:
             self.buy_names_available_widget.hide()

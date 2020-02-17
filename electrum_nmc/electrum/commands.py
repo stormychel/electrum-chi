@@ -326,7 +326,7 @@ class Commands:
         return coins
 
     @command('wn')
-    async def name_list(self, identifier=None, wallet: Abstract_Wallet = None):
+    async def name_list(self, identifier=None, name_encoding='ascii', value_encoding='ascii', wallet: Abstract_Wallet = None):
         """List unspent name outputs. Returns the list of unspent name_anyupdate
         outputs in your wallet."""
 
@@ -343,9 +343,21 @@ class Commands:
             if "name" not in name_op:
                 continue
 
-            # TODO: handle non-ASCII name/value encoding
-            name = name_op["name"].decode("ascii")
-            value = name_op["value"].decode("ascii")
+            if name_encoding == "hex":
+                name = name_op["name"]
+            elif name_encoding == "ascii":
+                name_bytes = bfh(name_op["name"])
+                name = name_bytes.decode("ascii")
+            else:
+                raise Exception("Unsupported name_encoding")
+
+            if value_encoding == "hex":
+                value = name_op["value"]
+            elif value_encoding == "ascii":
+                value_bytes = bfh(name_op["value"])
+                value = value_bytes.decode("ascii")
+            else:
+                raise Exception("Unsupported value_encoding")
 
             # Skip this item if it doesn't match the requested identifier
             if identifier is not None:
@@ -367,9 +379,9 @@ class Commands:
 
             result_item = {
                 "name": name,
-                "name_encoding": "ascii",
+                "name_encoding": name_encoding,
                 "value": value,
-                "value_encoding": "ascii",
+                "value_encoding": value_encoding,
                 "txid": txid,
                 "vout": vout,
                 "address": address,
@@ -1553,6 +1565,8 @@ command_options = {
     'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
     'identifier':  (None, "The requested name identifier"),
     'value':       (None, "The value to assign to the name"),
+    'name_encoding': (None, "Encoding for the name identifier ('ascii' or 'hex')"),
+    'value_encoding': (None, "Encoding for the name value ('ascii' or 'hex')"),
     'trigger_txid':(None, "Broadcast the transaction when this txid reaches the specified number of confirmations"),
     'trigger_name':(None, "Broadcast the transaction when this name reaches the specified number of confirmations"),
 }

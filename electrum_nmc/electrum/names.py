@@ -23,6 +23,8 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import Dict
+
 def split_name_script(decoded):
     # This case happens if a script was malformed and couldn't be decoded by
     # transaction.get_address_from_output_script.
@@ -273,6 +275,29 @@ def format_name_op(name_op):
     if name_op["op"] == OP_NAME_UPDATE:
         return "\tUpdate\n\t\t" + formatted_name + "\n\t\t" + formatted_value
 
+def name_op_to_json(name_op: Dict) -> Dict[str, str]:
+    result = deepcopy(name_op)
+
+    op_str = {
+        OP_NAME_NEW: "name_new",
+        OP_NAME_FIRSTUPDATE: "name_firstupdate",
+        OP_NAME_UPDATE: "name_update",
+    }
+
+    result["op"] = op_str[result["op"]]
+
+    if "hash" in result:
+        result["hash"] = result["hash"].hex()
+    if "rand" in result:
+        result["rand"] = result["rand"].hex()
+    if "name" in result:
+        result["name"] = result["name"].hex()
+        result["name_encoding"] = "hex"
+    if "value" in result:
+        result["value"] = result["value"].hex()
+        result["value_encoding"] = "hex"
+
+    return result
 
 def get_default_name_tx_label(wallet, tx):
     for idx, o in enumerate(tx.outputs()):
@@ -1279,6 +1304,7 @@ def add_domain_record_import(value, data):
 
 
 import binascii
+from copy import deepcopy
 from datetime import datetime, timedelta
 import json
 import os

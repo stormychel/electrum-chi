@@ -172,10 +172,9 @@ class TxOutput:
 
     def to_json(self):
         d = {
-            # TODO: Namecoin: Convert all name_op fields to JSON
             'scriptpubkey': self.scriptpubkey.hex(),
             'address': self.address,
-            'name_op': self.name_op,
+            'name_op': name_op_to_json(self.name_op) if self.name_op else None,
             'value_sats': self.value,
         }
         return d
@@ -1131,11 +1130,10 @@ class PartialTxInput(TxInput, PSBTSection):
     def to_json(self):
         d = super().to_json()
         d.update({
-            # TODO: Namecoin: Convert all name_op fields to JSON
             'height': self.block_height,
             'value_sats': self.value_sats(),
             'address': self.address,
-            'name_op': self.name_op,
+            'name_op': name_op_to_json(self.name_op) if self.name_op else None,
             'utxo': str(self.utxo) if self.utxo else None,
             'witness_utxo': self.witness_utxo.serialize_to_network().hex() if self.witness_utxo else None,
             'sighash': self.sighash,
@@ -1990,4 +1988,4 @@ def unpack_bip32_root_fingerprint_and_int_path(path: bytes) -> Tuple[bytes, Sequ
     int_path = [int.from_bytes(b, byteorder='little', signed=False) for b in chunks(path[4:], 4)]
     return xfp, int_path
 
-from .names import get_name_op_from_output_script, name_op_to_script, OP_NAME_NEW, split_name_script
+from .names import get_name_op_from_output_script, name_op_to_json, name_op_to_script, OP_NAME_NEW, split_name_script

@@ -23,7 +23,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Optional, List
+from typing import Optional, List, Set
 from enum import IntEnum
 import sys
 import traceback
@@ -70,6 +70,7 @@ class UNOList(UTXOList):
         MyTreeView.__init__(self, parent, self.create_menu,
                             stretch_column=self.Columns.VALUE,
                             editable_columns=[])
+        self._spend_set = None  # type: Optional[Set[str]]  # coins selected by the user to spend from
         self.setModel(QStandardItemModel(self))
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setSortingEnabled(True)
@@ -186,6 +187,11 @@ class UNOList(UTXOList):
         if not items:
             return None
         return [x.data(Qt.UserRole + USER_ROLE_VALUE) for x in items]
+
+    # Using Coin Control to choose name inputs doesn't make sense, so disable
+    # it.
+    def set_spend_list(self, coins: Optional[List[PartialTxInput]]):
+        super().set_spend_list(None)
 
     def create_menu(self, position):
         selected = self.selected_column_0_user_roles()

@@ -836,7 +836,7 @@ class AddressSynchronizer(Logger):
                 if only_uno_txids is not None:
                     if utxo.name_op is None:
                         continue
-                    if utxo.prevout.txid not in only_uno_txids:
+                    if utxo.prevout.txid.hex() not in only_uno_txids:
                         continue
                 if only_uno_identifiers is not None:
                     if utxo.name_op is None:

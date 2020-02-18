@@ -445,16 +445,24 @@ def get_wallet_name_count(wallet, network):
             continue
     return confirmed_count, pending_count
 
-
-def name_expires_in(name_height, chain_height):
+def blocks_remaining_until_confirmations(name_height, chain_height, confirmations):
     if name_height is None:
         return None
 
     if name_height <= 0:
         return None
 
-    return name_height - chain_height + 36000
+    # If name_height == chain_height, then it has 1 confirmation, so we
+    # subtract 1 to offset it.
+    return name_height - chain_height + confirmations - 1
 
+def name_new_mature_in(name_height, chain_height):
+    # name_new matures at 12 confirmations.
+    return blocks_remaining_until_confirmations(name_height, chain_height, 12)
+
+def name_expires_in(name_height, chain_height):
+    # Names expire at 36000 confirmations.
+    return blocks_remaining_until_confirmations(name_height, chain_height, 36000)
 
 def name_expiration_datetime_estimate(name_height, chain_height, chain_unixtime):
     expiration_blocks = name_expires_in(name_height, chain_height)

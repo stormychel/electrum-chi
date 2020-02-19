@@ -34,7 +34,7 @@ from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
 from electrum.commands import NameUpdatedTooRecentlyError
 from electrum.i18n import _
-from electrum.names import format_name_identifier, format_name_value, get_queued_firstupdate_from_new, name_expiration_datetime_estimate
+from electrum.names import format_name_identifier, format_name_value, get_queued_firstupdate_from_new, name_expiration_datetime_estimate, OP_NAME_UPDATE
 from electrum.transaction import PartialTxInput
 from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates, bh2u
 from electrum.wallet import InternalAddressCorruption
@@ -109,7 +109,19 @@ class UNOList(UTXOList):
                 expires_in, expires_datetime = name_expiration_datetime_estimate(height, header_at_tip['block_height'], header_at_tip['timestamp'])
             else:
                 expires_in, expires_datetime = None, None
-            status = '' if expires_in is not None else _('Update Pending')
+
+            if expires_in is not None
+                status = ''
+            else:
+                # utxo is unconfirmed
+                if name_op['op'] == OP_NAME_UPDATE:
+                    # utxo is name_update
+                    status = _('Update Pending')
+                else:
+                    # utxo is name_firstupdate
+                    # TODO: Namecoin: Take into account the fact that
+                    # transactions may not be mined in the next block.
+                    status = _('Registration Pending, ETA 10min')
 
         if 'name' in name_op:
             # utxo is name_anyupdate or a name_new that we've queued a name_firstupdate for

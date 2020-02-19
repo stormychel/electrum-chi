@@ -34,7 +34,7 @@ from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
 from electrum.commands import NameUpdatedTooRecentlyError
 from electrum.i18n import _
-from electrum.names import format_name_identifier, format_name_value, get_queued_firstupdate_from_new, name_expiration_datetime_estimate
+from electrum.names import blocks_remaining_until_confirmations, format_name_identifier, format_name_value, get_queued_firstupdate_from_new, name_expiration_datetime_estimate, OP_NAME_UPDATE
 from electrum.transaction import PartialTxInput
 from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates, bh2u
 from electrum.wallet import InternalAddressCorruption
@@ -90,6 +90,15 @@ class UNOList(UTXOList):
         height = utxo.block_height
         header_at_tip = self.network.blockchain().header_at_tip()
 
+        if height is None or height <= 0:
+            # TODO: Namecoin: Take into account the fact that transactions may
+            # not be mined in the next block.
+            blocks_until_mined = 1
+
+            height_estimated = header_at_tip['block_height'] + blocks_until_mined
+        else:
+            height_estimated = height
+
         if 'name' not in name_op:
             # utxo is name_new
             queue_item, firstupdate_output = get_queued_firstupdate_from_new(self.wallet, txid, vout)
@@ -100,16 +109,37 @@ class UNOList(UTXOList):
 
             if height is not None and header_at_tip is not None and queue_item is not None:
                 sendwhen_depth = queue_item["sendWhen"]["confirmations"]
-                status = _('Registration Pending, ETA ') + str(10 * (height - header_at_tip['block_height'] + sendwhen_depth)) + _("min")
+                blocks_until_firstupdate_sent = blocks_remaining_until_confirmations(height_estimated, header_at_tip['block_height'], sendwhen_depth)
+
+                # TODO: Namecoin: Take into account the fact that transactions
+                # may not be mined in the next block.
+                blocks_until_firstupdate_confirmed = blocks_until_firstupdate_sent + 1
+
+                minutes_remaining_until_firstupdate_confirmed = 10 * blocks_until_firstupdate_confirmed
+
+                status = _('Registration Pending, ETA ') + str(minutes_remaining_until_firstupdate_confirmed) + _("min")
             else:
                 status = _('Registration Pending')
         else:
             # utxo is name_anyupdate
             if header_at_tip is not None:
-                expires_in, expires_datetime = name_expiration_datetime_estimate(height, header_at_tip['block_height'], header_at_tip['timestamp'])
+                expires_in, expires_datetime = name_expiration_datetime_estimate(height_estimated, header_at_tip['block_height'], header_at_tip['timestamp'])
             else:
                 expires_in, expires_datetime = None, None
-            status = '' if expires_in is not None else _('Update Pending')
+
+            if height is not None and height > 0:
+                # utxo is confirmed
+                status = ''
+            else:
+                # utxo is unconfirmed
+                if name_op['op'] == OP_NAME_UPDATE:
+                    # utxo is name_update
+                    status = _('Update Pending')
+                else:
+                    # utxo is name_firstupdate
+                    # TODO: Namecoin: Take into account the fact that
+                    # transactions may not be mined in the next block.
+                    status = _('Registration Pending, ETA 10min')
 
         if 'name' in name_op:
             # utxo is name_anyupdate or a name_new that we've queued a name_firstupdate for

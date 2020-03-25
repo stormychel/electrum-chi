@@ -87,11 +87,6 @@ Compile the Qt UI::
     sudo apt-get install pyqt5-dev-tools
     for i in dnsdialog dnssubdomaindialog; do pyuic5 electrum_nmc/electrum/gui/qt/forms/$i.ui --execute --output=electrum_nmc/electrum/gui/qt/forms/$i.py; sed -i s/qvalidatedlineedit/.qvalidatedlineedit/ electrum_nmc/electrum/gui/qt/forms/$i.py; done
 
-Compile the protobuf description file::
-
-    sudo apt-get install protobuf-compiler
-    protoc --proto_path=electrum_nmc/electrum --python_out=electrum_nmc/electrum electrum_nmc/electrum/paymentrequest.proto
-
 Create translations (optional)::
 
     sudo apt-get install python-requests gettext

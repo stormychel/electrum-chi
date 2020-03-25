@@ -155,6 +155,11 @@ class NoDynamicFeeEstimates(Exception):
         return _('Dynamic fee estimates not available')
 
 
+class MultipleSpendMaxTxOutputs(Exception):
+    def __str__(self):
+        return _('At most one output can be set to spend max')
+
+
 class InvalidPassword(Exception):
     def __str__(self):
         return _("Incorrect password")
@@ -720,6 +725,8 @@ mainnet_block_explorers = {
     'Bchain.info (non-libre; no name support)': ('https://bchain.info/NMC/',
                         {'tx': 'tx/', 'addr': 'addr/'}),
     'BitInfoCharts.com (non-libre; wiretapped by Cloudflare; discriminates against Tor; no name support)': ('https://bitinfocharts.com/namecoin/',
+                        {'tx': 'tx/', 'addr': 'address/'}),
+    'mynode.local': ('http://mynode.local:3002/',
                         {'tx': 'tx/', 'addr': 'address/'}),
     'system default': ('blockchain:/',
                         {'tx': 'tx/', 'addr': 'address/'}),

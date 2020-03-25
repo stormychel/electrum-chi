@@ -444,6 +444,20 @@ class WalletDB(JsonDB):
             for channel in channels:
                 channel['state'] = 'OPENING'
             self.put('channels', channels)
+
+        # Namecoin: Electrum-NMC 3.3.8 and earlier hid the locked 0.01 NMC in
+        # name outputs from the DB.  4.0.0 and higher don't do this anymore, so
+        # we need to add 0.01 NMC to every name output.  But, doing this
+        # carefully is complex, so instead we just clear the history and let
+        # everything recalculate.
+        self.put('txi', None)
+        self.put('txo', None)
+        self.put('spent_outpoints', None)
+        self.put('transactions', None)
+        self.put('addr_history', None)
+        self.put('verified_tx3', None)
+        self.put('tx_fees', None)
+
         self.put('seed_version', 21)
 
     def _convert_version_22(self):

@@ -13,7 +13,6 @@ from electrum.plugins.trustedcoin import trustedcoin
 from electrum.plugins.trustedcoin.legacy_tx_format import serialize_tx_in_legacy_format
 
 from . import ElectrumTestCase, TestCaseForTestnet
-from .test_bitcoin import needs_test_with_all_ecc_implementations
 
 from .address_conversion import frombtc
 
@@ -66,7 +65,6 @@ class TestBCDataStream(ElectrumTestCase):
 
 class TestTransaction(ElectrumTestCase):
 
-    @needs_test_with_all_ecc_implementations
     def test_tx_update_signatures(self):
         tx = tx_from_any("cHNidP8BAFUBAAAAASpcmpT83pj1WBzQAWLGChOTbOt1OJ6mW/OGM7Qk60AxAAAAAAD/////AUBCDwAAAAAAGXapFCMKw3g0BzpCFG8R74QUrpKf6q/DiKwAAAAAAAAA")
         tx.inputs()[0].script_type = 'p2pkh'
@@ -75,7 +73,6 @@ class TestTransaction(ElectrumTestCase):
         tx.update_signatures(signed_blob_signatures)
         self.assertEqual(tx.serialize(), signed_blob)
 
-    @needs_test_with_all_ecc_implementations
     def test_tx_deserialize_for_signed_network_tx(self):
         tx = transaction.Transaction(signed_blob)
         tx.deserialize()

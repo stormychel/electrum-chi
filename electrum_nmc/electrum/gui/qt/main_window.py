@@ -1045,7 +1045,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             addr = str(self.receive_address_e.text())
             self.receive_address_widgets.setVisible(bool(addr))
 
-        msg = _('Bitcoin address where the payment should be received. Note that each payment request uses a different Bitcoin address.')
+        msg = _('Namecoin address where the payment should be received. Note that each payment request uses a different Namecoin address.')
         receive_address_label = HelpLabel(_('Receiving address'), msg)
 
         self.receive_address_e = ButtonsTextEdit()

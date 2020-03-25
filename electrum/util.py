@@ -155,6 +155,11 @@ class NoDynamicFeeEstimates(Exception):
         return _('Dynamic fee estimates not available')
 
 
+class MultipleSpendMaxTxOutputs(Exception):
+    def __str__(self):
+        return _('At most one output can be set to spend max')
+
+
 class InvalidPassword(Exception):
     def __str__(self):
         return _("Incorrect password")
@@ -742,6 +747,8 @@ mainnet_block_explorers = {
     'OXT.me': ('https://oxt.me/',
                         {'tx': 'transaction/', 'addr': 'address/'}),
     'smartbit.com.au': ('https://www.smartbit.com.au/',
+                        {'tx': 'tx/', 'addr': 'address/'}),
+    'mynode.local': ('http://mynode.local:3002/',
                         {'tx': 'tx/', 'addr': 'address/'}),
     'system default': ('blockchain:/',
                         {'tx': 'tx/', 'addr': 'address/'}),

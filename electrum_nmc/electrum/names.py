@@ -34,19 +34,19 @@ def split_name_script(decoded):
     # name_new TxOuts look like:
     # NAME_NEW (hash) 2DROP (Bitcoin TxOut)
     match = [ OP_NAME_NEW, OPPushDataGeneric, opcodes.OP_2DROP ]
-    if match_decoded(decoded[:len(match)], match):
+    if match_script_against_template(decoded[:len(match)], match):
         return {"name_op": {"op": OP_NAME_NEW, "hash": decoded[1][1]}, "address_scriptPubKey": decoded[len(match):]}
 
     # name_firstupdate TxOuts look like:
     # NAME_FIRSTUPDATE (name) (rand) (value) 2DROP 2DROP (Bitcoin TxOut)
     match = [ OP_NAME_FIRSTUPDATE, OPPushDataGeneric, OPPushDataGeneric, OPPushDataGeneric, opcodes.OP_2DROP, opcodes.OP_2DROP ]
-    if match_decoded(decoded[:len(match)], match):
+    if match_script_against_template(decoded[:len(match)], match):
         return {"name_op": {"op": OP_NAME_FIRSTUPDATE, "name": decoded[1][1], "rand": decoded[2][1], "value": decoded[3][1]}, "address_scriptPubKey": decoded[len(match):]}
 
     # name_update TxOuts look like:
     # NAME_UPDATE (name) (value) 2DROP DROP (Bitcoin TxOut)
     match = [ OP_NAME_UPDATE, OPPushDataGeneric, OPPushDataGeneric, opcodes.OP_2DROP, opcodes.OP_DROP ]
-    if match_decoded(decoded[:len(match)], match):
+    if match_script_against_template(decoded[:len(match)], match):
         return {"name_op": {"op": OP_NAME_UPDATE, "name": decoded[1][1], "value": decoded[2][1]}, "address_scriptPubKey": decoded[len(match):]}
 
     return {"name_op": None, "address_scriptPubKey": decoded}
@@ -1320,7 +1320,7 @@ import re
 
 from .bitcoin import push_script, script_to_scripthash
 from .crypto import hash_160
-from .transaction import MalformedBitcoinScript, match_decoded, opcodes, OPPushDataGeneric, PartialTransaction, script_GetOp, Transaction
+from .transaction import MalformedBitcoinScript, match_script_against_template, opcodes, OPPushDataGeneric, PartialTransaction, script_GetOp, Transaction
 from .util import bh2u, BitcoinException
 
 OP_NAME_NEW = opcodes.OP_1

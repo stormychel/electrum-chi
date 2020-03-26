@@ -59,6 +59,7 @@ for i in **/*.py; do
         | grep -v "electrum/gui/text.py.*'satoshis'" \
         | grep -v "electrum/old_mnemonic.py" \
         | grep -v "electrum/util.py.*'Satoshis(%d)'" \
+        | grep -v "electrum/util.py.*'Satoshis({self.value})'" \
         | grep -v "electrum/tests/.*\.py"; then
         echo "Rebranding needed"
         exit 1

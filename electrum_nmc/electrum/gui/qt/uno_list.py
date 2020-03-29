@@ -63,18 +63,7 @@ class UNOList(UTXOList):
         Columns.STATUS: _('Status'),
     }
     filter_columns = [Columns.NAME, Columns.VALUE]
-
-    # TODO: Break out stretch_column into its own attribute so that we can
-    # subclass it without re-implementing __init__
-    def __init__(self, parent=None):
-        MyTreeView.__init__(self, parent, self.create_menu,
-                            stretch_column=self.Columns.VALUE,
-                            editable_columns=[])
-        self._spend_set = None  # type: Optional[Set[str]]  # coins selected by the user to spend from
-        self.setModel(QStandardItemModel(self))
-        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.setSortingEnabled(True)
-        self.update()
+    stretch_column = Columns.VALUE
 
     def update(self):
         self.network = self.parent.network

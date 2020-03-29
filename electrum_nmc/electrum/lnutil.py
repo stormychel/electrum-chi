@@ -119,6 +119,26 @@ class PaymentAttemptLog(NamedTuple):
     failure_details: Optional[PaymentAttemptFailureDetails] = None
     exception: Optional[Exception] = None
 
+    def formatted_tuple(self):
+        if not self.exception:
+            route = self.route
+            route_str = '%d'%len(route)
+            if not self.success:
+                sender_idx = self.failure_details.sender_idx
+                failure_msg = self.failure_details.failure_msg
+                short_channel_id = route[sender_idx+1].short_channel_id
+                data = failure_msg.data
+                message = str(failure_msg.code.name)
+            else:
+                short_channel_id = route[-1].short_channel_id
+                message = _('Success')
+            chan_str = str(short_channel_id)
+        else:
+            route_str = 'None'
+            chan_str = 'N/A'
+            message = str(self.exception)
+        return route_str, chan_str, message
+
 
 class LightningError(Exception): pass
 class LightningPeerConnectionClosed(LightningError): pass
@@ -135,6 +155,7 @@ class PaymentFailure(UserFacingException): pass
 # TODO make some of these values configurable?
 DEFAULT_TO_SELF_DELAY = 144
 
+REDEEM_AFTER_DOUBLE_SPENT_DELAY = 30
 
 ##### CLTV-expiry-delta-related values
 # see https://github.com/lightningnetwork/lightning-rfc/blob/master/02-peer-protocol.md#cltv_expiry_delta-selection
@@ -656,15 +677,17 @@ class LnGlobalFeatures(IntFlag):
 # note that these are powers of two, not the bits themselves
 LN_GLOBAL_FEATURES_KNOWN_SET = set(LnGlobalFeatures)
 
-def ln_compare_features(our_features, their_features):
-    """raises ValueError if incompatible"""
+class IncompatibleLightningFeatures(ValueError): pass
+
+def ln_compare_features(our_features, their_features) -> int:
+    """raises IncompatibleLightningFeatures if incompatible"""
     our_flags = set(list_enabled_bits(our_features))
     their_flags = set(list_enabled_bits(their_features))
     for flag in our_flags:
         if flag not in their_flags and get_ln_flag_pair_of_bit(flag) not in their_flags:
             # they don't have this feature we wanted :(
             if flag % 2 == 0:  # even flags are compulsory
-                raise ValueError(LnLocalFeatures(1 << flag))
+                raise IncompatibleLightningFeatures(f"remote does not support {LnLocalFeatures(1 << flag)!r}")
             our_features ^= 1 << flag  # disable flag
         else:
             # They too have this flag.
@@ -823,8 +846,10 @@ class ShortChannelID(bytes):
         if isinstance(data, ShortChannelID) or data is None:
             return data
         if isinstance(data, str):
+            assert len(data) == 16
             return ShortChannelID.fromhex(data)
-        if isinstance(data, bytes):
+        if isinstance(data, (bytes, bytearray)):
+            assert len(data) == 8
             return ShortChannelID(data)
 
     @property

@@ -33,7 +33,7 @@ jobs:
         #- sudo apt-get install -yq bitcoind
         - curl https://www.namecoin.org/files/namecoin-core/namecoin-core-0.19.0.1/namecoin-0.19.0.1-x86_64-linux-gnu.tar.gz | tar -xz
         - sudo cp -a namecoin-0.19.0.1/* /usr/
-        - pip install -r contrib/requirements/requirements.txt
+        - pip install .[tests]
         - pip install electrumx
       before_script:
           - electrum_nmc/electrum/tests/regtest/start_bitcoind.sh

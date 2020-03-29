@@ -148,7 +148,7 @@ class UNOList(UTXOList):
 
         txout = txid + ":%d"%vout
 
-        self.utxo_dict[txout] = utxo
+        self._utxo_dict[txout] = utxo
 
         labels = [formatted_name, formatted_value, formatted_expires_datetime, status]
         utxo_item = [QStandardItem(x) for x in labels]

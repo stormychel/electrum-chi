@@ -1052,6 +1052,7 @@ class WalletDB(JsonDB):
         self.history = self.get_dict('addr_history')             # address -> list of (txid, height)
         self.verified_tx = self.get_dict('verified_tx3')         # txid -> (height, timestamp, txpos, header_hash)
         self.tx_fees = self.get_dict('tx_fees')                  # type: Dict[str, TxFeesValue]
+        self.queued_transactions = self.get_dict('queued_transactions') # type: Dict[str, Dict]
         # scripthash -> set of (outpoint, value)
         self._prevouts_by_scripthash = self.get_dict('prevouts_by_scripthash')  # type: Dict[str, Set[Tuple[str, int]]]
         # remove unreferenced tx

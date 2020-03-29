@@ -1184,7 +1184,7 @@ class Commands:
         }
         if not wallet.queue_transaction(txid, queue_item):
             return False
-        wallet.storage.write()
+        wallet.save_db()
         return txid
 
     @command('wn')
@@ -1229,7 +1229,7 @@ class Commands:
 
         for txid in to_unqueue:
             wallet.unqueue_transaction(txid)
-        wallet.storage.write()
+        wallet.save_db()
 
         success = (errors == {})
         return success, errors

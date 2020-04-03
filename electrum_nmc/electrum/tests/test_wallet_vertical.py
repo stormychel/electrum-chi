@@ -1507,7 +1507,7 @@ class TestWalletSending(TestCaseForTestnet):
         wallet_2of2.receive_tx_callback(funding_txid, funding_tx, TX_HEIGHT_UNCONFIRMED)
 
         # create tx
-        outputs = [PartialTxOutput.from_address_and_value('tb1qfrlx5pza9vmez6vpx7swt8yp0nmgz3qa7jjkuf', 100_000)]
+        outputs = [PartialTxOutput.from_address_and_value(frombtc('tb1qfrlx5pza9vmez6vpx7swt8yp0nmgz3qa7jjkuf'), 100_000)]
         coins = wallet_2of2.get_spendable_coins(domain=None)
         tx = wallet_2of2.make_unsigned_transaction(coins=coins, outputs=outputs, fee=5000)
         tx.set_rbf(True)
@@ -1522,9 +1522,9 @@ class TestWalletSending(TestCaseForTestnet):
         self.assertTrue(tx.is_segwit())
         self.assertEqual('652c1a903a659c9fabb9caf4a2281a9fbcc59cd598bf6edc88cd60f940c2352c', tx.txid())
 
-        self.assertEqual('tb1qxq5crk6yadw66rdt8xr3xj5ctvmq4c3z0fl85yx0ar8l6ga6ehysk0rjrk', tx.inputs()[0].address)
-        self.assertEqual('tb1qfrlx5pza9vmez6vpx7swt8yp0nmgz3qa7jjkuf',                     tx.outputs()[0].address)
-        self.assertEqual('tb1qadpg5z77egkpkde34mdcrsz3s3tgwk5ew4w3wlfqf4j3dk8kkvrs3t3mn0', tx.outputs()[1].address)
+        self.assertEqual(frombtc('tb1qxq5crk6yadw66rdt8xr3xj5ctvmq4c3z0fl85yx0ar8l6ga6ehysk0rjrk'), tx.inputs()[0].address)
+        self.assertEqual(frombtc('tb1qfrlx5pza9vmez6vpx7swt8yp0nmgz3qa7jjkuf'),                     tx.outputs()[0].address)
+        self.assertEqual(frombtc('tb1qadpg5z77egkpkde34mdcrsz3s3tgwk5ew4w3wlfqf4j3dk8kkvrs3t3mn0'), tx.outputs()[1].address)
 
         # check that wallet_frost does not mistakenly think tx is related to it in any way
         tx.add_info_from_wallet(wallet_frost)

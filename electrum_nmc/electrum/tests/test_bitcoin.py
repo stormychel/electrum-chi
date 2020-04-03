@@ -807,14 +807,21 @@ class Test_keyImport(ElectrumTestCase):
         self.assertFalse(is_address("not an address"))
 
     def test_is_address_bad_checksums(self):
-        self.assertTrue(is_address('1819s5TxxbBtuRPr3qYskMVC8sb1pqapWx'))
-        self.assertFalse(is_address('1819s5TxxbBtuRPr3qYskMVC8sb1pqapWw'))
+        # Namecoin: frombtc raises an AssertionError when an invalid
+        # Base58Check or Bech32 address is supplied, so we have to assert that
+        # the AssertionError is raised, rather than just asserting False.
 
-        self.assertTrue(is_address('3LrjLVnngqnaJeo3BQwMBg34iqYsjZjQUe'))
-        self.assertFalse(is_address('3LrjLVnngqnaJeo3BQwMBg34iqYsjZjQUd'))
+        self.assertTrue(is_address(frombtc('1819s5TxxbBtuRPr3qYskMVC8sb1pqapWx')))
+        with self.assertRaises(AssertionError):
+            self.assertFalse(is_address(frombtc('1819s5TxxbBtuRPr3qYskMVC8sb1pqapWw')))
 
-        self.assertTrue(is_address('bc1qxq64lrwt02hm7tu25lr3hm9tgzh58snfe67yt6'))
-        self.assertFalse(is_address('bc1qxq64lrwt02hm7tu25lr3hm9tgzh58snfe67yt5'))
+        self.assertTrue(is_address(frombtc('3LrjLVnngqnaJeo3BQwMBg34iqYsjZjQUe')))
+        with self.assertRaises(AssertionError):
+            self.assertFalse(is_address(frombtc('3LrjLVnngqnaJeo3BQwMBg34iqYsjZjQUd')))
+
+        self.assertTrue(is_address(frombtc('bc1qxq64lrwt02hm7tu25lr3hm9tgzh58snfe67yt6')))
+        with self.assertRaises(AssertionError):
+            self.assertFalse(is_address(frombtc('bc1qxq64lrwt02hm7tu25lr3hm9tgzh58snfe67yt5')))
 
     def test_is_private_key(self):
         for priv_details in self.priv_pub_addr:

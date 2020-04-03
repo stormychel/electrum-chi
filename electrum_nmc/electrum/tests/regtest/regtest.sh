@@ -74,7 +74,7 @@ fi
 if [[ $1 == "init" ]]; then
     echo "initializing $2"
     rm -rf /tmp/$2/
-    agent="./run_electrum --regtest -D /tmp/$2"
+    agent="./run_electrum_nmc --regtest -D /tmp/$2"
     $agent create --offline > /dev/null
     $agent -o init_lightning
     $agent setconfig --offline log_to_file True
@@ -91,14 +91,14 @@ fi
 
 # start daemons. Bob is started first because he is listening
 if [[ $1 == "start" ]]; then
-    agent="./run_electrum --regtest -D /tmp/$2"
+    agent="./run_electrum_nmc --regtest -D /tmp/$2"
     $agent daemon -d
     $agent load_wallet
     sleep 1 # give time to synchronize
 fi
 
 if [[ $1 == "stop" ]]; then
-    agent="./run_electrum --regtest -D /tmp/$2"
+    agent="./run_electrum_nmc --regtest -D /tmp/$2"
     $agent stop || true
 fi
 

@@ -1318,9 +1318,12 @@ class Commands:
         unmined_height = max_chain_height - 18
 
         tx_best = None
+        expired_tx_exists = False
+        unmined_tx_exists = False
         for tx_candidate in txs[::-1]:
             if tx_candidate["height"] < unexpired_height:
                 # Transaction is expired.  Skip.
+                expired_tx_exists = True
                 continue
             if tx_candidate["height"] > unverified_height:
                 # Transaction doesn't have enough verified depth.  What we do
@@ -1329,6 +1332,7 @@ class Commands:
 
                 if tx_candidate["height"] > unmined_height:
                     # Transaction is new; skip in favor of an older one.
+                    unmined_tx_exists = True
                     continue
 
                 # We can't verify the transaction because we're still syncing,
@@ -1339,8 +1343,12 @@ class Commands:
             tx_best = tx_candidate
             break
 
+        if unmined_tx_exists:
+            raise NameNotFoundError("Name is purportedly unconfirmed")
+        if expired_tx_exists:
+            raise NameNotFoundError("Name is purportedly expired")
         if tx_best is None:
-            raise NameNotFoundError("Name never existed, is expired, or is unconfirmed")
+            raise NameNotFoundError("Name purportedly never existed")
         txid = tx_best["tx_hash"]
         height = tx_best["height"]
 

@@ -1383,7 +1383,7 @@ class Commands:
             if raw:
                 tx = Transaction(raw)
             else:
-                raise Exception("Unknown transaction")
+                raise Exception("Unknown transaction (txid {})".format(txid))
 
         if tx.txid() != txid:
             raise Exception("txid mismatch")

@@ -1386,7 +1386,7 @@ class Commands:
                 raise Exception("Unknown transaction (txid {})".format(txid))
 
         if tx.txid() != txid:
-            raise Exception("txid mismatch")
+            raise Exception("txid mismatch ({} vs {})".format(tx.txid(), txid))
 
         # the tx is now verified to come from a safe height in the blockchain
 

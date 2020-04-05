@@ -358,7 +358,7 @@ class Commands:
                 name_bytes = bfh(name_op["name"])
                 name = name_bytes.decode("ascii")
             else:
-                raise Exception("Unsupported name_encoding")
+                raise Exception('Unsupported name_encoding "{}"'.format(name_encoding))
 
             if value_encoding == "hex":
                 value = name_op["value"]

@@ -366,7 +366,7 @@ class Commands:
                 value_bytes = bfh(name_op["value"])
                 value = value_bytes.decode("ascii")
             else:
-                raise Exception("Unsupported value_encoding")
+                raise Exception('Unsupported value_encoding "{}"'.format(value_encoding))
 
             # Skip this item if it doesn't match the requested identifier
             if identifier is not None:

@@ -63,7 +63,11 @@ ca_path = certifi.where()
 
 BUCKET_NAME_OF_ONION_SERVERS = 'onion'
 
-MAX_INCOMING_MSG_SIZE = 1_000_000  # in bytes
+# The default Bitcoin frame size limit of 1 MB doesn't work for AuxPoW-based
+# chains, because those chains' block headers have extra AuxPoW data.  A limit
+# of 10 MB works fine for Namecoin as of block height 418744 (5 MB fails after
+# height 155232); we set a limit of 20 MB so that we have extra wiggle room.
+MAX_INCOMING_MSG_SIZE = 20_000_000  # in bytes
 
 
 class NetworkTimeout:
@@ -87,16 +91,6 @@ class NotificationSession(RPCSession):
         self._msg_counter = itertools.count(start=1)
         self.interface = None  # type: Optional[Interface]
         self.cost_hard_limit = 0  # disable aiorpcx resource limits
-
-    # The default Bitcoin frame size limit of 1 MB doesn't work for AuxPoW-
-    # based chains, because those chains' block headers have extra AuxPoW data.
-    # A limit of 10 MB works fine for Namecoin as of block height 418744 (5 MB
-    # fails after height 155232); we set a limit of 20 MB so that we have extra
-    # wiggle room.
-    def default_framer(self):
-        framer = super(NotificationSession, self).default_framer()
-        framer.max_size = 20000000
-        return framer
 
     async def handle_request(self, request):
         self.maybe_log(f"--> {request}")

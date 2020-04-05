@@ -358,7 +358,7 @@ class Commands:
                 name_bytes = bfh(name_op["name"])
                 name = name_bytes.decode("ascii")
             else:
-                raise Exception("Unsupported name_encoding")
+                raise Exception('Unsupported name_encoding "{}"'.format(name_encoding))
 
             if value_encoding == "hex":
                 value = name_op["value"]
@@ -366,7 +366,7 @@ class Commands:
                 value_bytes = bfh(name_op["value"])
                 value = value_bytes.decode("ascii")
             else:
-                raise Exception("Unsupported value_encoding")
+                raise Exception('Unsupported value_encoding "{}"'.format(value_encoding))
 
             # Skip this item if it doesn't match the requested identifier
             if identifier is not None:
@@ -1318,9 +1318,12 @@ class Commands:
         unmined_height = max_chain_height - 18
 
         tx_best = None
+        expired_tx_exists = False
+        unmined_tx_exists = False
         for tx_candidate in txs[::-1]:
             if tx_candidate["height"] < unexpired_height:
                 # Transaction is expired.  Skip.
+                expired_tx_exists = True
                 continue
             if tx_candidate["height"] > unverified_height:
                 # Transaction doesn't have enough verified depth.  What we do
@@ -1329,18 +1332,23 @@ class Commands:
 
                 if tx_candidate["height"] > unmined_height:
                     # Transaction is new; skip in favor of an older one.
+                    unmined_tx_exists = True
                     continue
 
                 # We can't verify the transaction because we're still syncing,
                 # but we have reason to believe that previous transactions will
                 # be stale.  So we have to error.
-                raise Exception('The blockchain is still syncing')
+                raise Exception('The blockchain is still syncing (latest purported transaction height {}, local chain height {}, server chain height {})'.format(tx_candidate["height"], local_chain_height, server_chain_height))
 
             tx_best = tx_candidate
             break
 
+        if unmined_tx_exists:
+            raise NameNotFoundError("Name is purportedly unconfirmed")
+        if expired_tx_exists:
+            raise NameNotFoundError("Name is purportedly expired")
         if tx_best is None:
-            raise NameNotFoundError("Name never existed, is expired, or is unconfirmed")
+            raise NameNotFoundError("Name purportedly never existed")
         txid = tx_best["tx_hash"]
         height = tx_best["height"]
 
@@ -1375,10 +1383,10 @@ class Commands:
             if raw:
                 tx = Transaction(raw)
             else:
-                raise Exception("Unknown transaction")
+                raise Exception("Unknown transaction (txid {})".format(txid))
 
         if tx.txid() != txid:
-            raise Exception("txid mismatch")
+            raise Exception("txid mismatch ({} vs {})".format(tx.txid(), txid))
 
         # the tx is now verified to come from a safe height in the blockchain
 
@@ -1414,7 +1422,7 @@ class Commands:
                         "ismine": is_mine,
                     }
 
-        raise Exception("missing name op")
+        raise Exception("missing name op (txid {})".format(txid))
 
     @command('w')
     async def removelocaltx(self, txid, wallet: Abstract_Wallet = None):

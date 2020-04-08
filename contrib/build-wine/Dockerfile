@@ -38,6 +38,11 @@ RUN wget -nc https://dl.winehq.org/wine-builds/Release.key && \
         wine-stable:amd64=4.0.3~bionic \
         winehq-stable:amd64=4.0.3~bionic
 
+# For compiling Namecoin-Qt forms
+RUN apt-get update -q && \
+        apt-get install -qy \
+        pyqt5-dev-tools=5.10.1+dfsg-1ubuntu2
+
 RUN rm -rf /var/lib/apt/lists/* && \
     apt-get autoremove -y && \
     apt-get clean

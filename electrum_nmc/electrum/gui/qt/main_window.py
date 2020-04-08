@@ -3167,11 +3167,14 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         name_exists = True
         name_valid = True
         name_mine = False
+        chain_syncing = False
         try:
             name_show_result = name_show(identifier_ascii, wallet=self.wallet)
             name_mine = name_show_result["ismine"]
         except commands.NameNotFoundError:
             name_exists = False
+        except commands.NotSynchronizedException:
+            chain_syncing = True
         except util.BitcoinException:
             # This happens if the name identifier exceeded the 255-byte limit.
             name_valid = False
@@ -3180,7 +3183,11 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.show_error(msg)
             return
 
-        if not name_valid:
+        if chain_syncing:
+            self.buy_names_available_widget.hide()
+            self.buy_names_already_exists_label.setText(_("The blockchain is still syncing; please wait and then try again."))
+            self.buy_names_already_exists_widget.show()
+        elif not name_valid:
             self.buy_names_available_widget.hide()
             self.buy_names_already_exists_label.setText(_("That name is invalid (probably exceeded the 255-byte limit) and therefore cannot be registered."))
             self.buy_names_already_exists_widget.show()

@@ -69,6 +69,7 @@ hiddenimports += ['PyQt5.QtPrintSupport']  # needed by Revealer
 
 datas = [
     (electrum + PYPKG + '/electrum/*.json', PYPKG + '/electrum'),
+    (electrum + PYPKG + '/electrum/lnwire/*.csv', PYPKG + '/electrum/lnwire'),
     (electrum + PYPKG + '/electrum/wordlist/english.txt', PYPKG + '/electrum/wordlist'),
     (electrum + PYPKG + '/electrum/locale', PYPKG + '/electrum/locale'),
     (electrum + PYPKG + '/electrum/plugins', PYPKG + '/electrum/plugins'),

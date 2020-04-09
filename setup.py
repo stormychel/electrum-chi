@@ -80,10 +80,11 @@ setup(
         'electrum_nmc': 'electrum_nmc',
     },
     package_data={
-        '': ['*.txt', '*.json', '*.ttf', '*.otf'],
+        '': ['*.txt', '*.json', '*.ttf', '*.otf', '*.csv'],
         'electrum_nmc.electrum': [
             'wordlist/*.txt',
             'locale/*/LC_MESSAGES/electrum.mo',
+            'lnwire/*.csv',
         ],
         'electrum_nmc.electrum.gui': [
             'icons/*',

@@ -35,6 +35,7 @@ binaries += [('C:/tmp/libusb-1.0.dll', '.')]
 
 datas = [
     (home+'electrum_nmc/electrum/*.json', 'electrum'),
+    (home+'electrum_nmc/electrum/lnwire/*.csv', 'electrum/lnwire'),
     (home+'electrum_nmc/electrum/wordlist/english.txt', 'electrum/wordlist'),
     (home+'electrum_nmc/electrum/locale', 'electrum/locale'),
     (home+'electrum_nmc/electrum/plugins', 'electrum/plugins'),

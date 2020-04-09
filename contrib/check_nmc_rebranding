@@ -51,9 +51,12 @@ for i in **/*.py; do
         | grep -v "funding_sat" \
         | grep -v "htlc_minimum_msat" \
         | grep -v "htlc_maximum_msat" \
+        | grep -v "local_msat" \
         | grep -v "max_htlc_value_in_flight_msat" \
         | grep -v "MAXIMUM_HTLC_MINIMUM_MSAT_ACCEPTED" \
         | grep -v "push_msat" \
+        | grep -v "remote_msat" \
+        | grep -v "total_msat" \
         | grep -v "value_sats" \
         | grep -v "satisfied" \
         | grep -v "electrum/gui/text.py.*'satoshis'" \

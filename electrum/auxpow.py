@@ -45,9 +45,7 @@
 
 import binascii
 
-# electrum.blockchain is an absolute import because cyclic imports must be
-# absolute prior to Python 3.5.
-import electrum.blockchain
+from . import blockchain
 from .bitcoin import hash_encode, hash_decode
 from . import constants
 from .crypto import sha256d
@@ -88,6 +86,12 @@ class AuxPoWCoinbaseRootTooLate(AuxPowVerifyError):
 class AuxPoWCoinbaseRootMissingError(AuxPowVerifyError):
     pass
 
+class AuxPoWCoinbaseRootDuplicatedError(AuxPowVerifyError):
+    pass
+
+class AuxPoWCoinbaseRootWrongOffset(AuxPowVerifyError):
+    pass
+
 def auxpow_active(base_header):
     height_allows_auxpow = base_header['block_height'] >= constants.net.AUXPOW_START_HEIGHT
     version_allows_auxpow = base_header['version'] & BLOCK_VERSION_AUXPOW_BIT
@@ -124,9 +128,9 @@ def deserialize_auxpow_header(base_header, s, start_position=0) -> (dict, int):
     auxpow_header['chain_merkle_branch'], auxpow_header['chain_merkle_index'], start_position = deserialize_merkle_branch(s, start_position=start_position)
     
     # Finally there's the parent header.  Deserialize it.
-    parent_header_bytes = s[start_position : start_position + electrum.blockchain.HEADER_SIZE]
-    auxpow_header['parent_header'] = electrum.blockchain.deserialize_pure_header(parent_header_bytes, None)
-    start_position += electrum.blockchain.HEADER_SIZE
+    parent_header_bytes = s[start_position : start_position + blockchain.HEADER_SIZE]
+    auxpow_header['parent_header'] = blockchain.deserialize_pure_header(parent_header_bytes, None)
+    start_position += blockchain.HEADER_SIZE
     # The parent block header doesn't have any block height,
     # so delete that field.  (We used None as a dummy value above.)
     del auxpow_header['parent_header']['block_height']
@@ -150,11 +154,11 @@ def deserialize_merkle_branch(s, start_position=0):
 
 def hash_parent_header(header):
     if not auxpow_active(header):
-        return electrum.blockchain.hash_header(header)
+        return blockchain.hash_header(header)
 
     verify_auxpow(header)
 
-    return electrum.blockchain.hash_header(header['auxpow']['parent_header'])
+    return blockchain.hash_header(header['auxpow']['parent_header'])
 
 # Reimplementation of btcutils.check_merkle_branch from Electrum-DOGE.
 # btcutils seems to have an unclear license and no obvious Git repo, so it
@@ -187,7 +191,7 @@ def calc_merkle_index(chain_id, nonce, merkle_size):
 # Copied from Electrum-DOGE
 # TODO: Audit this function carefully.
 def verify_auxpow(header):
-    auxhash = electrum.blockchain.hash_header(header)
+    auxhash = blockchain.hash_header(header)
     auxpow = header['auxpow']
 
     parent_block = auxpow['parent_header']
@@ -204,19 +208,19 @@ def verify_auxpow(header):
     #    return error("AuxPow is not a generate");
 
     if (coinbase_index != 0):
-        raise AuxPoWNotGenerateError()
+        raise AuxPoWNotGenerateError("AuxPow is not a generate")
 
     #if (get_chain_id(parent_block) == chain_id)
     #  return error("Aux POW parent has our chain ID");
 
     if (get_chain_id(parent_block) == constants.net.AUXPOW_CHAIN_ID):
-        raise AuxPoWOwnChainIDError()
+        raise AuxPoWOwnChainIDError("Aux POW parent has our chain ID")
 
     #if (vChainMerkleBranch.size() > 30)
     #    return error("Aux POW chain merkle branch too long");
 
     if (len(chain_merkle_branch) > 30):
-        raise AuxPoWChainMerkleTooLongError()
+        raise AuxPoWChainMerkleTooLongError("Aux POW chain merkle branch too long")
 
     #// Check that the chain merkle root is in the coinbase
     #uint256 nRootHash = CBlock::CheckMerkleBranch(hashAuxBlock, vChainMerkleBranch, nChainIndex);
@@ -230,7 +234,7 @@ def verify_auxpow(header):
     # if (CBlock::CheckMerkleBranch(GetHash(), vMerkleBranch, nIndex) != parentBlock.hashMerkleRoot)
     #    return error("Aux POW merkle root incorrect");
     if (calculate_merkle_root(coinbase_hash, coinbase_merkle_branch, coinbase_index) != parent_block['merkle_root']):
-        raise AuxPoWBadCoinbaseMerkleBranchError()
+        raise AuxPoWBadCoinbaseMerkleBranchError("Aux POW merkle root incorrect")
 
     #// Check that there is at least one input.
     #if (coinbaseTx->vin.empty())
@@ -238,7 +242,7 @@ def verify_auxpow(header):
 
     # Check that there is at least one input.
     if (len(coinbase.inputs()) == 0):
-        raise AuxPoWCoinbaseNoInputsError()
+        raise AuxPoWCoinbaseNoInputsError("Aux POW coinbase has no inputs")
 
     # const CScript script = coinbaseTx->vin[0].scriptSig;
 
@@ -280,8 +284,10 @@ def verify_auxpow(header):
         #if (pcHead + sizeof(pchMergedMiningHeader) != pc)
             #return error("Merged mining header is not just before chain merkle root");
 
-        # TODO
-        pass
+        if -1 != script_bytes.find(COINBASE_MERGED_MINING_HEADER, pos_header + 1):
+            raise AuxPoWCoinbaseRootDuplicatedError('Multiple merged mining headers in coinbase')
+        if pos_header + len(COINBASE_MERGED_MINING_HEADER) != pos:
+            raise AuxPoWCoinbaseRootWrongOffset('Merged mining header is not just before chain merkle root')
 
     #}
     #else
@@ -299,7 +305,7 @@ def verify_auxpow(header):
         # Enforce only one chain merkle root by checking that it starts early in the coinbase.
         # 8-12 bytes are enough to encode extraNonce and nBits.
         if pos > 20:
-            raise AuxPoWCoinbaseRootTooLate()
+            raise AuxPoWCoinbaseRootTooLate("Aux POW chain merkle root must start in the first 20 bytes of the parent coinbase")
 
     #}
 

@@ -1706,9 +1706,6 @@ class PartialTransaction(Transaction):
             self.locktime = locktime
         if version is not None:
             self.version = version
-        # Name ops require a Namecoin-version transaction
-        if any([o.name_op is not None for o in self.outputs()]):
-            self.version = NAMECOIN_VERSION
         self.BIP69_sort()
         return self
 

@@ -182,8 +182,8 @@ class Test_bitcoin(ElectrumTestCase):
         sig2_b64 = base64.b64encode(sig2)
 
         # Re-signed these with Xaya Core, since the upstream Namecoin ones are invalid for Xaya's msg_magic.
-        self.assertEqual(sig1_b64, b'H8FU6ku4jO82lAtIVxT2nEl++MKMe0N+lcOStNQAhcGZV8MGqeWkxSvcUZSl0YAexEZG5qlMs289V+RV6qyQV7k=')
-        self.assertEqual(sig2_b64, b'G7CwmsisI1gzC06FPrROr37S0CLiKvxkIYB7issD2mTdLCIf/iRMgFOu16v978Qgc6awdZLUjMOZw1I7WKNmKms=')
+        self.assertEqual(sig1_b64, b'IEAh/W+I7zGhzHdNK38hgbyZm8iDqJQiQx2tSAj0AMGxCX+z/hgzGw0Uk7GPADKj5TZF/c/Pkdn6FYBYeRyu7mo=')
+        self.assertEqual(sig2_b64, b'HFIE8/lcdlOtxl7WG7cLYB5Wi8oElMx/3gJ0w6BfwJ9YLd7vBlUqKiTdUzaT4CukmlR5eCagrFW1sVguYS8dhr8=')
 
         self.assertTrue(ecc.verify_message_with_address(addr1, sig1, msg1))
         self.assertTrue(ecc.verify_message_with_address(addr2, sig2, msg2))

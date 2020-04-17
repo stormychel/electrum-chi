@@ -170,7 +170,7 @@ class TestCommandsTestnet(TestCaseForTestnet):
                     "prevout_hash": "9d221a69ca3997cbeaf5624d723e7dc5f829b1023078c177d37bdae95f37c539",
                     "prevout_n": 1,
                     "value": 1000000,
-                    "privkey": "p2wpkh:cVDXzzQg6RoCTfiKpe8MBvmm5d5cJc6JLuFApsFDKwWa6F5TVHpD"
+                    "privkey": frombtc("p2wpkh:cVDXzzQg6RoCTfiKpe8MBvmm5d5cJc6JLuFApsFDKwWa6F5TVHpD")
                 }
             ],
             "outputs": [
@@ -190,9 +190,9 @@ class TestCommandsTestnet(TestCaseForTestnet):
                                           path='if_this_exists_mocking_failed_648151893',
                                           config=self.config)['wallet']
         cmds = Commands(config=self.config)
-        self.assertEqual("p2wpkh:cUzm7zPpWgLYeURgff4EsoMjhskCpsviBH4Y3aZcrBX8UJSRPjC2",
+        self.assertEqual(frombtc("p2wpkh:cUzm7zPpWgLYeURgff4EsoMjhskCpsviBH4Y3aZcrBX8UJSRPjC2"),
                          cmds._run('getprivatekeyforpath', ([0, 10000],), wallet=wallet))
-        self.assertEqual("p2wpkh:cUzm7zPpWgLYeURgff4EsoMjhskCpsviBH4Y3aZcrBX8UJSRPjC2",
+        self.assertEqual(frombtc("p2wpkh:cUzm7zPpWgLYeURgff4EsoMjhskCpsviBH4Y3aZcrBX8UJSRPjC2"),
                          cmds._run('getprivatekeyforpath', ("m/0/10000",), wallet=wallet))
-        self.assertEqual("p2wpkh:cQAj4WGf1socCPCJNMjXYCJ8Bs5JUAk5pbDr4ris44QdgAXcV24S",
+        self.assertEqual(frombtc("p2wpkh:cQAj4WGf1socCPCJNMjXYCJ8Bs5JUAk5pbDr4ris44QdgAXcV24S"),
                          cmds._run('getprivatekeyforpath', ("m/5h/100000/88h/7",), wallet=wallet))

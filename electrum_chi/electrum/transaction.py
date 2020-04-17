@@ -560,6 +560,10 @@ class Transaction:
 
         self._cached_txid = None  # type: Optional[str]
 
+        # When parsing the parent coinbase tx of an auxpow, we have to allow
+        # there not being any outputs (which is normally not valid).
+        self._allow_zero_outputs = False
+
     @property
     def locktime(self):
         return self._locktime
@@ -629,7 +633,7 @@ class Transaction:
             raise SerializationError('tx needs to have at least 1 input')
         self._inputs = [parse_input(vds) for i in range(n_vin)]
         n_vout = vds.read_compact_size()
-        if n_vout < 1:
+        if n_vout < 1 and not self._allow_zero_outputs:
             raise SerializationError('tx needs to have at least 1 output')
         self._outputs = [parse_output(vds) for i in range(n_vout)]
         if is_segwit:

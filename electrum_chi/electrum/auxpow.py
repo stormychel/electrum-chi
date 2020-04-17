@@ -99,6 +99,7 @@ def deserialize_auxpow_header(s, start_position=0) -> (dict, int):
     # The parent coinbase transaction is first.
     # Deserialize it and save the trailing data.
     parent_coinbase_tx = Transaction(s, expect_trailing_data=True, copy_input=False, start_position=start_position)
+    parent_coinbase_tx._allow_zero_outputs = True
     start_position = fast_tx_deserialize(parent_coinbase_tx)
     auxpow_header['parent_coinbase_tx'] = parent_coinbase_tx
 

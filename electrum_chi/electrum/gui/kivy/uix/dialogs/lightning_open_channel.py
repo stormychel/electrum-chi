@@ -1,11 +1,19 @@
+from typing import TYPE_CHECKING
+
 from kivy.lang import Builder
 from kivy.factory import Factory
+
 from electrum.gui.kivy.i18n import _
 from electrum.lnaddr import lndecode
 from electrum.util import bh2u
 from electrum.bitcoin import COIN
 import electrum.simple_config as config
+
 from .label_dialog import LabelDialog
+
+if TYPE_CHECKING:
+    from ...main_window import ElectrumWindow
+
 
 Builder.load_string('''
 <LightningOpenChannelDialog@Popup>
@@ -34,19 +42,6 @@ Builder.load_string('''
                 BlueButton:
                     text: s.pubkey if s.pubkey else _('Node ID')
                     shorten: True
-            #CardSeparator:
-            #    color: blue_bottom.foreground_color
-            #BoxLayout:
-            #    size_hint: 1, None
-            #    height: blue_bottom.item_height
-            #    Image:
-            #        source: 'atlas://electrum/gui/kivy/theming/light/network'
-            #        size_hint: None, None
-            #        size: '22dp', '22dp'
-            #        pos_hint: {'center_y': .5}
-            #    BlueButton:
-            #        text: s.ipport if s.ipport else _('host:port')
-            #        on_release: s.ipport_dialog()
             CardSeparator:
                 color: blue_bottom.foreground_color
             BoxLayout:
@@ -60,8 +55,11 @@ Builder.load_string('''
                 BlueButton:
                     text: s.amount if s.amount else _('Amount')
                     on_release: app.amount_dialog(s, True)
+        TopLabel:
+            text: _('Paste or scan a node ID, a connection string or a lightning invoice.')
         BoxLayout:
             size_hint: 1, None
+            height: '48dp'
             IconButton:
                 icon: 'atlas://electrum/gui/kivy/theming/light/copy'
                 size_hint: 0.5, None
@@ -78,12 +76,22 @@ Builder.load_string('''
                 height: '48dp'
                 on_release: s.choose_node()
             Button:
+                text: _('Clear')
+                size_hint: 1, None
+                height: '48dp'
+                on_release: s.do_clear()
+        Widget:
+            size_hint: 1, 1
+        BoxLayout:
+            size_hint: 1, None
+            Widget:
+                size_hint: 2, None
+            Button:
                 text: _('Open')
                 size_hint: 1, None
                 height: '48dp'
                 on_release: s.open_channel()
-        Widget:
-            size_hint: 1, 1
+                disabled: not root.pubkey or not root.amount
 ''')
 
 class LightningOpenChannelDialog(Factory.Popup):
@@ -100,7 +108,7 @@ class LightningOpenChannelDialog(Factory.Popup):
 
     def __init__(self, app, lnaddr=None, msg=None):
         super(LightningOpenChannelDialog, self).__init__()
-        self.app = app
+        self.app = app  # type: ElectrumWindow
         self.lnaddr = lnaddr
         self.msg = msg
 
@@ -115,6 +123,10 @@ class LightningOpenChannelDialog(Factory.Popup):
         if self.msg:
             self.app.show_info(self.msg)
 
+    def do_clear(self):
+        self.pubkey = ''
+        self.amount = ''
+
     def do_paste(self):
         contents = self.app._clipboard.paste()
         if not contents:
@@ -125,6 +137,7 @@ class LightningOpenChannelDialog(Factory.Popup):
     def on_qr(self, conn_str):
         self.pubkey = conn_str
 
+    # FIXME "max" button in amount_dialog should enforce LN_MAX_FUNDING_SAT
     def open_channel(self):
         if not self.pubkey or not self.amount:
             self.app.show_info(_('All fields must be filled out'))
@@ -137,8 +150,14 @@ class LightningOpenChannelDialog(Factory.Popup):
         self.dismiss()
 
     def do_open_channel(self, conn_str, amount, password):
+        coins = self.app.wallet.get_spendable_coins(None, nonlocal_only=True)
+        funding_tx = self.app.wallet.lnworker.mktx_for_open_channel(coins=coins, funding_sat=amount)
         try:
-            chan = self.app.wallet.lnworker.open_channel(conn_str, amount, 0, password=password)
+            chan, funding_tx = self.app.wallet.lnworker.open_channel(connect_str=conn_str,
+                                                                     funding_tx=funding_tx,
+                                                                     funding_sat=amount,
+                                                                     push_amt_sat=0,
+                                                                     password=password)
         except Exception as e:
             self.app.show_error(_('Problem opening channel: ') + '\n' + repr(e))
             return
@@ -148,4 +167,8 @@ class LightningOpenChannelDialog(Factory.Popup):
             _('Remote peer ID') + ':' + chan.node_id.hex(),
             _('This channel will be usable after {} confirmations').format(n)
         ])
+        if not funding_tx.is_complete():
+            message += '\n\n' + _('Please sign and broadcast the funding transaction')
         self.app.show_info(message)
+        if not funding_tx.is_complete():
+            self.app.tx_dialog(funding_tx)

@@ -8,13 +8,13 @@ import time
 
 from io import StringIO
 from electrum.storage import WalletStorage
-from electrum.json_db import FINAL_SEED_VERSION
+from electrum.wallet_db import FINAL_SEED_VERSION
 from electrum.wallet import (Abstract_Wallet, Standard_Wallet, create_new_wallet,
                              restore_wallet_from_text, Imported_Wallet)
 from electrum.exchange_rate import ExchangeBase, FxThread
 from electrum.util import TxMinedInfo
 from electrum.bitcoin import COIN
-from electrum.json_db import JsonDB
+from electrum.wallet_db import WalletDB
 from electrum.simple_config import SimpleConfig
 
 from . import ElectrumTestCase
@@ -60,13 +60,15 @@ class TestWalletStorage(WalletTestCase):
         with open(self.wallet_path, "w") as f:
             contents = f.write(contents)
 
-        storage = WalletStorage(self.wallet_path, manual_upgrades=True)
-        self.assertEqual("b", storage.get("a"))
-        self.assertEqual("d", storage.get("c"))
+        storage = WalletStorage(self.wallet_path)
+        db = WalletDB(storage.read(), manual_upgrades=True)
+        self.assertEqual("b", db.get("a"))
+        self.assertEqual("d", db.get("c"))
 
     def test_write_dictionary_to_file(self):
 
         storage = WalletStorage(self.wallet_path)
+        db = WalletDB('', manual_upgrades=True)
 
         some_dict = {
             u"a": u"b",
@@ -74,8 +76,8 @@ class TestWalletStorage(WalletTestCase):
             u"seed_version": FINAL_SEED_VERSION}
 
         for key, value in some_dict.items():
-            storage.put(key, value)
-        storage.write()
+            db.put(key, value)
+        db.write(storage)
 
         with open(self.wallet_path, "r") as f:
             contents = f.read()
@@ -102,7 +104,7 @@ class FakeWallet:
     def __init__(self, fiat_value):
         super().__init__()
         self.fiat_value = fiat_value
-        self.db = JsonDB("{}", manual_upgrades=True)
+        self.db = WalletDB("{}", manual_upgrades=True)
         self.db.transactions = self.db.verified_tx = {'abc':'Tx'}
 
     def get_tx_height(self, txid):
@@ -224,7 +226,7 @@ class TestCreateRestoreWallet(WalletTestCase):
         addr0 = wallet.get_receiving_addresses()[0]
         self.assertEqual(frombtc('bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw'), addr0)
         self.assertEqual(frombtc('p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL'),
-                         wallet.export_private_key(addr0, password=None)[0])
+                         wallet.export_private_key(addr0, password=None))
         self.assertEqual(2, len(wallet.get_receiving_addresses()))
         # also test addr deletion
         wallet.delete_address(frombtc('bc1qnp78h78vp92pwdwq5xvh8eprlga5q8gu66960c'))

@@ -4,6 +4,6 @@
 [submodule "contrib/CalinsQRReader"]
 	path = contrib/osx/CalinsQRReader
 	url = https://github.com/spesmilo/CalinsQRReader
-[submodule "electrum_nmc/electrum/www"]
+[submodule "electrum/www"]
 	path = electrum_nmc/electrum/www
 	url = https://github.com/spesmilo/electrum-http.git

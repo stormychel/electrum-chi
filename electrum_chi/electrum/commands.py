@@ -34,25 +34,28 @@ import operator
 import asyncio
 import inspect
 from functools import wraps, partial
+from itertools import repeat
 from decimal import Decimal
-from typing import Optional, TYPE_CHECKING, Dict
+from typing import Optional, TYPE_CHECKING, Dict, List
 
 from .import util, ecc
 from .util import bfh, bh2u, format_satoshis, json_decode, json_encode, is_hash256_str, is_hex_str, to_bytes, timestamp_to_datetime
 from .util import standardize_path
 from . import bitcoin
-from .bitcoin import is_address,  hash_160, COIN, TYPE_ADDRESS
+from .bitcoin import is_address,  hash_160, COIN
 from .bip32 import BIP32Node
 from .i18n import _
 from .names import format_name_identifier, name_identifier_to_scripthash, OP_NAME_REGISTER, OP_NAME_UPDATE
 from .verifier import verify_tx_is_in_block
-from .transaction import Transaction, multisig_script, TxOutput
+from .transaction import (Transaction, multisig_script, TxOutput, PartialTransaction, PartialTxOutput,
+                          tx_from_any, PartialTxInput, TxOutpoint)
 from .paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
 from .synchronizer import Notifier
-from .wallet import Abstract_Wallet, create_new_wallet, restore_wallet_from_text
+from .wallet import Abstract_Wallet, create_new_wallet, restore_wallet_from_text, Deterministic_Wallet
 from .address_synchronizer import TX_HEIGHT_LOCAL
 from .mnemonic import Mnemonic
 from .lnutil import SENT, RECEIVED
+from .lnutil import ln_dummy_address
 from .lnpeer import channel_id_from_funding_tx
 from .plugin import run_hook
 from .version import ELECTRUM_VERSION
@@ -68,6 +71,10 @@ if TYPE_CHECKING:
 known_commands = {}  # type: Dict[str, Command]
 
 
+class NotSynchronizedException(Exception):
+    pass
+
+
 class NameNotFoundError(Exception):
     pass
 
@@ -77,6 +84,14 @@ class NameAlreadyExistsError(Exception):
 def satoshis(amount):
     # satoshi conversion must not be performed by the parser
     return int(COIN*Decimal(amount)) if amount not in ['!', None] else amount
+
+
+def json_normalize(x):
+    # note: The return value of commands, when going through the JSON-RPC interface,
+    #       is json-encoded. The encoder used there cannot handle some types, e.g. electrum.util.Satoshis.
+    # note: We should not simply do "json_encode(x)" here, as then later x would get doubly json-encoded.
+    # see #5868
+    return json_decode(json_encode(x))
 
 
 class Command:
@@ -112,7 +127,8 @@ def command(s):
             daemon = cmd_runner.daemon
             if daemon:
                 if (cmd.requires_wallet or 'wallet_path' in cmd.options) and kwargs.get('wallet_path') is None:
-                    kwargs['wallet_path'] = daemon.config.get_wallet_path()
+                    # using JSON-RPC, sometimes the "wallet" kwarg needs to be used to specify a wallet
+                    kwargs['wallet_path'] = kwargs.pop('wallet', None) or daemon.config.get_wallet_path()
                 if cmd.requires_wallet:
                     wallet_path = kwargs.pop('wallet_path')
                     wallet = daemon.get_wallet(wallet_path)
@@ -203,9 +219,9 @@ class Commands:
                 for path, w in self.daemon.get_wallets().items()]
 
     @command('n')
-    async def load_wallet(self, wallet_path=None):
+    async def load_wallet(self, wallet_path=None, password=None):
         """Open wallet in daemon"""
-        wallet = self.daemon.load_wallet(wallet_path, self.config.get('password'))
+        wallet = self.daemon.load_wallet(wallet_path, password, manual_upgrades=False)
         if wallet is not None:
             run_hook('load_wallet', wallet, None)
         response = wallet is not None
@@ -258,14 +274,14 @@ class Commands:
         if wallet.storage.is_encrypted_with_hw_device() and new_password:
             raise Exception("Can't change the password of a wallet encrypted with a hw device.")
         b = wallet.storage.is_encrypted()
-        wallet.update_password(password, new_password, b)
-        wallet.storage.write()
+        wallet.update_password(password, new_password, encrypt_storage=b)
+        wallet.save_db()
         return {'password':wallet.has_password()}
 
     @command('w')
     async def get(self, key, wallet: Abstract_Wallet = None):
         """Return item from wallet storage"""
-        return wallet.storage.get(key)
+        return wallet.db.get(key)
 
     @command('')
     async def getconfig(self, key):
@@ -308,58 +324,78 @@ class Commands:
     async def listunspent(self, wallet: Abstract_Wallet = None):
         """List unspent outputs. Returns the list of unspent transaction
         outputs in your wallet."""
-        l = copy.deepcopy(wallet.get_utxos())
-        for i in l:
-            v = i["value"]
-            i["value"] = str(Decimal(v)/COIN) if v is not None else None
-        return l
+        coins = []
+        for txin in wallet.get_utxos():
+            d = txin.to_json()
+            v = d.pop("value_sats")
+            d["value"] = str(Decimal(v)/COIN) if v is not None else None
+            coins.append(d)
+        return coins
 
     @command('wn')
-    async def name_list(self, identifier=None, wallet: Abstract_Wallet = None):
+    async def name_list(self, identifier=None, name_encoding='utf-8', value_encoding='ascii', wallet: Abstract_Wallet = None):
         """List unspent name outputs. Returns the list of unspent name_anyupdate
         outputs in your wallet."""
-        l = copy.deepcopy(wallet.get_utxos())
+
+        coins = await self.listunspent(wallet)
 
         result = []
 
-        for i in l:
-            txid = i["prevout_hash"]
-            tx = wallet.db.transactions[txid]
+        for coin in coins:
+            name_op = coin["name_op"]
 
-            vout = i["prevout_n"]
-            o = tx.outputs()[vout]
-
-            if o.name_op is None:
+            if name_op is None:
                 continue
-            name_op = o.name_op
 
             if "name" not in name_op:
                 continue
 
-            # TODO: handle non-ASCII name/value encoding
-            name = name_op["name"].decode("utf-8")
-            value = name_op["value"].decode("ascii")
+            if name_encoding == "hex":
+                name = name_op["name"]
+            elif name_encoding == "utf-8":
+                name = name_op["name"].decode("utf-8")
+            elif name_encoding == "ascii":
+                name_bytes = bfh(name_op["name"])
+                name = name_bytes.decode("ascii")
+            else:
+                raise Exception('Unsupported name_encoding "{}"'.format(name_encoding))
+
+            if value_encoding == "hex":
+                value = name_op["value"]
+            elif value_encoding == "ascii":
+                value_bytes = bfh(name_op["value"])
+                value = value_bytes.decode("ascii")
+            else:
+                raise Exception('Unsupported value_encoding "{}"'.format(value_encoding))
 
             # Skip this item if it doesn't match the requested identifier
             if identifier is not None:
                 if identifier != name:
                     continue
 
-            chain_height = self.network.blockchain().height()
+            txid = coin["prevout_hash"]
+            vout = coin["prevout_n"]
 
-            address = i["address"]
-            height = i["height"]
+            address = coin["address"]
+
+            height = coin["height"]
+            chain_height = self.network.get_local_height()
+
+            is_mine = wallet.is_mine(address)
 
             result_item = {
                 "name": name,
+                "name_encoding": name_encoding,
                 "value": value,
+                "value_encoding": value_encoding,
                 "txid": txid,
                 "vout": vout,
                 "address": address,
                 "height": height,
-                "ismine": wallet.is_mine(address),
+                "ismine": is_mine,
             }
             result.append(result_item)
+
         return result
 
     @command('n')
@@ -377,46 +413,50 @@ class Commands:
         Outputs must be a list of {'address':address, 'value':satoshi_amount}.
         """
         keypairs = {}
-        inputs = jsontx.get('inputs')
-        outputs = jsontx.get('outputs')
+        inputs = []  # type: List[PartialTxInput]
         locktime = jsontx.get('lockTime', 0)
-        for txin in inputs:
-            if txin.get('output'):
-                prevout_hash, prevout_n = txin['output'].split(':')
-                txin['prevout_n'] = int(prevout_n)
-                txin['prevout_hash'] = prevout_hash
-            sec = txin.get('privkey')
+        for txin_dict in jsontx.get('inputs'):
+            if txin_dict.get('prevout_hash') is not None and txin_dict.get('prevout_n') is not None:
+                prevout = TxOutpoint(txid=bfh(txin_dict['prevout_hash']), out_idx=int(txin_dict['prevout_n']))
+            elif txin_dict.get('output'):
+                prevout = TxOutpoint.from_str(txin_dict['output'])
+            else:
+                raise Exception("missing prevout for txin")
+            txin = PartialTxInput(prevout=prevout)
+            txin._trusted_value_sats = int(txin_dict['value'])
+            sec = txin_dict.get('privkey')
             if sec:
                 txin_type, privkey, compressed = bitcoin.deserialize_privkey(sec)
                 pubkey = ecc.ECPrivkey(privkey).get_public_key_hex(compressed=compressed)
                 keypairs[pubkey] = privkey, compressed
-                txin['type'] = txin_type
-                txin['x_pubkeys'] = [pubkey]
-                txin['signatures'] = [None]
-                txin['num_sig'] = 1
+                txin.script_type = txin_type
+                txin.pubkeys = [bfh(pubkey)]
+                txin.num_sig = 1
+            inputs.append(txin)
 
-        outputs = [TxOutput(TYPE_ADDRESS, x['address'], int(x['value'])) for x in outputs]
-        tx = Transaction.from_io(inputs, outputs, locktime=locktime)
+        outputs = [PartialTxOutput.from_address_and_value(txout['address'], int(txout['value']))
+                   for txout in jsontx.get('outputs')]
+        tx = PartialTransaction.from_io(inputs, outputs, locktime=locktime)
         tx.sign(keypairs)
-        return tx.as_dict()
+        return tx.serialize()
 
     @command('wp')
     async def signtransaction(self, tx, privkey=None, password=None, wallet: Abstract_Wallet = None):
         """Sign a transaction. The wallet keys will be used unless a private key is provided."""
-        tx = Transaction(tx)
+        tx = PartialTransaction(tx)
         if privkey:
             txin_type, privkey2, compressed = bitcoin.deserialize_privkey(privkey)
             pubkey = ecc.ECPrivkey(privkey2).get_public_key_bytes(compressed=compressed).hex()
             tx.sign({pubkey:(privkey2, compressed)})
         else:
             wallet.sign_transaction(tx, password)
-        return tx.as_dict()
+        return tx.serialize()
 
     @command('')
     async def deserialize(self, tx):
         """Deserialize a serialized transaction"""
-        tx = Transaction(tx)
-        return tx.deserialize(force_full_parse=True)
+        tx = tx_from_any(tx)
+        return tx.to_json()
 
     @command('n')
     async def broadcast(self, tx):
@@ -449,9 +489,16 @@ class Commands:
         if isinstance(address, str):
             address = address.strip()
         if is_address(address):
-            return wallet.export_private_key(address, password)[0]
+            return wallet.export_private_key(address, password)
         domain = address
-        return [wallet.export_private_key(address, password)[0] for address in domain]
+        return [wallet.export_private_key(address, password) for address in domain]
+
+    @command('wp')
+    async def getprivatekeyforpath(self, path, password=None, wallet: Abstract_Wallet = None):
+        """Get private key corresponding to derivation path (address index).
+        'path' can be either a str such as "m/0/50", or a list of ints such as [0, 50].
+        """
+        return wallet.export_private_key_for_path(path, password)
 
     @command('w')
     async def ismine(self, address, wallet: Abstract_Wallet = None):
@@ -506,7 +553,7 @@ class Commands:
 
     @command('n')
     async def getservers(self):
-        """Return the list of available servers"""
+        """Return the list of known servers (candidates for connecting)."""
         return self.network.get_servers()
 
     @command('')
@@ -570,8 +617,13 @@ class Commands:
         privkeys = privkey.split()
         self.nocheck = nocheck
         #dest = self._resolver(destination)
-        tx = sweep(privkeys, self.network, self.config, destination, tx_fee, imax)
-        return tx.as_dict() if tx else None
+        tx = sweep(privkeys,
+                   network=self.network,
+                   config=self.config,
+                   to_address=destination,
+                   fee=tx_fee,
+                   imax=imax)
+        return tx.serialize() if tx else None
 
     @command('wp')
     async def signmessage(self, address, message, password=None, wallet: Abstract_Wallet = None):
@@ -601,22 +653,24 @@ class Commands:
         name_txid_domain = copy.deepcopy(domain_addr)
         name_identifier_domain = copy.deepcopy(domain_addr)
 
-        domain_addr = None if domain_addr is None else map(self._resolver, domain_addr)
-        name_txid_domain = None if name_txid_domain is None else map(self._resolver, name_txid_domain)
-        name_identifier_domain = None if name_identifier_domain is None else map(self._resolver, name_identifier_domain)
+        domain_addr = None if domain_addr is None else map(self._resolver, domain_addr, repeat(wallet))
+        name_txid_domain = None if name_txid_domain is None else map(self._resolver, name_txid_domain, repeat(wallet))
+        name_identifier_domain = None if name_identifier_domain is None else map(self._resolver, name_identifier_domain, repeat(wallet))
         final_outputs = []
         for address, amount, name_op, memo in name_outputs:
             address = self._resolver(address, wallet)
             amount = satoshis(amount)
-            final_outputs.append(TxOutput(TYPE_ADDRESS, address, amount, name_op))
+            output = PartialTxOutput.from_address_and_value(address, amount)
+            output.add_name_op(name_op)
+            final_outputs.append(output)
         for address, amount in outputs:
             address = self._resolver(address, wallet)
             amount = satoshis(amount)
-            final_outputs.append(TxOutput(TYPE_ADDRESS, address, amount))
+            final_outputs.append(PartialTxOutput.from_address_and_value(address, amount))
 
         coins = wallet.get_spendable_coins(domain_addr)
         if domain_coins is not None:
-            coins = [coin for coin in coins if (coin['prevout_hash'] + ':' + str(coin['prevout_n']) in domain_coins)]
+            coins = [coin for coin in coins if (coin.prevout.to_str() in domain_coins)]
         name_coins = wallet.get_spendable_coins(name_txid_domain, include_names=True, only_uno_txids=name_input_txids)
         name_coins += wallet.get_spendable_coins(name_identifier_domain, include_names=True, only_uno_identifiers=name_input_identifiers)
         if feerate is not None:
@@ -624,7 +678,11 @@ class Commands:
             fee_estimator = partial(SimpleConfig.estimate_fee_for_feerate, fee_per_kb)
         else:
             fee_estimator = fee
-        tx = wallet.make_unsigned_transaction(coins, final_outputs, fee_estimator, change_addr, name_inputs=name_coins)
+        tx = wallet.make_unsigned_transaction(coins=coins,
+                                              outputs=final_outputs,
+                                              fee=fee_estimator,
+                                              change_addr=change_addr,
+                                              name_inputs=name_coins)
         if locktime is not None:
             tx.locktime = locktime
         if rbf is None:
@@ -654,7 +712,7 @@ class Commands:
                         rbf=rbf,
                         password=password,
                         locktime=locktime)
-        return tx.as_dict()
+        return tx.serialize()
 
     @command('wp')
     async def paytomany(self, outputs, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None,
@@ -675,10 +733,10 @@ class Commands:
                         rbf=rbf,
                         password=password,
                         locktime=locktime)
-        return tx.as_dict()
+        return tx.serialize()
 
     @command('wp')
-    async def name_register(self, identifier, value, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
+    async def name_register(self, identifier, destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
         """Create a name_register transaction. """
         if not allow_existing:
             name_exists = True
@@ -705,7 +763,7 @@ class Commands:
             destination = request['address']
 
         tx = self._mktx(wallet,
-                        [],
+                        outputs,
                         fee=tx_fee,
                         feerate=feerate,
                         change_addr=change_addr,
@@ -717,10 +775,10 @@ class Commands:
                         password=password,
                         locktime=locktime,
                         name_outputs=[(destination, amount, name_op, memo)])
-        return tx.as_dict()
+        return tx.serialize()
 
     @command('wpn')
-    async def name_update(self, identifier, value=None, destination=None, amount=0.0, fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
+    async def name_update(self, identifier, value=None, destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
         """Create a name_update transaction. """
 
         tx_fee = satoshis(fee)
@@ -739,7 +797,7 @@ class Commands:
             destination = request['address']
 
         tx = self._mktx(wallet,
-                        [],
+                        outputs,
                         fee=tx_fee,
                         feerate=feerate,
                         change_addr=change_addr,
@@ -752,7 +810,7 @@ class Commands:
                         locktime=locktime,
                         name_input_identifiers=[identifier_bytes],
                         name_outputs=[(destination, amount, name_op, memo)])
-        return tx.as_dict()
+        return tx.serialize()
 
     @command('w')
     async def onchain_history(self, year=None, show_addresses=False, show_fiat=False, wallet: Abstract_Wallet = None):
@@ -770,13 +828,24 @@ class Commands:
             from .exchange_rate import FxThread
             fx = FxThread(self.config, None)
             kwargs['fx'] = fx
-        return json_encode(wallet.get_detailed_history(**kwargs))
+        return json_normalize(wallet.get_detailed_history(**kwargs))
+
+    @command('w')
+    async def init_lightning(self, wallet: Abstract_Wallet = None):
+        """Enable lightning payments"""
+        wallet.init_lightning()
+        return "Lightning keys have been created."
+
+    @command('w')
+    async def remove_lightning(self, wallet: Abstract_Wallet = None):
+        """Disable lightning payments"""
+        wallet.remove_lightning()
 
     @command('w')
     async def lightning_history(self, show_fiat=False, wallet: Abstract_Wallet = None):
         """ lightning history """
         lightning_history = wallet.lnworker.get_history() if wallet.lnworker else []
-        return json_encode(lightning_history)
+        return json_normalize(lightning_history)
 
     @command('w')
     async def setlabel(self, key, label, wallet: Abstract_Wallet = None):
@@ -840,7 +909,9 @@ class Commands:
                 tx = Transaction(raw)
             else:
                 raise Exception("Unknown transaction")
-        return tx.as_dict()
+        if tx.txid() != txid:
+            raise Exception("Mismatching txid")
+        return tx.serialize()
 
     @command('')
     async def encrypt(self, pubkey, message) -> str:
@@ -868,7 +939,7 @@ class Commands:
     def _format_request(self, out):
         from .util import get_request_status
         out['amount_CHI'] = format_satoshis(out.get('amount'))
-        out['status_str'] = get_request_status(out)
+        out['status'], out['status_str'] = get_request_status(out)
         return out
 
     @command('w')
@@ -906,6 +977,30 @@ class Commands:
         return wallet.create_new_address(False)
 
     @command('w')
+    async def changegaplimit(self, new_limit, iknowwhatimdoing=False, wallet: Abstract_Wallet = None):
+        """Change the gap limit of the wallet."""
+        if not iknowwhatimdoing:
+            raise Exception("WARNING: Are you SURE you want to change the gap limit?\n"
+                            "It makes recovering your wallet from seed difficult!\n"
+                            "Please do your research and make sure you understand the implications.\n"
+                            "Typically only merchants and power users might want to do this.\n"
+                            "To proceed, try again, with the --iknowwhatimdoing option.")
+        if not isinstance(wallet, Deterministic_Wallet):
+            raise Exception("This wallet is not deterministic.")
+        return wallet.change_gap_limit(new_limit)
+
+    @command('wn')
+    async def getminacceptablegap(self, wallet: Abstract_Wallet = None):
+        """Returns the minimum value for gap limit that would be sufficient to discover all
+        known addresses in the wallet.
+        """
+        if not isinstance(wallet, Deterministic_Wallet):
+            raise Exception("This wallet is not deterministic.")
+        if not wallet.is_up_to_date():
+            raise NotSynchronizedException("Wallet not fully synchronized.")
+        return wallet.min_acceptable_gap()
+
+    @command('w')
     async def getunusedaddress(self, wallet: Abstract_Wallet = None):
         """Returns the first unused address of the wallet, or None if all addresses are used.
         An address is considered as used if it has received a transaction, or if it is used in a payment request."""
@@ -939,9 +1034,9 @@ class Commands:
     async def addtransaction(self, tx, wallet: Abstract_Wallet = None):
         """ Add a transaction to the wallet history """
         tx = Transaction(tx)
-        if not wallet.add_transaction(tx.txid(), tx):
+        if not wallet.add_transaction(tx):
             return False
-        wallet.storage.write()
+        wallet.save_db()
         return tx.txid()
 
     @command('w')
@@ -966,7 +1061,7 @@ class Commands:
         }
         if not wallet.queue_transaction(txid, queue_item):
             return False
-        wallet.storage.write()
+        wallet.save_db()
         return txid
 
     @command('wn')
@@ -983,7 +1078,7 @@ class Commands:
             trigger_name = send_when["name"]
             trigger_depth = send_when["confirmations"]
 
-            chain_height = self.network.blockchain().height()
+            chain_height = self.network.get_local_height()
 
             current_depth = 0
 
@@ -1011,7 +1106,7 @@ class Commands:
 
         for txid in to_unqueue:
             wallet.unqueue_transaction(txid)
-        wallet.storage.write()
+        wallet.save_db()
 
         success = (errors == {})
         return success, errors
@@ -1091,12 +1186,18 @@ class Commands:
         unmined_height = max_chain_height
 
         tx_best = None
+        expired_tx_exists = False
+        unmined_tx_exists = False
         for tx_candidate in txs[::-1]:
             tx_best = tx_candidate
             break
 
+        if unmined_tx_exists:
+            raise NameNotFoundError("Name is purportedly unconfirmed")
+        if expired_tx_exists:
+            raise NameNotFoundError("Name is purportedly expired")
         if tx_best is None:
-            raise NameNotFoundError("Name never existed, or is unconfirmed")
+            raise NameNotFoundError("Name purportedly never existed")
         txid = tx_best["tx_hash"]
         height = tx_best["height"]
 
@@ -1131,10 +1232,10 @@ class Commands:
             if raw:
                 tx = Transaction(raw)
             else:
-                raise Exception("Unknown transaction")
+                raise Exception("Unknown transaction (txid {})".format(txid))
 
         if tx.txid() != txid:
-            raise Exception("txid mismatch")
+            raise Exception("txid mismatch ({} vs {})".format(tx.txid(), txid))
 
         # the tx is now verified to come from a safe height in the blockchain
 
@@ -1168,7 +1269,7 @@ class Commands:
                         "ismine": is_mine,
                     }
 
-        raise Exception("missing name op")
+        raise Exception("missing name op (txid {})".format(txid))
 
     @command('w')
     async def removelocaltx(self, txid, wallet: Abstract_Wallet = None):
@@ -1185,7 +1286,7 @@ class Commands:
         to_delete |= wallet.get_depending_transactions(txid)
         for tx_hash in to_delete:
             wallet.remove_transaction(tx_hash)
-        wallet.storage.write()
+        wallet.save_db()
 
     @command('wn')
     async def get_tx_status(self, txid, wallet: Abstract_Wallet = None):
@@ -1212,13 +1313,29 @@ class Commands:
         return True
 
     @command('wpn')
-    async def open_channel(self, connection_string, amount, channel_push=0, password=None, wallet: Abstract_Wallet = None):
-        chan = await wallet.lnworker._open_channel_coroutine(connection_string, satoshis(amount), satoshis(channel_push), password)
+    async def open_channel(self, connection_string, amount, push_amount=0, password=None, wallet: Abstract_Wallet = None):
+        funding_sat = satoshis(amount)
+        push_sat = satoshis(push_amount)
+        dummy_output = PartialTxOutput.from_address_and_value(ln_dummy_address(), funding_sat)
+        funding_tx = wallet.mktx(outputs = [dummy_output], rbf=False, sign=False, nonlocal_only=True)
+        chan, funding_tx = await wallet.lnworker._open_channel_coroutine(connect_str=connection_string,
+                                                                         funding_tx=funding_tx,
+                                                                         funding_sat=funding_sat,
+                                                                         push_sat=push_sat,
+                                                                         password=password)
         return chan.funding_outpoint.to_str()
 
     @command('wn')
     async def lnpay(self, invoice, attempts=1, timeout=10, wallet: Abstract_Wallet = None):
-        return await wallet.lnworker._pay(invoice, attempts=attempts)
+        lnworker = wallet.lnworker
+        lnaddr = lnworker._check_invoice(invoice, None)
+        payment_hash = lnaddr.paymenthash
+        success = await lnworker._pay(invoice, attempts=attempts)
+        return {
+            'payment_hash': payment_hash.hex(),
+            'success': success,
+            'preimage': lnworker.get_preimage(payment_hash).hex() if success else None,
+        }
 
     @command('w')
     async def nodeid(self, wallet: Abstract_Wallet = None):
@@ -1227,7 +1344,26 @@ class Commands:
 
     @command('w')
     async def list_channels(self, wallet: Abstract_Wallet = None):
-        return list(wallet.lnworker.list_channels())
+        # we output the funding_outpoint instead of the channel_id because lnd uses channel_point (funding outpoint) to identify channels
+        from .lnutil import LOCAL, REMOTE, format_short_channel_id
+        encoder = util.MyEncoder()
+        l = list(wallet.lnworker.channels.items())
+        return [
+            {
+                'short_channel_id': format_short_channel_id(chan.short_channel_id) if chan.short_channel_id else None,
+                'channel_id': bh2u(chan.channel_id),
+                'channel_point': chan.funding_outpoint.to_str(),
+                'state': chan.get_state().name,
+                'peer_state': chan.peer_state.name,
+                'remote_pubkey': bh2u(chan.node_id),
+                'local_balance': chan.balance(LOCAL)//1000,
+                'remote_balance': chan.balance(REMOTE)//1000,
+                'local_reserve': chan.config[LOCAL].reserve_sat,
+                'remote_reserve': chan.config[REMOTE].reserve_sat,
+                'local_unsettled_sent': chan.balance_tied_up_in_htlcs_by_direction(LOCAL, direction=SENT) // 1000,
+                'remote_unsettled_sent': chan.balance_tied_up_in_htlcs_by_direction(REMOTE, direction=SENT) // 1000,
+            } for channel_id, chan in l
+        ]
 
     @command('wn')
     async def dumpgraph(self, wallet: Abstract_Wallet = None):
@@ -1239,6 +1375,11 @@ class Commands:
         self.network.config.fee_estimates = ast.literal_eval(fees)
         self.network.notify('fee')
 
+    @command('wn')
+    async def enable_htlc_settle(self, b: bool, wallet: Abstract_Wallet = None):
+        e = wallet.lnworker.enable_htlc_settle
+        e.set() if b else e.clear()
+
     @command('n')
     async def clear_ln_blacklist(self):
         self.network.path_finder.blacklist.clear()
@@ -1246,10 +1387,6 @@ class Commands:
     @command('w')
     async def list_invoices(self, wallet: Abstract_Wallet = None):
         return wallet.get_invoices()
-
-    @command('w')
-    async def lightning_history(self, wallet: Abstract_Wallet = None):
-        return wallet.lnworker.get_history()
 
     @command('wn')
     async def close_channel(self, channel_point, force=False, wallet: Abstract_Wallet = None):
@@ -1259,13 +1396,22 @@ class Commands:
         return await coro
 
     @command('wn')
-    async def get_channel_ctx(self, channel_point, wallet: Abstract_Wallet = None):
+    async def get_channel_ctx(self, channel_point, iknowwhatimdoing=False, wallet: Abstract_Wallet = None):
         """ return the current commitment transaction of a channel """
+        if not iknowwhatimdoing:
+            raise Exception("WARNING: this command is potentially unsafe.\n"
+                            "To proceed, try again, with the --iknowwhatimdoing option.")
         txid, index = channel_point.split(':')
         chan_id, _ = channel_id_from_funding_tx(txid, int(index))
         chan = wallet.lnworker.channels[chan_id]
         tx = chan.force_close_tx()
-        return tx.as_dict()
+        return tx.serialize()
+
+    @command('wn')
+    async def get_watchtower_ctn(self, channel_point, wallet: Abstract_Wallet = None):
+        """ return the local watchtower's ctn of channel. used in regtests """
+        return await self.network.local_watchtower.sweepstore.get_ctn(channel_point, None)
+
 
 def eval_bool(x: str) -> bool:
     if x == 'false': return False
@@ -1318,7 +1464,7 @@ command_options = {
     'passphrase':  (None, "Seed extension"),
     'privkey':     (None, "Private key. Set to '?' to get a prompt."),
     'unsigned':    ("-u", "Do not sign transaction"),
-    'rbf':         (None, "Replace-by-fee transaction"),
+    'rbf':         (None, "Whether to signal opt-in Replace-By-Fee in the transaction (true/false)"),
     'locktime':    (None, "Set locktime block number"),
     'domain':      ("-D", "List of addresses"),
     'memo':        ("-m", "Description of the request"),
@@ -1327,7 +1473,7 @@ command_options = {
     'timeout':     (None, "Timeout in seconds"),
     'force':       (None, "Create new address beyond gap limit, if no more addresses are available."),
     'pending':     (None, "Show only pending requests."),
-    'channel_push':(None, 'Push initial amount (in CHI)'),
+    'push_amount': (None, 'Push initial amount (in CHI)'),
     'expired':     (None, "Show only expired requests."),
     'paid':        (None, "Show only paid requests."),
     'show_addresses': (None, "Show input and output addresses"),
@@ -1338,19 +1484,23 @@ command_options = {
     'fee_level':   (None, "Float between 0.0 and 1.0, representing fee slider position"),
     'from_height': (None, "Only show transactions that confirmed after given block height"),
     'to_height':   (None, "Only show transactions that confirmed before given block height"),
+    'iknowwhatimdoing': (None, "Acknowledge that I understand the full implications of what I am about to do"),
     'destination': (None, "Address, contact or alias"),
     'amount':      (None, "Amount to be sent (in CHI). Type \'!\' to send the maximum available."),
+    'outputs':     (None, "Currency outputs to add to a transaction in addition to a name operation."),
     'allow_existing': (None, "Allow pre-registering a name that already is registered.  Your registration fee will be forfeited until you can register the name after it expires."),
     'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
     'identifier':  (None, "The requested name identifier"),
     'value':       (None, "The value to assign to the name"),
+    'name_encoding': (None, "Encoding for the name identifier ('ascii' or 'hex')"),
+    'value_encoding': (None, "Encoding for the name value ('ascii' or 'hex')"),
     'trigger_txid':(None, "Broadcast the transaction when this txid reaches the specified number of confirmations"),
     'trigger_name':(None, "Broadcast the transaction when this name reaches the specified number of confirmations"),
 }
 
 
 # don't use floats because of rounding errors
-from .transaction import tx_from_str
+from .transaction import convert_raw_tx_to_hex
 json_loads = lambda x: json.loads(x, parse_float=lambda x: str(Decimal(x)))
 arg_types = {
     'num': int,
@@ -1359,7 +1509,7 @@ arg_types = {
     'year': int,
     'from_height': int,
     'to_height': int,
-    'tx': tx_from_str,
+    'tx': convert_raw_tx_to_hex,
     'pubkeys': json_loads,
     'jsontx': json_loads,
     'inputs': json_loads,
@@ -1370,6 +1520,7 @@ arg_types = {
     'fee_method': str,
     'fee_level': json_loads,
     'encrypt_file': eval_bool,
+    'rbf': eval_bool,
     'timeout': float,
 }
 
@@ -1440,7 +1591,7 @@ argparse._SubParsersAction.__call__ = subparser_call
 def add_network_options(parser):
     parser.add_argument("-1", "--oneserver", action="store_true", dest="oneserver", default=None, help="connect to one server only")
     parser.add_argument("-s", "--server", dest="server", default=None, help="set server host:port:protocol, where protocol is either t (tcp) or s (ssl)")
-    parser.add_argument("-p", "--proxy", dest="proxy", default=None, help="set proxy [type:]host[:port], where type is socks4,socks5 or http")
+    parser.add_argument("-p", "--proxy", dest="proxy", default=None, help="set proxy [type:]host[:port] (or 'none' to disable proxy), where type is socks4,socks5 or http")
     parser.add_argument("--noonion", action="store_true", dest="noonion", default=None, help="do not try to connect to onion servers")
     parser.add_argument("--skipmerklecheck", action="store_true", dest="skipmerklecheck", default=False, help="Tolerate invalid merkle proofs from server")
 
@@ -1453,12 +1604,11 @@ def add_global_options(parser):
     group.add_argument("--testnet", action="store_true", dest="testnet", default=False, help="Use Testnet")
     group.add_argument("--regtest", action="store_true", dest="regtest", default=False, help="Use Regtest")
     group.add_argument("--simnet", action="store_true", dest="simnet", default=False, help="Use Simnet")
-    group.add_argument("--lightning", action="store_true", dest="lightning", default=False, help="Enable lightning")
-    group.add_argument("--reckless", action="store_true", dest="reckless", default=False, help="Allow to enable lightning on mainnet")
     group.add_argument("-o", "--offline", action="store_true", dest="offline", default=False, help="Run offline")
 
 def add_wallet_option(parser):
     parser.add_argument("-w", "--wallet", dest="wallet_path", help="wallet path")
+    parser.add_argument("--forgetconfig", action="store_true", dest="forget_config", default=False, help="Forget config on exit")
 
 def get_parser():
     # create main parser

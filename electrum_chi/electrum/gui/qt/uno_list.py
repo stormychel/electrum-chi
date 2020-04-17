@@ -23,7 +23,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Optional, List
+from typing import Optional, List, Set
 from enum import IntEnum
 import sys
 import traceback
@@ -34,6 +34,7 @@ from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
 from electrum.i18n import _
 from electrum.names import format_name_identifier, format_name_value
+from electrum.transaction import PartialTxInput
 from electrum.util import NotEnoughFunds, NoDynamicFeeEstimates, bh2u
 from electrum.wallet import InternalAddressCorruption
 
@@ -59,40 +60,41 @@ class UNOList(UTXOList):
         Columns.STATUS: _('Status'),
     }
     filter_columns = [Columns.NAME, Columns.VALUE]
-
-    # TODO: Break out stretch_column into its own attribute so that we can
-    # subclass it without re-implementing __init__
-    def __init__(self, parent=None):
-        MyTreeView.__init__(self, parent, self.create_menu,
-                            stretch_column=self.Columns.VALUE,
-                            editable_columns=[])
-        self.setModel(QStandardItemModel(self))
-        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.setSortingEnabled(True)
-        self.update()
+    stretch_column = Columns.VALUE
 
     def update(self):
         self.network = self.parent.network
         super().update()
 
-    def insert_utxo(self, idx, x):
-        txid = x.get('prevout_hash')
-        vout = x.get('prevout_n')
-        output = self.wallet.db.transactions[txid].outputs()[vout]
-        name_op = output.name_op
+    def insert_utxo(self, idx, utxo: PartialTxInput):
+        txid = utxo.prevout.txid.hex()
+        vout = utxo.prevout.out_idx
+        name_op = utxo.name_op
         if name_op is None:
             return
+
+        height = utxo.block_height
+        header_at_tip = self.network.blockchain().header_at_tip()
+
+        if height is None or height <= 0:
+            # TODO: Namecoin: Take into account the fact that transactions may
+            # not be mined in the next block.
+            blocks_until_mined = 1
+
+            height_estimated = header_at_tip['block_height'] + blocks_until_mined
+        else:
+            height_estimated = height
 
         if 'name' not in name_op:
             # Upstream handles a name_new here, which doesn't exist in Xaya.
             assert False
         else:
-            # utxo is name_anyupdate
-            height = x.get('height')
-            header_at_tip = self.network.blockchain().header_at_tip()
-            #chain_height = self.network.blockchain().height()
-            pending = (height <= 0)
-            status = '' if not pending else _('Update Pending')
+            if height is not None and height > 0:
+                # utxo is confirmed
+                status = ''
+            else:
+                # utxo is name_update
+                status = _('Update Pending')
 
         if 'name' in name_op:
             # utxo is name_anyupdate or a name_new that we've queued a name_firstupdate for
@@ -109,7 +111,7 @@ class UNOList(UTXOList):
 
         txout = txid + ":%d"%vout
 
-        self.utxo_dict[txout] = x
+        self._utxo_dict[txout] = utxo
 
         labels = [formatted_name, formatted_value, status]
         utxo_item = [QStandardItem(x) for x in labels]
@@ -122,14 +124,14 @@ class UNOList(UTXOList):
         utxo_item[self.Columns.NAME].setData(name, Qt.UserRole + USER_ROLE_NAME)
         utxo_item[self.Columns.NAME].setData(value, Qt.UserRole + USER_ROLE_VALUE)
 
-        address = x.get('address')
-        if self.wallet.is_frozen_address(address) or self.wallet.is_frozen_coin(x):
+        address = utxo.address
+        if self.wallet.is_frozen_address(address) or self.wallet.is_frozen_coin(utxo):
             utxo_item[self.Columns.NAME].setBackground(ColorScheme.BLUE.as_color(True))
-            if self.wallet.is_frozen_address(address) and self.wallet.is_frozen_coin(x):
+            if self.wallet.is_frozen_address(address) and self.wallet.is_frozen_coin(utxo):
                 utxo_item[self.Columns.NAME].setToolTip(_('Address and coin are frozen'))
             elif self.wallet.is_frozen_address(address):
                 utxo_item[self.Columns.NAME].setToolTip(_('Address is frozen'))
-            elif self.wallet.is_frozen_coin(x):
+            elif self.wallet.is_frozen_coin(utxo):
                 utxo_item[self.Columns.NAME].setToolTip(_('Coin is frozen'))
         self.model().appendRow(utxo_item)
 
@@ -166,6 +168,11 @@ class UNOList(UTXOList):
             return None
         return [x.data(Qt.UserRole + USER_ROLE_VALUE) for x in items]
 
+    # Using Coin Control to choose name inputs doesn't make sense, so disable
+    # it.
+    def set_spend_list(self, coins: Optional[List[PartialTxInput]]):
+        super().set_spend_list(None)
+
     def create_menu(self, position):
         selected = self.selected_column_0_user_roles()
         if not selected:
@@ -178,7 +185,7 @@ class UNOList(UTXOList):
             if tx:
                 label = self.wallet.get_label(txid) or None # Prefer None if empty (None hides the Description: field in the window)
                 menu.addAction(_("Configure"), lambda: self.configure_selected_item())
-                menu.addAction(_("Transaction Details"), lambda: self.parent.show_transaction(tx, label))
+                menu.addAction(_("Transaction Details"), lambda: self.parent.show_transaction(tx, tx_desc=label))
 
         # "Copy ..."
 
@@ -195,13 +202,17 @@ class UNOList(UTXOList):
 
         if selected_data is not None and len(selected_data) == 1:
             data = selected_data[0]
-            try:
-                copy_ascii = data.decode('ascii')
-                menu.addAction(_("Copy {} as ASCII").format(selected_data_type), lambda: self.parent.app.clipboard().setText(copy_ascii))
-            except UnicodeDecodeError:
-                pass
-            copy_hex = bh2u(data)
-            menu.addAction(_("Copy {} as hex").format(selected_data_type), lambda: self.parent.app.clipboard().setText(copy_hex))
+            # data will be None if this row is a name_new that we haven't
+            # queued a name_firstupdate for, so we don't know the identifier or
+            # value.
+            if data is not None:
+                try:
+                    copy_ascii = data.decode('ascii')
+                    menu.addAction(_("Copy {} as ASCII").format(selected_data_type), lambda: self.parent.app.clipboard().setText(copy_ascii))
+                except UnicodeDecodeError:
+                    pass
+                copy_hex = bh2u(data)
+                menu.addAction(_("Copy {} as hex").format(selected_data_type), lambda: self.parent.app.clipboard().setText(copy_hex))
 
         menu.exec_(self.viewport().mapToGlobal(position))
 

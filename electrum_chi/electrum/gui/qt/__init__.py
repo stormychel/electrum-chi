@@ -48,6 +48,7 @@ from electrum.base_wizard import GoBack
 from electrum.util import (UserCancelled, profiler,
                            WalletFileException, BitcoinException, get_new_wallet_name)
 from electrum.wallet import Wallet, Abstract_Wallet
+from electrum.wallet_db import WalletDB
 from electrum.logging import Logger
 
 from .installwizard import InstallWizard, WalletAlreadyOpenInMemory
@@ -56,6 +57,7 @@ from .main_window import ElectrumWindow
 from .network_dialog import NetworkDialog
 from .stylesheet_patcher import patch_qt_stylesheet
 from .lightning_dialog import LightningDialog
+from .watchtower_dialog import WatchtowerDialog
 
 if TYPE_CHECKING:
     from electrum.daemon import Daemon
@@ -115,6 +117,7 @@ class ElectrumGui(Logger):
 
         self.network_dialog = None
         self.lightning_dialog = None
+        self.watchtower_dialog = None
         self.network_updated_signal_obj = QNetworkUpdatedSignalObject()
         self._num_wizards_in_progress = 0
         self._num_wizards_lock = threading.Lock()
@@ -153,8 +156,12 @@ class ElectrumGui(Logger):
         else:
             m = self.tray.contextMenu()
             m.clear()
-        if self.config.get('lightning'):
-            m.addAction(_("Lightning"), self.show_lightning_dialog)
+        network = self.daemon.network
+        m.addAction(_("Network"), self.show_network_dialog)
+        if network and network.lngossip:
+            m.addAction(_("Lightning Network"), self.show_lightning_dialog)
+        if network and network.local_watchtower:
+            m.addAction(_("Local Watchtower"), self.show_watchtower_dialog)
         for window in self.windows:
             name = window.wallet.basename()
             submenu = m.addMenu(name)
@@ -191,20 +198,26 @@ class ElectrumGui(Logger):
             self.network_dialog.close()
         if self.lightning_dialog:
             self.lightning_dialog.close()
+        if self.watchtower_dialog:
+            self.watchtower_dialog.close()
 
     def new_window(self, path, uri=None):
         # Use a signal as can be called from daemon thread
         self.app.new_window_signal.emit(path, uri)
 
     def show_lightning_dialog(self):
+        if not self.daemon.network.is_lightning_running():
+            return
         if not self.lightning_dialog:
             self.lightning_dialog = LightningDialog(self)
         self.lightning_dialog.bring_to_top()
 
-    def show_network_dialog(self, parent):
-        if not self.daemon.network:
-            parent.show_warning(_('You are using Electrum-CHI in offline mode; restart Electrum-CHI if you want to get connected'), title=_('Offline'))
-            return
+    def show_watchtower_dialog(self):
+        if not self.watchtower_dialog:
+            self.watchtower_dialog = WatchtowerDialog(self)
+        self.watchtower_dialog.bring_to_top()
+
+    def show_network_dialog(self):
         if self.network_dialog:
             self.network_dialog.on_update()
             self.network_dialog.show()
@@ -222,6 +235,7 @@ class ElectrumGui(Logger):
         run_hook('on_new_window', w)
         w.warn_if_testnet()
         w.warn_if_watching_only()
+        w.warn_if_lightning_backup()
         return w
 
     def count_wizards_in_progress(func):
@@ -289,16 +303,17 @@ class ElectrumGui(Logger):
         return window
 
     def _start_wizard_to_select_or_create_wallet(self, path) -> Optional[Abstract_Wallet]:
-        wizard = InstallWizard(self.config, self.app, self.plugins)
+        wizard = InstallWizard(self.config, self.app, self.plugins, gui_object=self)
         try:
             path, storage = wizard.select_storage(path, self.daemon.get_wallet)
             # storage is None if file does not exist
             if storage is None:
                 wizard.path = path  # needed by trustedcoin plugin
                 wizard.run('new')
-                storage = wizard.create_storage(path)
+                storage, db = wizard.create_storage(path)
             else:
-                wizard.run_upgrades(storage)
+                db = WalletDB(storage.read(), manual_upgrades=False)
+                wizard.run_upgrades(storage, db)
         except (UserCancelled, GoBack):
             return
         except WalletAlreadyOpenInMemory as e:
@@ -306,9 +321,9 @@ class ElectrumGui(Logger):
         finally:
             wizard.terminate()
         # return if wallet creation is not complete
-        if storage is None or storage.get_action():
+        if storage is None or db.get_action():
             return
-        wallet = Wallet(storage, config=self.config)
+        wallet = Wallet(db, storage, config=self.config)
         wallet.start_network(self.daemon.network)
         self.daemon.add_wallet(wallet)
         return wallet
@@ -327,7 +342,7 @@ class ElectrumGui(Logger):
         # Show network dialog if config does not exist
         if self.daemon.network:
             if self.config.get('auto_connect') is None:
-                wizard = InstallWizard(self.config, self.app, self.plugins)
+                wizard = InstallWizard(self.config, self.app, self.plugins, gui_object=self)
                 wizard.init_network(self.daemon.network)
                 wizard.terminate()
 

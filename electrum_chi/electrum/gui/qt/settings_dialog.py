@@ -22,50 +22,33 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import sys
-import time
-import threading
-import os
-import traceback
-import json
-from decimal import Decimal
 
-from PyQt5.QtGui import QPixmap, QKeySequence, QIcon, QCursor
-from PyQt5.QtCore import Qt, QRect, QStringListModel, QSize, pyqtSignal
-from PyQt5.QtWidgets import (QMessageBox, QComboBox, QSystemTrayIcon, QTabWidget,
-                             QSpinBox, QMenuBar, QFileDialog, QCheckBox, QLabel,
-                             QVBoxLayout, QGridLayout, QLineEdit, QTreeWidgetItem,
-                             QHBoxLayout, QPushButton, QScrollArea, QTextEdit,
-                             QShortcut, QMainWindow, QCompleter, QInputDialog,
-                             QWidget, QMenu, QSizePolicy, QStatusBar)
+from typing import Optional, TYPE_CHECKING
 
-import electrum
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QComboBox,  QTabWidget,
+                             QSpinBox,  QFileDialog, QCheckBox, QLabel,
+                             QVBoxLayout, QGridLayout, QLineEdit,
+                             QPushButton, QWidget)
+
 from electrum.i18n import _
 from electrum import util, coinchooser, paymentrequest
-from electrum.util import (format_time, format_satoshis, format_fee_satoshis,
-                           format_satoshis_plain, NotEnoughFunds,
-                           UserCancelled, NoDynamicFeeEstimates, profiler,
-                           export_meta, import_meta, bh2u, bfh, InvalidPassword,
-                           base_units, base_units_list, base_unit_name_to_decimal_point,
-                           decimal_point_to_base_unit_name, quantize_feerate,
-                           UnknownBaseUnit, DECIMAL_POINT_DEFAULT, UserFacingException,
-                           get_new_wallet_name, send_exception_to_crash_reporter,
-                           InvalidBitcoinURI, InvoiceError)
+from electrum.util import base_units_list, base_unit_name_to_decimal_point
 
-from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, FeerateEdit
-from .util import (read_QIcon, ColorScheme, text_dialog, icon_path, WaitingDialog,
-                   WindowModalDialog, ChoicesLayout, HelpLabel, FromList, Buttons,
-                   OkButton, InfoButton, WWLabel, TaskThread, CancelButton,
-                   CloseButton, HelpButton, MessageBoxMixin, EnterButton,
-                   ButtonsLineEdit, CopyCloseButton, import_meta_gui, export_meta_gui,
-                   filename_field, address_field, char_width_in_lineedit, webopen)
+from .util import (ColorScheme, WindowModalDialog, HelpLabel, Buttons,
+                   CloseButton)
 
 from electrum.i18n import languages
 from electrum import qrscanner
 
+if TYPE_CHECKING:
+    from electrum.simple_config import SimpleConfig
+    from .main_window import ElectrumWindow
+
+
 class SettingsDialog(WindowModalDialog):
 
-    def __init__(self, parent, config):
+    def __init__(self, parent: 'ElectrumWindow', config: 'SimpleConfig'):
         WindowModalDialog.__init__(self, parent, _('Preferences'))
         self.config = config
         self.window = parent
@@ -133,18 +116,8 @@ class SettingsDialog(WindowModalDialog):
         def on_fee_type(x):
             self.config.set_key('mempool_fees', x==2)
             self.config.set_key('dynamic_fees', x>0)
-            self.window.fee_slider.update()
         fee_type_combo.currentIndexChanged.connect(on_fee_type)
         fee_widgets.append((fee_type_label, fee_type_combo))
-
-        feebox_cb = QCheckBox(_('Edit fees manually'))
-        feebox_cb.setChecked(bool(self.config.get('show_fee', False)))
-        feebox_cb.setToolTip(_("Show fee edit box in send tab."))
-        def on_feebox(x):
-            self.config.set_key('show_fee', x == Qt.Checked)
-            self.window.fee_adv_controls.setVisible(bool(x))
-        feebox_cb.stateChanged.connect(on_feebox)
-        fee_widgets.append((feebox_cb, None))
 
         use_rbf = bool(self.config.get('use_rbf', True))
         use_rbf_cb = QCheckBox(_('Use Replace-By-Fee'))
@@ -171,17 +144,14 @@ class SettingsDialog(WindowModalDialog):
         fee_widgets.append((batch_rbf_cb, None))
 
         # lightning
-        help_lightning = _("""Enable Lightning Network payments. Note that funds stored in
-lightning channels are not recoverable from your seed. You must backup
-your wallet file after every channel creation.""")
         lightning_widgets = []
-        lightning_cb = QCheckBox(_("Enable Lightning"))
-        lightning_cb.setToolTip(help_lightning)
-        lightning_cb.setChecked(bool(self.config.get('lightning', False)))
-        def on_lightning_checked(x):
-            self.config.set_key('lightning', bool(x))
-        lightning_cb.stateChanged.connect(on_lightning_checked)
-        lightning_widgets.append((lightning_cb, None))
+
+        backup_help = _("""If you configure a backup directory, a backup of your wallet file will be saved everytime you create a new channel.\n\nA backup file cannot be used as a wallet; it can only be used to retrieve the funds locked in your channels, by requesting your channels to be force closed (using data loss protection).\n\nIf the remote node is online, they will force-close your channels when you open the backup file. Note that a backup is not strictly necessary for that; if the remote party is online but they cannot reach you because you lost your wallet file, they should eventually close your channels, and your funds should be sent to an address recoverable from your seed (using static_remotekey).\n\nIf the remote node is not online, you can use the backup file to force close your channels, but only at the risk of losing all your funds in the channel, because you will be broadcasting an old state.""")
+        backup_dir = self.config.get('backup_dir')
+        backup_dir_label = HelpLabel(_('Backup directory') + ':', backup_help)
+        self.backup_dir_e = QPushButton(backup_dir)
+        self.backup_dir_e.clicked.connect(self.select_backup_dir)
+        lightning_widgets.append((backup_dir_label, self.backup_dir_e))
 
         help_persist = _("""If this option is checked, Electrum will persist as a daemon after
 you close all your wallet windows. Your local watchtower will keep
@@ -209,8 +179,6 @@ open. For this to work, your computer needs to be online regularly.""")
         def on_wt_url():
             url = self.watchtower_url_e.text() or None
             watchtower_url = self.config.set_key('watchtower_url', url)
-            if url:
-                self.lnwatcher.set_remote_watchtower()
         self.watchtower_url_e.editingFinished.connect(on_wt_url)
         lightning_widgets.append((remote_wt_cb, self.watchtower_url_e))
 
@@ -235,7 +203,7 @@ open. For this to work, your computer needs to be online regularly.""")
         ssl_privkey = self.config.get('ssl_keyfile')
         ssl_privkey_label = HelpLabel(_('SSL key file') + ':', '')
         self.ssl_privkey_e = QPushButton(ssl_privkey)
-        self.ssl_cert_e.clicked.connect(self.select_ssl_certfile)
+        self.ssl_privkey_e.clicked.connect(self.select_ssl_privkey)
         services_widgets.append((ssl_privkey_label, self.ssl_privkey_e))
 
         ssl_domain_label = HelpLabel(_('SSL domain') + ':', '')
@@ -264,8 +232,8 @@ open. For this to work, your computer needs to be online regularly.""")
         self.payserver_port_e.setEnabled(self.config.get('run_payserver', False))
         services_widgets.append((payserver_cb, self.payserver_port_e))
 
-        help_local_wt = _("""To setup a local watchtower, you must run Electrum on a machine
-        that is always connected to the internet. Configure a port if you want it to be public.""")
+        help_local_wt = _("""To run a watchtower, you must run Electrum on a machine
+that is always connected to the internet. Configure a port if you want it to be public.""")
         local_wt_cb = QCheckBox(_("Run Watchtower"))
         local_wt_cb.setToolTip(help_local_wt)
         local_wt_cb.setChecked(bool(self.config.get('run_watchtower', False)))
@@ -292,7 +260,7 @@ open. For this to work, your computer needs to be online regularly.""")
             unit_result = units[unit_combo.currentIndex()]
             if self.window.base_unit() == unit_result:
                 return
-            edits = self.window.amount_e, self.window.fee_e, self.window.receive_amount_e
+            edits = self.window.amount_e, self.window.receive_amount_e
             amounts = [edit.get_amount() for edit in edits]
             self.window.decimal_point = base_unit_name_to_decimal_point(unit_result)
             self.config.set_key('decimal_point', self.window.decimal_point, True)
@@ -349,6 +317,14 @@ open. For this to work, your computer needs to be online regularly.""")
         filelogging_cb.setToolTip(_('Debug logs can be persisted to disk. These are useful for troubleshooting.'))
         gui_widgets.append((filelogging_cb, None))
 
+        preview_cb = QCheckBox(_('Advanced preview'))
+        preview_cb.setChecked(bool(self.config.get('advanced_preview', False)))
+        preview_cb.setToolTip(_("Open advanced transaction preview dialog when 'Pay' is clicked."))
+        def on_preview(x):
+            self.config.set_key('advanced_preview', x == Qt.Checked)
+        preview_cb.stateChanged.connect(on_preview)
+        tx_widgets.append((preview_cb, None))
+
         usechange_cb = QCheckBox(_('Use change addresses'))
         usechange_cb.setChecked(self.window.wallet.use_change)
         if not self.config.is_modifiable('use_change'): usechange_cb.setEnabled(False)
@@ -356,7 +332,7 @@ open. For this to work, your computer needs to be online regularly.""")
             usechange_result = x == Qt.Checked
             if self.window.wallet.use_change != usechange_result:
                 self.window.wallet.use_change = usechange_result
-                self.window.wallet.storage.put('use_change', self.window.wallet.use_change)
+                self.window.wallet.db.put('use_change', self.window.wallet.use_change)
                 multiple_cb.setEnabled(self.window.wallet.use_change)
         usechange_cb.stateChanged.connect(on_usechange)
         usechange_cb.setToolTip(_('Using change addresses makes it more difficult for other people to track your transactions.'))
@@ -366,7 +342,7 @@ open. For this to work, your computer needs to be online regularly.""")
             multiple = x == Qt.Checked
             if self.wallet.multiple_change != multiple:
                 self.wallet.multiple_change = multiple
-                self.wallet.storage.put('multiple_change', multiple)
+                self.wallet.db.put('multiple_change', multiple)
         multiple_change = self.wallet.multiple_change
         multiple_cb = QCheckBox(_('Use multiple change addresses'))
         multiple_cb.setEnabled(self.wallet.use_change)
@@ -415,7 +391,7 @@ open. For this to work, your computer needs to be online regularly.""")
         outrounding_cb.setToolTip(
             _('Set the value of the change output so that it has similar precision to the other outputs.') + '\n' +
             _('This might improve your privacy somewhat.') + '\n' +
-            _('If enabled, at most 100 satoshis might be lost due to this, per transaction.'))
+            _('If enabled, at most 100 swartz might be lost due to this, per transaction.'))
         outrounding_cb.setChecked(enable_outrounding)
         outrounding_cb.stateChanged.connect(on_outrounding)
         tx_widgets.append((outrounding_cb, None))
@@ -578,6 +554,13 @@ open. For this to work, your computer needs to be online regularly.""")
         if alias:
             self.window.fetch_alias()
 
+    def select_backup_dir(self, b):
+        name = self.config.get('backup_dir', '')
+        dirname = QFileDialog.getExistingDirectory(self, "Select your SSL certificate file", name)
+        if dirname:
+            self.config.set_key('backup_dir', dirname)
+            self.backup_dir_e.setText(dirname)
+
     def select_ssl_certfile(self, b):
         name = self.config.get('ssl_certfile', '')
         filename, __ = QFileDialog.getOpenFileName(self, "Select your SSL certificate file", name)
@@ -587,10 +570,10 @@ open. For this to work, your computer needs to be online regularly.""")
             self.check_ssl_config()
 
     def select_ssl_privkey(self, b):
-        name = self.config.get('ssl_privkey', '')
+        name = self.config.get('ssl_keyfile', '')
         filename, __ = QFileDialog.getOpenFileName(self, "Select your SSL private key file", name)
         if filename:
-            self.config.set_key('ssl_privkey', filename)
+            self.config.set_key('ssl_keyfile', filename)
             self.ssl_cert_e.setText(filename)
             self.check_ssl_config()
 
@@ -615,10 +598,26 @@ open. For this to work, your computer needs to be online regularly.""")
         hostname = str(self.hostname_e.text())
         self.config.set_key('services_hostname', hostname, True)
 
+    def _get_int_port_from_port_text(self, port_text) -> Optional[int]:
+        if not port_text:
+            return
+        try:
+            port = int(port_text)
+            if not (0 < port < 2 ** 16):
+                raise Exception('port out of range')
+        except Exception:
+            self.window.show_error("invalid port")
+            return
+        return port
+
     def on_payserver_port(self):
-        port = int(self.payserver_port_e.text())
+        port_text = self.payserver_port_e.text()
+        port = self._get_int_port_from_port_text(port_text)
+        if port is None: return
         self.config.set_key('payserver_port', port, True)
 
     def on_watchtower_port(self):
-        port = int(self.payserver_port_e.text())
+        port_text = self.payserver_port_e.text()
+        port = self._get_int_port_from_port_text(port_text)
+        if port is None: return
         self.config.set_key('watchtower_port', port, True)

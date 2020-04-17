@@ -1,5 +1,6 @@
+import copy
 from datetime import datetime
-from typing import NamedTuple, Callable
+from typing import NamedTuple, Callable, TYPE_CHECKING
 
 from kivy.app import App
 from kivy.factory import Factory
@@ -16,6 +17,11 @@ from electrum.gui.kivy.i18n import _
 from electrum.util import InvalidPassword
 from electrum.address_synchronizer import TX_HEIGHT_LOCAL
 from electrum.wallet import CannotBumpFee
+from electrum.transaction import Transaction, PartialTransaction
+from ...util import address_colors
+
+if TYPE_CHECKING:
+    from ...main_window import ElectrumWindow
 
 
 Builder.load_string('''
@@ -121,10 +127,15 @@ class TxDialog(Factory.Popup):
 
     def __init__(self, app, tx):
         Factory.Popup.__init__(self)
-        self.app = app
+        self.app = app  # type: ElectrumWindow
         self.wallet = self.app.wallet
-        self.tx = tx
+        self.tx = tx  # type: Transaction
         self._action_button_fn = lambda btn: None
+
+        # if the wallet can populate the inputs with more info, do it now.
+        # as a result, e.g. we might learn an imported address tx is segwit,
+        # or that a beyond-gap-limit address is is_mine
+        tx.add_info_from_wallet(self.wallet)
 
     def on_open(self):
         self.update()
@@ -150,6 +161,7 @@ class TxDialog(Factory.Popup):
             self.date_label = ''
             self.date_str = ''
 
+        self.can_sign = self.wallet.can_sign(self.tx)
         if amount is None:
             self.amount_str = _("Transaction unrelated to your wallet")
         elif amount > 0:
@@ -158,16 +170,23 @@ class TxDialog(Factory.Popup):
         else:
             self.is_mine = True
             self.amount_str = format_amount(-amount)
-        if fee is not None:
+        risk_of_burning_coins = (isinstance(self.tx, PartialTransaction)
+                                 and self.can_sign
+                                 and fee is not None
+                                 and self.tx.is_there_risk_of_burning_coins_as_fees())
+        if fee is not None and not risk_of_burning_coins:
             self.fee_str = format_amount(fee)
             fee_per_kb = fee / self.tx.estimated_size() * 1000
             self.feerate_str = self.app.format_fee_rate(fee_per_kb)
         else:
             self.fee_str = _('unknown')
             self.feerate_str = _('unknown')
-        self.can_sign = self.wallet.can_sign(self.tx)
-        self.ids.output_list.update(self.tx.get_outputs_for_UI())
-        self.is_local_tx = tx_mined_status.height == TX_HEIGHT_LOCAL
+        self.ids.output_list.update(self.tx.outputs())
+
+        for dict_entry in self.ids.output_list.data:
+            dict_entry['color'], dict_entry['background_color'] = address_colors(self.wallet, dict_entry['address'])
+
+        self.can_remove_tx = tx_details.can_remove
         self.update_action_button()
 
     def update_action_button(self):
@@ -176,7 +195,7 @@ class TxDialog(Factory.Popup):
             ActionButtonOption(text=_('Sign'), func=lambda btn: self.do_sign(), enabled=self.can_sign),
             ActionButtonOption(text=_('Broadcast'), func=lambda btn: self.do_broadcast(), enabled=self.can_broadcast),
             ActionButtonOption(text=_('Bump fee'), func=lambda btn: self.do_rbf(), enabled=self.can_rbf),
-            ActionButtonOption(text=_('Remove'), func=lambda btn: self.remove_local_tx(), enabled=self.is_local_tx),
+            ActionButtonOption(text=_('Remove'), func=lambda btn: self.remove_local_tx(), enabled=self.can_remove_tx),
         )
         num_options = sum(map(lambda o: bool(o.enabled), options))
         # if no options available, hide button
@@ -252,10 +271,15 @@ class TxDialog(Factory.Popup):
 
     def show_qr(self):
         from electrum.bitcoin import base_encode, bfh
-        raw_tx = str(self.tx)
-        text = bfh(raw_tx)
+        original_raw_tx = str(self.tx)
+        tx = copy.deepcopy(self.tx)  # make copy as we mutate tx
+        if isinstance(tx, PartialTransaction):
+            # this makes QR codes a lot smaller (or just possible in the first place!)
+            tx.convert_all_utxos_to_witness_utxos()
+
+        text = tx.serialize_as_bytes()
         text = base_encode(text, base=43)
-        self.app.qr_dialog(_("Raw Transaction"), text, text_for_clipboard=raw_tx)
+        self.app.qr_dialog(_("Raw Transaction"), text, text_for_clipboard=original_raw_tx)
 
     def remove_local_tx(self):
         txid = self.tx.txid()
@@ -270,7 +294,7 @@ class TxDialog(Factory.Popup):
             if b:
                 for tx in to_delete:
                     self.wallet.remove_transaction(tx)
-                self.wallet.storage.write()
+                self.wallet.save_db()
                 self.app._trigger_update_wallet()  # FIXME private...
                 self.dismiss()
         d = Question(question, on_prompt)

@@ -1,4 +1,6 @@
 #:import _ electrum.gui.kivy.i18n._
+#:import pr_color electrum.util.pr_color
+#:import PR_UNKNOWN electrum.util.PR_UNKNOWN
 #:import Factory kivy.factory.Factory
 #:import Decimal decimal.Decimal
 #:set btc_symbol chr(171)
@@ -15,7 +17,8 @@
     key: ''
     memo: ''
     amount: ''
-    status: ''
+    status: PR_UNKNOWN
+    status_str: ''
     date: ''
     BoxLayout:
         spacing: '8dp'
@@ -44,10 +47,10 @@
             font_size: '15sp'
         Widget
         PaymentLabel:
-            text: root.status
+            text: root.status_str
             halign: 'right'
             font_size: '13sp'
-            color: .699, .699, .699, 1
+            color: pr_color[root.status]
         Widget
 
 <PaymentRecycleView>:
@@ -59,7 +62,7 @@
         height: self.minimum_height
         orientation: 'vertical'
 
-SendScreen:
+<SendScreen>:
     id: s
     name: 'send'
     address: ''
@@ -92,7 +95,6 @@ SendScreen:
                     on_release: Clock.schedule_once(lambda dt: app.show_info(_('Copy and paste the recipient address using the Paste button, or use the camera to scan a QR code.')))
                     #on_release: Clock.schedule_once(lambda dt: app.popup_dialog('contacts'))
             CardSeparator:
-                opacity: int(not root.is_locked)
                 color: blue_bottom.foreground_color
             BoxLayout:
                 size_hint: 1, None
@@ -111,7 +113,6 @@ SendScreen:
                     disabled: root.is_bip70 or (root.is_lightning and not s.amount)
                     on_release: Clock.schedule_once(lambda dt: app.amount_dialog(s, True))
             CardSeparator:
-                opacity: int(not root.is_locked)
                 color: blue_bottom.foreground_color
             BoxLayout:
                 id: message_selection
@@ -129,7 +130,6 @@ SendScreen:
                     disabled: root.is_locked
                     on_release: Clock.schedule_once(lambda dt: app.description_dialog(s))
             CardSeparator:
-                opacity: int(not root.is_locked)
                 color: blue_bottom.foreground_color
             BoxLayout:
                 size_hint: 1, None
@@ -149,26 +149,30 @@ SendScreen:
             size_hint: 1, None
             height: '48dp'
             IconButton:
+                icon: 'atlas://electrum_chi/electrum/gui/kivy/theming/light/delete'
                 size_hint: 0.5, 1
-                on_release: s.parent.do_save()
+                on_release: Clock.schedule_once(lambda dt: s.clear_invoices_dialog())
+            IconButton:
+                size_hint: 0.5, 1
+                on_release: s.do_save()
                 icon: 'atlas://electrum_chi/electrum/gui/kivy/theming/light/save'
             IconButton:
                 size_hint: 0.5, 1
-                icon: 'atlas://electrum_chi/electrum/gui/kivy/theming/light/copy'
-                on_release: s.parent.do_paste()
+                on_release: s.do_clear()
+                icon: 'atlas://electrum_chi/electrum/gui/kivy/theming/light/closebutton'
             IconButton:
+                size_hint: 0.5, 1
+                icon: 'atlas://electrum_chi/electrum/gui/kivy/theming/light/copy'
+                on_release: s.do_paste()
+            Button:
                 id: qr
+                text:_('Scan')
                 size_hint: 1, 1
                 on_release: Clock.schedule_once(lambda dt: app.scan_qr(on_complete=app.on_qr))
-                icon: 'atlas://electrum_chi/electrum/gui/kivy/theming/light/camera'
-            Button:
-                text: _('Clear')
-                size_hint: 1, 1
-                on_release: s.parent.do_clear()
             Button:
                 text: _('Pay')
                 size_hint: 1, 1
-                on_release: s.parent.do_pay()
+                on_release: s.do_pay()
         Widget:
             size_hint: 1, 0.1
         PaymentRecycleView:

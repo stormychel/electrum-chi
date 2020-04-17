@@ -47,6 +47,7 @@ from aiohttp_socks import SocksConnector, SocksVer
 from aiorpcx import TaskGroup
 import certifi
 import dns.resolver
+import ecdsa
 
 from .i18n import _
 from .logging import get_logger, Logger
@@ -84,6 +85,17 @@ PR_UNKNOWN  = 2     # sent but not propagated
 PR_PAID     = 3     # send and propagated
 PR_INFLIGHT = 4     # unconfirmed
 PR_FAILED   = 5
+PR_ROUTING  = 6
+
+pr_color = {
+    PR_UNPAID:   (.7, .7, .7, 1),
+    PR_PAID:     (.2, .9, .2, 1),
+    PR_UNKNOWN:  (.7, .7, .7, 1),
+    PR_EXPIRED:  (.9, .2, .2, 1),
+    PR_INFLIGHT: (.9, .6, .3, 1),
+    PR_FAILED:   (.9, .2, .2, 1),
+    PR_ROUTING: (.9, .6, .3, 1),
+}
 
 pr_tooltips = {
     PR_UNPAID:_('Pending'),
@@ -92,25 +104,35 @@ pr_tooltips = {
     PR_EXPIRED:_('Expired'),
     PR_INFLIGHT:_('In progress'),
     PR_FAILED:_('Failed'),
+    PR_ROUTING: _('Computing route...'),
 }
 
+PR_DEFAULT_EXPIRATION_WHEN_CREATING = 24*60*60  # 1 day
 pr_expiration_values = {
+    0: _('Never'),
     10*60: _('10 minutes'),
     60*60: _('1 hour'),
     24*60*60: _('1 day'),
-    7*24*60*60: _('1 week')
+    7*24*60*60: _('1 week'),
 }
+assert PR_DEFAULT_EXPIRATION_WHEN_CREATING in pr_expiration_values
+
 
 def get_request_status(req):
     status = req['status']
+    exp = req.get('exp', 0) or 0
+    if req.get('type') == PR_TYPE_LN and exp == 0:
+        status = PR_EXPIRED  # for BOLT-11 invoices, exp==0 means 0 seconds
+    if req['status'] == PR_UNPAID and exp > 0 and req['time'] + req['exp'] < time.time():
+        status = PR_EXPIRED
     status_str = pr_tooltips[status]
     if status == PR_UNPAID:
-        if req.get('exp'):
-            expiration = req['exp'] + req['time']
+        if exp > 0:
+            expiration = exp + req['time']
             status_str = _('Expires') + ' ' + age(expiration, include_seconds=True)
         else:
             status_str = _('Pending')
-    return status_str
+    return status, status_str
 
 
 class UnknownBaseUnit(Exception): pass
@@ -140,6 +162,11 @@ class NotEnoughFunds(Exception):
 class NoDynamicFeeEstimates(Exception):
     def __str__(self):
         return _('Dynamic fee estimates not available')
+
+
+class MultipleSpendMaxTxOutputs(Exception):
+    def __str__(self):
+        return _('At most one output can be set to spend max')
 
 
 class InvalidPassword(Exception):
@@ -172,7 +199,9 @@ class BitcoinException(Exception): pass
 class UserFacingException(Exception):
     """Exception that contains information intended to be shown to the user."""
 
-class InvoiceError(Exception): pass
+
+class InvoiceError(UserFacingException): pass
+
 
 # Throw this exception to unwind the stack like when an error occurs.
 # However unlike other exceptions the user won't be informed.
@@ -187,13 +216,15 @@ class Satoshis(object):
 
     def __new__(cls, value):
         self = super(Satoshis, cls).__new__(cls)
+        # note: 'value' sometimes has msat precision
         self.value = value
         return self
 
     def __repr__(self):
-        return 'Satoshis(%d)'%self.value
+        return f'Satoshis({self.value})'
 
     def __str__(self):
+        # note: precision is truncated to satoshis here
         return format_satoshis(self.value)
 
     def __eq__(self, other):
@@ -245,9 +276,14 @@ class Fiat(object):
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         # note: this does not get called for namedtuples :(  https://bugs.python.org/issue30343
-        from .transaction import Transaction
+        from .transaction import Transaction, TxOutput
+        from .lnutil import UpdateAddHtlc
+        if isinstance(obj, UpdateAddHtlc):
+            return obj.to_tuple()
         if isinstance(obj, Transaction):
-            return obj.as_dict()
+            return obj.serialize()
+        if isinstance(obj, TxOutput):
+            return obj.to_legacy_tuple()
         if isinstance(obj, Satoshis):
             return str(obj)
         if isinstance(obj, Fiat):
@@ -258,6 +294,8 @@ class MyEncoder(json.JSONEncoder):
             return obj.isoformat(' ')[:-3]
         if isinstance(obj, set):
             return list(obj)
+        if isinstance(obj, bytes): # for nametuples in lnchannel
+            return obj.hex()
         if hasattr(obj, 'to_json') and callable(obj.to_json):
             return obj.to_json()
         return super(MyEncoder, self).default(obj)
@@ -400,11 +438,26 @@ def profiler(func):
     return lambda *args, **kw_args: do_profile(args, kw_args)
 
 
+def android_ext_dir():
+    from android.storage import primary_external_storage_path
+    return primary_external_storage_path()
+
+def android_backup_dir():
+    d = os.path.join(android_ext_dir(), 'org.electrum.electrum')
+    if not os.path.exists(d):
+        os.mkdir(d)
+    return d
+
 def android_data_dir():
     import jnius
     PythonActivity = jnius.autoclass('org.kivy.android.PythonActivity')
     return PythonActivity.mActivity.getFilesDir().getPath() + '/data'
 
+def get_backup_dir(config):
+    if 'ANDROID_DATA' in os.environ:
+        return android_backup_dir() if config.get('android_backups') else None
+    else:
+        return config.get('backup_dir')
 
 def ensure_sparse_file(filename):
     # On modern Linux, no need to do anything.
@@ -441,7 +494,12 @@ def assert_file_in_datadir_available(path, config_path):
 
 
 def standardize_path(path):
-    return os.path.normcase(os.path.realpath(os.path.abspath(path)))
+    return os.path.normcase(
+            os.path.realpath(
+                os.path.abspath(
+                    os.path.expanduser(
+                        path
+    ))))
 
 
 def get_new_wallet_name(wallet_folder: str) -> str:
@@ -519,7 +577,9 @@ def xor_bytes(a: bytes, b: bytes) -> bytes:
 
 
 def user_dir():
-    if 'ANDROID_DATA' in os.environ:
+    if "ELECTRUMDIR" in os.environ:
+        return os.environ["ELECTRUMDIR"]
+    elif 'ANDROID_DATA' in os.environ:
         return android_data_dir()
     elif os.name == 'posix':
         return os.path.join(os.environ["HOME"], ".electrum-chi")
@@ -578,9 +638,11 @@ def chunks(items, size: int):
         yield items[i: i + size]
 
 
-def format_satoshis_plain(x, decimal_point = 8):
+def format_satoshis_plain(x, decimal_point = 8) -> str:
     """Display a satoshi amount scaled.  Always uses a '.' as a decimal
     point and has no thousands separator"""
+    if x == '!':
+        return 'max'
     scale_factor = pow(10, decimal_point)
     return "{:.8f}".format(Decimal(x) / scale_factor).rstrip('0').rstrip('.')
 
@@ -629,7 +691,7 @@ def format_fee_satoshis(fee, *, num_zeros=0, precision=None):
     return format_satoshis(fee, num_zeros=num_zeros, decimal_point=0, precision=precision)
 
 
-def quantize_feerate(fee):
+def quantize_feerate(fee) -> Union[None, Decimal, int]:
     """Strip sat/byte fee rate of excess precision."""
     if fee is None:
         return None
@@ -690,6 +752,8 @@ def time_difference(distance_in_time, include_seconds):
 
 mainnet_block_explorers = {
     'Xaya.io': ('https://explorer.xaya.io/',
+                        {'tx': 'tx/', 'addr': 'address/'}),
+    'mynode.local': ('http://mynode.local:3002/',
                         {'tx': 'tx/', 'addr': 'address/'}),
     'system default': ('blockchain:/',
                         {'tx': 'tx/', 'addr': 'address/'}),
@@ -793,7 +857,7 @@ def parse_URI(uri: str, on_pr: Callable = None, *, loop=None) -> dict:
             raise InvalidBitcoinURI(f"failed to parse 'exp' field: {repr(e)}") from e
     if 'sig' in out:
         try:
-            out['sig'] = bh2u(bitcoin.base_decode(out['sig'], None, base=58))
+            out['sig'] = bh2u(bitcoin.base_decode(out['sig'], base=58))
         except Exception as e:
             raise InvalidBitcoinURI(f"failed to parse 'sig' field: {repr(e)}") from e
 
@@ -836,6 +900,16 @@ def create_bip21_uri(addr, amount_sat: Optional[int], message: Optional[str],
         query.append(f"{k}={v}")
     p = urllib.parse.ParseResult(scheme='xaya', netloc='', path=addr, params='', query='&'.join(query), fragment='')
     return str(urllib.parse.urlunparse(p))
+
+
+def maybe_extract_bolt11_invoice(data: str) -> Optional[str]:
+    data = data.strip()  # whitespaces
+    data = data.lower()
+    if data.startswith('lightning:ln'):
+        data = data[10:]
+    if data.startswith('ln'):
+        return data
+    return None
 
 
 # Python bug (http://bugs.python.org/issue1927) causes raw_input
@@ -954,6 +1028,7 @@ def ignore_exceptions(func):
         try:
             return await func(*args, **kwargs)
         except asyncio.CancelledError:
+            # note: with python 3.8, CancelledError no longer inherits Exception, so this catch is redundant
             raise
         except Exception as e:
             pass
@@ -962,7 +1037,7 @@ def ignore_exceptions(func):
 
 class TxMinedInfo(NamedTuple):
     height: int                        # height of block that mined tx
-    conf: Optional[int] = None         # number of confirmations (None means unknown)
+    conf: Optional[int] = None         # number of confirmations, SPV verified (None means unknown)
     timestamp: Optional[int] = None    # timestamp of block that mined tx
     txpos: Optional[int] = None        # position of tx in serialized block
     header_hash: Optional[str] = None  # hash of block that mined tx
@@ -972,7 +1047,9 @@ def make_aiohttp_session(proxy: Optional[dict], headers=None, timeout=None):
     if headers is None:
         headers = {'User-Agent': 'Electrum'}
     if timeout is None:
-        timeout = aiohttp.ClientTimeout(total=30)
+        # The default timeout is high intentionally.
+        # DNS on some systems can be really slow, see e.g. #5337
+        timeout = aiohttp.ClientTimeout(total=45)
     elif isinstance(timeout, (int, float)):
         timeout = aiohttp.ClientTimeout(total=timeout)
     ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=ca_path)
@@ -1021,14 +1098,14 @@ class NetworkJobOnDefaultServer(Logger):
         """Initialise fields. Called every time the underlying
         server connection changes.
         """
-        self.group = SilentTaskGroup()
+        self.taskgroup = SilentTaskGroup()
 
     async def _start(self, interface: 'Interface'):
         self.interface = interface
-        await interface.group.spawn(self._start_tasks)
+        await interface.taskgroup.spawn(self._start_tasks)
 
     async def _start_tasks(self):
-        """Start tasks in self.group. Called every time the underlying
+        """Start tasks in self.taskgroup. Called every time the underlying
         server connection changes.
         """
         raise NotImplementedError()  # implemented by subclasses
@@ -1038,7 +1115,7 @@ class NetworkJobOnDefaultServer(Logger):
         await self._stop()
 
     async def _stop(self):
-        await self.group.cancel_remaining()
+        await self.taskgroup.cancel_remaining()
 
     @log_exceptions
     async def _restart(self, *args):
@@ -1183,3 +1260,9 @@ def resolve_dns_srv(host: str):
             'port': srv.port,
         }
     return [dict_from_srv_record(srv) for srv in srv_records]
+
+
+def randrange(bound: int) -> int:
+    """Return a random integer k such that 1 <= k < bound, uniformly
+    distributed across that range."""
+    return ecdsa.util.randrange(bound)

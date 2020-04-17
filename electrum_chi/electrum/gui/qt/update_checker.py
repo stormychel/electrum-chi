@@ -8,7 +8,7 @@ from distutils.version import StrictVersion
 
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QLabel, QProgressBar,
-                             QHBoxLayout, QPushButton)
+                             QHBoxLayout, QPushButton, QDialog)
 
 from electrum import version
 from electrum import constants
@@ -23,12 +23,12 @@ class UpdateCheck(QWidget, Logger):
     download_url = "https://www.xaya.io/download/betas/#electrum-chi"
 
     VERSION_ANNOUNCEMENT_SIGNING_KEYS = (
-        "N8XRR1apE8bRVe47JkRNWZ3LLx3hD2jRNn",
+        "CJRpDC3CHvrceJBLCaViGjvoXVDTwK8fUv",
     )
 
     def __init__(self, main_window, latest_version=None):
         self.main_window = main_window
-        QWidget.__init__(self)
+        QDialog.__init__(self)
         self.setWindowTitle('Electrum-CHI - ' + _('Update Check'))
         self.content = QVBoxLayout()
         self.content.setContentsMargins(*[10]*4)
@@ -103,7 +103,9 @@ class UpdateCheckThread(QThread, Logger):
         self.main_window = main_window
 
     async def get_update_info(self):
-        async with make_aiohttp_session(proxy=self.main_window.network.proxy) as session:
+        # note: Use long timeout here as it is not critical that we get a response fast,
+        #       and it's bad not to get an update notification just because we did not wait enough.
+        async with make_aiohttp_session(proxy=self.main_window.network.proxy, timeout=120) as session:
             async with session.get(UpdateCheck.url) as result:
                 signed_version_dict = await result.json(content_type=None)
                 # example signed_version_dict:

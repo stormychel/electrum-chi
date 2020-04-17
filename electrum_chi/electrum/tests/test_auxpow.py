@@ -45,12 +45,11 @@ class Test_auxpow(SequentialTestCase):
         auxpow_header['parent_coinbase_tx']._outputs = []
 
         # Clear the cached raw serialization
-        auxpow_header['parent_coinbase_tx'].raw = None
-        auxpow_header['parent_coinbase_tx'].raw_bytes = None
+        auxpow_header['parent_coinbase_tx'].invalidate_ser_cache()
 
         # Re-serialize.  Note that our AuxPoW library won't do this for us,
         # because it optimizes via fast_txid.
-        auxpow_header['parent_coinbase_tx'].raw_bytes = bfh(auxpow_header['parent_coinbase_tx'].serialize_to_network(witness=False))
+        auxpow_header['parent_coinbase_tx']._cached_network_ser_bytes = bfh(auxpow_header['parent_coinbase_tx'].serialize_to_network(force_legacy=True))
 
         # Correct the coinbase Merkle root.
         if fix_merkle_root:
@@ -175,17 +174,36 @@ class Test_auxpow(SequentialTestCase):
     def test_should_reject_coinbase_root_too_late(self):
         header = self.deserialize_with_auxpow(header_without_mm)
 
-        input_script = bfh(header['powdata']['auxpow']['parent_coinbase_tx'].inputs()[0]['scriptSig'])
+        input_script = header['powdata']['auxpow']['parent_coinbase_tx'].inputs()[0].script_sig
 
         padded_script = bfh('00') * (auxpow.MAX_INDEX_PC_BACKWARDS_COMPATIBILITY + 4)
         padded_script += input_script
 
-        header['powdata']['auxpow']['parent_coinbase_tx']._inputs[0]['scriptSig'] = bh2u(padded_script)
+        header['powdata']['auxpow']['parent_coinbase_tx']._inputs[0].script_sig = padded_script
 
         self.clear_coinbase_outputs(header['powdata']['auxpow'])
 
         with self.assertRaises(auxpow.AuxPoWCoinbaseRootTooLate):
             blockchain.Blockchain.verify_header(header, prev_hash_without_mm, target_without_mm)
+
+    # Catch the case that more than one merged mine header is present in the
+    # coinbase transaction (this is considered an attempt to confuse the
+    # parser).  We use this Namecoin header because it has an explicit MM
+    # coinbase header (otherwise it won't be a duplicate).
+    # Equivalent to shouldRejectIfMergedMineHeaderDuplicated in libdohj tests.
+    def test_should_reject_coinbase_root_duplicated(self):
+        header = self.deserialize_with_auxpow(header_with_mm)
+
+        input_script = header['powdata']['auxpow']['parent_coinbase_tx'].inputs()[0].script_sig
+
+        new_script = input_script + auxpow.COINBASE_MERGED_MINING_HEADER
+
+        header['powdata']['auxpow']['parent_coinbase_tx']._inputs[0].script_sig = new_script
+
+        self.clear_coinbase_outputs(header['powdata']['auxpow'])
+
+        with self.assertRaises(auxpow.AuxPoWCoinbaseRootDuplicatedError):
+            blockchain.Blockchain.verify_header(header, prev_hash_with_mm, target_with_mm)
 
     # Verifies that the commitment of the auxpow to the block header it is
     # proving for is actually checked.

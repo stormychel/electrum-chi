@@ -50,7 +50,7 @@ from .bitcoin import hash_encode, hash_decode
 from . import constants
 from .crypto import sha256d
 from . import transaction
-from .transaction import BCDataStream, Transaction, TYPE_SCRIPT
+from .transaction import BCDataStream, Transaction, TxOutput, TYPE_SCRIPT
 from .util import bfh, bh2u
 
 # Maximum index of the merkle root hash in the coinbase transaction script,
@@ -82,6 +82,12 @@ class AuxPoWCoinbaseRootTooLate(AuxPowVerifyError):
 class AuxPoWCoinbaseRootMissingError(AuxPowVerifyError):
     pass
 
+class AuxPoWCoinbaseRootDuplicatedError(AuxPowVerifyError):
+    pass
+
+class AuxPoWCoinbaseRootWrongOffset(AuxPowVerifyError):
+    pass
+
 def deserialize_auxpow_header(s, start_position=0) -> (dict, int):
     """Deserialises an AuxPoW instance.
 
@@ -92,8 +98,8 @@ def deserialize_auxpow_header(s, start_position=0) -> (dict, int):
 
     # The parent coinbase transaction is first.
     # Deserialize it and save the trailing data.
-    parent_coinbase_tx = Transaction(None, expect_trailing_data=True, raw_bytes=s, expect_trailing_bytes=True, copy_input=False, start_position=start_position)
-    parent_coinbase_tx_dict, start_position = fast_tx_deserialize(parent_coinbase_tx)
+    parent_coinbase_tx = Transaction(s, expect_trailing_data=True, copy_input=False, start_position=start_position)
+    start_position = fast_tx_deserialize(parent_coinbase_tx)
     auxpow_header['parent_coinbase_tx'] = parent_coinbase_tx
 
     # Next is the parent block hash.  According to the Bitcoin.it wiki,
@@ -175,13 +181,13 @@ def verify_auxpow(auxpow, auxhash):
     #    return error("AuxPow is not a generate");
 
     if (coinbase_index != 0):
-        raise AuxPoWNotGenerateError()
+        raise AuxPoWNotGenerateError("AuxPow is not a generate")
 
     #if (vChainMerkleBranch.size() > 30)
     #    return error("Aux POW chain merkle branch too long");
 
     if (len(chain_merkle_branch) > 30):
-        raise AuxPoWChainMerkleTooLongError()
+        raise AuxPoWChainMerkleTooLongError("Aux POW chain merkle branch too long")
 
     #// Check that the chain merkle root is in the coinbase
     #uint256 nRootHash = CBlock::CheckMerkleBranch(hashAuxBlock, vChainMerkleBranch, nChainIndex);
@@ -195,7 +201,7 @@ def verify_auxpow(auxpow, auxhash):
     # if (CBlock::CheckMerkleBranch(GetHash(), vMerkleBranch, nIndex) != parentBlock.hashMerkleRoot)
     #    return error("Aux POW merkle root incorrect");
     if (calculate_merkle_root(coinbase_hash, coinbase_merkle_branch, coinbase_index) != parent_block['merkle_root']):
-        raise AuxPoWBadCoinbaseMerkleBranchError()
+        raise AuxPoWBadCoinbaseMerkleBranchError("Aux POW merkle root incorrect")
 
     #// Check that there is at least one input.
     #if (coinbaseTx->vin.empty())
@@ -203,11 +209,11 @@ def verify_auxpow(auxpow, auxhash):
 
     # Check that there is at least one input.
     if (len(coinbase.inputs()) == 0):
-        raise AuxPoWCoinbaseNoInputsError()
+        raise AuxPoWCoinbaseNoInputsError("Aux POW coinbase has no inputs")
 
     # const CScript script = coinbaseTx->vin[0].scriptSig;
 
-    script_bytes = bfh(coinbase.inputs()[0]['scriptSig'])
+    script_bytes = coinbase.inputs()[0].script_sig
 
     #// Check that the same work is not submitted twice to our chain.
     #//
@@ -245,8 +251,10 @@ def verify_auxpow(auxpow, auxhash):
         #if (pcHead + sizeof(pchMergedMiningHeader) != pc)
             #return error("Merged mining header is not just before chain merkle root");
 
-        # TODO
-        pass
+        if -1 != script_bytes.find(COINBASE_MERGED_MINING_HEADER, pos_header + 1):
+            raise AuxPoWCoinbaseRootDuplicatedError('Multiple merged mining headers in coinbase')
+        if pos_header + len(COINBASE_MERGED_MINING_HEADER) != pos:
+            raise AuxPoWCoinbaseRootWrongOffset('Merged mining header is not just before chain merkle root')
 
     #}
     #else
@@ -264,7 +272,7 @@ def verify_auxpow(auxpow, auxhash):
         # Enforce only one chain merkle root by checking that it starts early in the coinbase.
         # 8-12 bytes are enough to encode extraNonce and nBits.
         if pos > 20:
-            raise AuxPoWCoinbaseRootTooLate()
+            raise AuxPoWCoinbaseRootTooLate("Aux POW chain merkle root must start in the first 20 bytes of the parent coinbase")
 
     #}
 
@@ -324,15 +332,15 @@ def verify_auxpow(auxpow, auxhash):
 # This is calculated the same as the Transaction.txid() method, but doesn't
 # reserialize it.
 def fast_txid(tx):
-    return bh2u(sha256d(tx.raw_bytes)[::-1])
+    return bh2u(sha256d(tx._cached_network_ser_bytes)[::-1])
 
 # Used by fast_tx_deserialize
-def stub_parse_output(vds, i):
-    vds.read_int64() # d['value']
-    vds.read_bytes(vds.read_compact_size()) # scriptPubKey
-    return {'type': TYPE_SCRIPT, 'address': None, 'value': 0, 'name_op': None}
+def stub_parse_output(vds: BCDataStream) -> TxOutput:
+    vds.read_int64() # value
+    vds.read_bytes(vds.read_compact_size()) # scriptpubkey
+    return TxOutput(value=0, scriptpubkey=b'')
 
-# This is equivalent to tx.deserialize(), but doesn't parse outputs.
+# This is equivalent to (tx.deserialize(), ), but doesn't parse outputs.
 def fast_tx_deserialize(tx):
     # Monkeypatch output address parsing with a stub, since we only care about
     # inputs.

@@ -10,6 +10,10 @@ recursive-include packages cacert.pem
 
 graft electrum_chi
 prune electrum_chi/electrum/tests
+graft contrib/udev
+
+exclude electrum/*.so
+exclude electrum/*.so.0
 
 global-exclude __pycache__
 global-exclude *.py[co~]

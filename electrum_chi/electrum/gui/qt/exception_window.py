@@ -21,9 +21,7 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import platform
 import sys
-import traceback
 
 from PyQt5.QtCore import QObject
 import PyQt5.QtCore as QtCore
@@ -60,6 +58,8 @@ class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin, Logger):
         main_box.addWidget(QLabel(BaseCrashReporter.REQUEST_HELP_MESSAGE))
 
         collapse_info = QPushButton(_("Show report contents"))
+        # FIXME if traceback contains special HTML characters, e.g. '<'
+        #       then formatting issues arise (due to rich_text=True)
         collapse_info.clicked.connect(
             lambda: self.msg_box(QMessageBox.NoIcon,
                                  self, _("Report contents"), self.get_report_string(),

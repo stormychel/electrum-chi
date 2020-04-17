@@ -29,17 +29,16 @@ import base64
 import time
 import hashlib
 from collections import defaultdict
-from typing import Dict, Union
+from typing import Dict, Union, Sequence, List
 
 from urllib.parse import urljoin
 from urllib.parse import quote
 from aiohttp import ClientResponse
 
 from electrum import ecc, constants, keystore, version, bip32, bitcoin
-from electrum.bitcoin import TYPE_ADDRESS
 from electrum.bip32 import BIP32Node, xpub_type
 from electrum.crypto import sha256
-from electrum.transaction import TxOutput
+from electrum.transaction import PartialTxOutput, PartialTxInput, PartialTransaction, Transaction
 from electrum.mnemonic import Mnemonic, seed_type, is_any_2fa_seed_type
 from electrum.wallet import Multisig_Wallet, Deterministic_Wallet
 from electrum.i18n import _
@@ -49,6 +48,8 @@ from electrum.storage import StorageEncryptionVersion
 from electrum.network import Network
 from electrum.base_wizard import BaseWizard, WizardWalletPasswordSetting
 from electrum.logging import Logger
+
+from .legacy_tx_format import serialize_tx_in_legacy_format
 
 
 def get_signing_xpub(xtype):
@@ -259,19 +260,21 @@ server = TrustedCoinCosignerClient(user_agent="Electrum/" + version.ELECTRUM_VER
 
 class Wallet_2fa(Multisig_Wallet):
 
+    plugin: 'TrustedCoinPlugin'
+
     wallet_type = '2fa'
 
-    def __init__(self, storage, *, config):
+    def __init__(self, db, storage, *, config):
         self.m, self.n = 2, 3
-        Deterministic_Wallet.__init__(self, storage, config=config)
+        Deterministic_Wallet.__init__(self, db, storage, config=config)
         self.is_billing = False
         self.billing_info = None
         self._load_billing_addresses()
 
     def _load_billing_addresses(self):
         billing_addresses = {
-            'legacy': self.storage.get('trustedcoin_billing_addresses', {}),
-            'segwit': self.storage.get('trustedcoin_billing_addresses_segwit', {})
+            'legacy': self.db.get('trustedcoin_billing_addresses', {}),
+            'segwit': self.db.get('trustedcoin_billing_addresses_segwit', {})
         }
         self._billing_addresses = {}  # type: Dict[str, Dict[int, str]]  # addr_type -> index -> addr
         self._billing_addresses_set = set()  # set of addrs
@@ -286,7 +289,7 @@ class Wallet_2fa(Multisig_Wallet):
         return not self.keystores['x2/'].is_watching_only()
 
     def get_user_id(self):
-        return get_user_id(self.storage)
+        return get_user_id(self.db)
 
     def min_prepay(self):
         return min(self.price_per_tx.keys())
@@ -314,34 +317,35 @@ class Wallet_2fa(Multisig_Wallet):
             raise Exception('too high trustedcoin fee ({} for {} txns)'.format(price, n))
         return price
 
-    def make_unsigned_transaction(self, coins, outputs, fixed_fee=None,
-                                  change_addr=None, is_sweep=False):
+    def make_unsigned_transaction(self, *, coins: Sequence[PartialTxInput],
+                                  outputs: List[PartialTxOutput], fee=None,
+                                  change_addr: str = None, is_sweep=False) -> PartialTransaction:
         mk_tx = lambda o: Multisig_Wallet.make_unsigned_transaction(
-            self, coins, o, fixed_fee, change_addr)
-        fee = self.extra_fee() if not is_sweep else 0
-        if fee:
+            self, coins=coins, outputs=o, fee=fee, change_addr=change_addr)
+        extra_fee = self.extra_fee() if not is_sweep else 0
+        if extra_fee:
             address = self.billing_info['billing_address_segwit']
-            fee_output = TxOutput(TYPE_ADDRESS, address, fee)
+            fee_output = PartialTxOutput.from_address_and_value(address, extra_fee)
             try:
                 tx = mk_tx(outputs + [fee_output])
             except NotEnoughFunds:
                 # TrustedCoin won't charge if the total inputs is
                 # lower than their fee
                 tx = mk_tx(outputs)
-                if tx.input_value() >= fee:
+                if tx.input_value() >= extra_fee:
                     raise
                 self.logger.info("not charging for this tx")
         else:
             tx = mk_tx(outputs)
         return tx
 
-    def on_otp(self, tx, otp):
+    def on_otp(self, tx: PartialTransaction, otp):
         if not otp:
             self.logger.info("sign_transaction: no auth code")
             return
         otp = int(otp)
         long_user_id, short_id = self.get_user_id()
-        raw_tx = tx.serialize()
+        raw_tx = serialize_tx_in_legacy_format(tx, wallet=self)
         try:
             r = server.sign(short_id, raw_tx, otp)
         except TrustedCoinException as e:
@@ -350,8 +354,9 @@ class Wallet_2fa(Multisig_Wallet):
             else:
                 raise
         if r:
-            raw_tx = r.get('transaction')
-            tx.update(raw_tx)
+            received_raw_tx = r.get('transaction')
+            received_tx = Transaction(received_raw_tx)
+            tx.combine_with_other_psbt(received_tx)
         self.logger.info(f"twofactor: is complete {tx.is_complete()}")
         # reset billing_info
         self.billing_info = None
@@ -378,10 +383,10 @@ class Wallet_2fa(Multisig_Wallet):
         billing_addresses_of_this_type[billing_index] = address
         self._billing_addresses_set.add(address)
         self._billing_addresses[addr_type] = billing_addresses_of_this_type
-        self.storage.put('trustedcoin_billing_addresses', self._billing_addresses['legacy'])
-        self.storage.put('trustedcoin_billing_addresses_segwit', self._billing_addresses['segwit'])
+        self.db.put('trustedcoin_billing_addresses', self._billing_addresses['legacy'])
+        self.db.put('trustedcoin_billing_addresses_segwit', self._billing_addresses['segwit'])
         # FIXME this often runs in a daemon thread, where storage.write will fail
-        self.storage.write()
+        self.db.write(self.storage)
 
     def is_billing_address(self, addr: str) -> bool:
         return addr in self._billing_addresses_set
@@ -389,11 +394,11 @@ class Wallet_2fa(Multisig_Wallet):
 
 # Utility functions
 
-def get_user_id(storage):
+def get_user_id(db):
     def make_long_id(xpub_hot, xpub_cold):
         return sha256(''.join(sorted([xpub_hot, xpub_cold])))
-    xpub1 = storage.get('x1/')['xpub']
-    xpub2 = storage.get('x2/')['xpub']
+    xpub1 = db.get('x1/')['xpub']
+    xpub2 = db.get('x2/')['xpub']
     long_id = make_long_id(xpub1, xpub2)
     short_id = hashlib.sha256(long_id).hexdigest()
     return long_id, short_id
@@ -453,19 +458,20 @@ class TrustedCoinPlugin(BasePlugin):
             return
         if wallet.can_sign_without_server():
             return
-        if not wallet.keystores['x3/'].get_tx_derivations(tx):
+        if not wallet.keystores['x3/'].can_sign(tx, ignore_watching_only=True):
             self.logger.info("twofactor: xpub3 not needed")
             return
         def wrapper(tx):
+            assert tx
             self.prompt_user_for_otp(wallet, tx, on_success, on_failure)
         return wrapper
 
     @hook
-    def get_tx_extra_fee(self, wallet, tx):
+    def get_tx_extra_fee(self, wallet, tx: Transaction):
         if type(wallet) != Wallet_2fa:
             return
         for o in tx.outputs():
-            if o.type == TYPE_ADDRESS and wallet.is_billing_address(o.address):
+            if wallet.is_billing_address(o.address):
                 return o.address, o.value
 
     def finish_requesting(func):
@@ -747,12 +753,12 @@ class TrustedCoinPlugin(BasePlugin):
         self.request_otp_dialog(wizard, short_id, new_secret, xpub3)
 
     @hook
-    def get_action(self, storage):
-        if storage.get('wallet_type') != '2fa':
+    def get_action(self, db):
+        if db.get('wallet_type') != '2fa':
             return
-        if not storage.get('x1/'):
+        if not db.get('x1/'):
             return self, 'show_disclaimer'
-        if not storage.get('x2/'):
+        if not db.get('x2/'):
             return self, 'show_disclaimer'
-        if not storage.get('x3/'):
+        if not db.get('x3/'):
             return self, 'accept_terms_of_use'

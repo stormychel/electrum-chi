@@ -9,8 +9,8 @@ import logging
 
 import electrum
 from electrum.util import format_satoshis
-from electrum.bitcoin import is_address, COIN, TYPE_ADDRESS
-from electrum.transaction import TxOutput
+from electrum.bitcoin import is_address, COIN
+from electrum.transaction import PartialTxOutput
 from electrum.wallet import Wallet
 from electrum.storage import WalletStorage
 from electrum.network import NetworkParameters, TxBroadcastError, BestEffortRequestFailed
@@ -130,7 +130,7 @@ class ElectrumGui:
             label = self.wallet.get_label(hist_item.txid)
             if len(label) > 40:
                 label = label[0:37] + '...'
-            self.history.append(format_str % (time_str, label, format_satoshis(hist_item.value, whitespaces=True),
+            self.history.append(format_str % (time_str, label, format_satoshis(hist_item.delta, whitespaces=True),
                                               format_satoshis(hist_item.balance, whitespaces=True)))
 
 
@@ -331,6 +331,8 @@ class ElectrumGui:
             curses.echo()
             curses.endwin()
 
+    def stop(self):
+        pass
 
     def do_clear(self):
         self.str_amount = ''
@@ -360,8 +362,9 @@ class ElectrumGui:
         else:
             password = None
         try:
-            tx = self.wallet.mktx([TxOutput(TYPE_ADDRESS, self.str_recipient, amount)],
-                                  password, self.config, fee)
+            tx = self.wallet.mktx(outputs=[PartialTxOutput.from_address_and_value(self.str_recipient, amount)],
+                                  password=password,
+                                  fee=fee)
         except Exception as e:
             self.show_message(repr(e))
             return

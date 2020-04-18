@@ -181,9 +181,13 @@ class Test_bitcoin(ElectrumTestCase):
         sig1_b64 = base64.b64encode(sig1)
         sig2_b64 = base64.b64encode(sig2)
 
-        # Re-signed these with Namecoin Core, since the upstream Electrum ones are invalid for Namecoin's msg_magic.
-        self.assertEqual(sig1_b64, b'IKqxjcFykcFJPUsIJtUvR5901nJnD/WN326bDVHqnvxjX6+E/mXH9FY+MNpNyl/liXQDhd53BihaVH2lOGknzFU=')
-        self.assertEqual(sig2_b64, b'HMBdVzZJfSqhGsrJ6NgUoLUxPmTS0NSxA2Y/q3Te69MVNtt4aWbJORq+0MCllDfqiKo9IIaWpSmXk0VXlaIMxx4=')
+        # Due to a difference in low-r signing, Namecoin Core and Electrum-NMC
+        # produce different signatures.  The values here are produced by
+        # Electrum-NMC but have been checked to verify with Namecoin Core.
+        # The difference in signing behaviour was introduced in
+        # https://github.com/spesmilo/electrum/pull/5820.
+        self.assertEqual(sig1_b64, b'H0u4fB+LyaNuPCdJMihq2MQR1H9yRJC2cUKKqo6gAUWGLARkz43rLY7QNKbJWq5eoBN+mK8ZD7hFuEzAXYpHFUk=')
+        self.assertEqual(sig2_b64, b'GygNVRsJ28/zwXdPDk59BjZkRvjpZFkoBtzkGfSWOGqFZ8CT863QFBxbU6xVbJUkyHbcI5uHW2Z782O5DcGaKKI=')
 
         self.assertTrue(ecc.verify_message_with_address(addr1, sig1, msg1))
         self.assertTrue(ecc.verify_message_with_address(addr2, sig2, msg2))

@@ -8,6 +8,7 @@ import asyncio
 from electrum import storage, bitcoin, keystore, bip32, wallet
 from electrum import Transaction
 from electrum import SimpleConfig
+from electrum import simple_config
 from electrum.address_synchronizer import TX_HEIGHT_UNCONFIRMED, TX_HEIGHT_UNCONF_PARENT
 from electrum.wallet import sweep, Multisig_Wallet, Standard_Wallet, Imported_Wallet, restore_wallet_from_text, Abstract_Wallet
 from electrum.util import bfh, bh2u
@@ -682,6 +683,11 @@ class TestWalletSending(TestCaseForTestnet):
 
     @mock.patch.object(wallet.Abstract_Wallet, 'save_db')
     def test_sending_between_p2wsh_2of3_and_p2wsh_p2sh_2of2(self, mock_save_db):
+        # Namecoin note: This test expects Bitcoin's relay fees, so we set them
+        # here.
+        simple_config.FEERATE_MAX_DYNAMIC = 1500000
+        simple_config.FEERATE_DEFAULT_RELAY = 1000
+
         wallet1a = WalletIntegrityHelper.create_multisig_wallet(
             [
                 keystore.from_seed('bitter grass shiver impose acquire brush forget axis eager alone wine silver', '', True),
@@ -860,6 +866,11 @@ class TestWalletSending(TestCaseForTestnet):
 
     @mock.patch.object(wallet.Abstract_Wallet, 'save_db')
     def test_rbf(self, mock_save_db):
+        # Namecoin note: This test expects Bitcoin's relay fees, so we set them
+        # here.
+        simple_config.FEERATE_MAX_DYNAMIC = 1500000
+        simple_config.FEERATE_DEFAULT_RELAY = 1000
+
         self.maxDiff = None
         for simulate_moving_txs in (False, True):
             with self.subTest(msg="_bump_fee_p2pkh_when_there_is_a_change_address", simulate_moving_txs=simulate_moving_txs):

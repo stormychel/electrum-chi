@@ -85,7 +85,7 @@ class UTXOList(MyTreeView):
         if self._spend_set is not None:
             coins = [self._utxo_dict[x] for x in self._spend_set]
             coins = self._filter_frozen_coins(coins)
-            amount = sum(x.value_sats() for x in coins)
+            amount = sum(x.value_sats_display() for x in coins)
             amount_str = self.parent.format_amount_and_units(amount)
             num_outputs_str = _("{} outputs available ({} total)").format(len(coins), len(utxos))
             self.parent.set_coincontrol_msg(_("Coin control active") + f': {num_outputs_str}, {amount_str}')
@@ -99,7 +99,7 @@ class UTXOList(MyTreeView):
         name_short = utxo.prevout.txid.hex()[:16] + '...' + ":%d" % utxo.prevout.out_idx
         self._utxo_dict[name] = utxo
         label = self.wallet.get_label(utxo.prevout.txid.hex())
-        amount = self.parent.format_amount(utxo.value_sats(), whitespaces=True)
+        amount = self.parent.format_amount(utxo.value_sats_display(), whitespaces=True)
         labels = [name_short, address, label, amount, '%d'%height]
         utxo_item = [QStandardItem(x) for x in labels]
         self.set_editability(utxo_item)

@@ -41,9 +41,9 @@ from qrcode import exceptions
 
 from electrum.simple_config import SimpleConfig
 from electrum.util import quantize_feerate
-from electrum.bitcoin import base_encode, NLOCKTIME_BLOCKHEIGHT_MAX
+from electrum.bitcoin import base_encode, COIN, NLOCKTIME_BLOCKHEIGHT_MAX
 from electrum.i18n import _
-from electrum.names import format_name_op
+from electrum.names import format_name_op, OP_NAME_NEW
 from electrum.plugin import run_hook
 from electrum import simple_config
 from electrum.transaction import SerializationError, Transaction, PartialTransaction, PartialTxInput
@@ -404,6 +404,11 @@ class BaseTxDialog(QDialog, MessageBoxMixin):
         tx_mined_status = tx_details.tx_mined_status
         exp_n = tx_details.mempool_depth_bytes
         amount, fee = tx_details.amount, tx_details.fee
+        # TODO: Move this logic into names.py
+        name_fee = 0
+        for o in self.tx.outputs():
+            if o.name_op is not None and o.name_op['op'] == OP_NAME_NEW:
+                name_fee = COIN // 100
         size = self.tx.estimated_size()
         txid = self.tx.txid()
         lnworker_history = self.wallet.lnworker.get_onchain_history() if self.wallet.lnworker else {}
@@ -484,6 +489,11 @@ class BaseTxDialog(QDialog, MessageBoxMixin):
             self.fee_warning_icon.setVisible(risk_of_burning_coins)
         self.fee_label.setText(fee_str)
         self.size_label.setText(size_str)
+        if name_fee is not None and name_fee != 0:
+            name_fee_str = _("Name Registration Fee") + ': %s' % (format_amount(name_fee) + ' ' + base_unit)
+            self.name_fee_label.setText(name_fee_str)
+        else:
+            self.name_fee_label.setText("")
         if ln_amount is None:
             ln_amount_str = ''
         elif ln_amount > 0:
@@ -553,8 +563,8 @@ class BaseTxDialog(QDialog, MessageBoxMixin):
                 if addr is None:
                     addr = ''
                 cursor.insertText(addr, text_format(addr))
-                if isinstance(txin, PartialTxInput) and txin.value_sats() is not None:
-                    cursor.insertText(format_amount(txin.value_sats()), ext)
+                if isinstance(txin, PartialTxInput) and txin.value_sats_display() is not None:
+                    cursor.insertText(format_amount(txin.value_sats_display()), ext)
             cursor.insertBlock()
 
         self.outputs_header.setText(_("Outputs") + ' (%d)'%len(self.tx.outputs()))
@@ -564,7 +574,7 @@ class BaseTxDialog(QDialog, MessageBoxMixin):
         o_text.setReadOnly(True)
         cursor = o_text.textCursor()
         for o in self.tx.outputs():
-            addr, v, name_op = o.get_ui_address_str(), o.value, o.name_op
+            addr, v, name_op = o.get_ui_address_str(), o.value_display, o.name_op
             cursor.insertText(addr, text_format(addr))
             if v is not None:
                 cursor.insertText('\t', ext)
@@ -606,6 +616,12 @@ class BaseTxDialog(QDialog, MessageBoxMixin):
         fee_hbox.addWidget(self.fee_warning_icon)
         fee_hbox.addStretch(1)
         vbox_left.addLayout(fee_hbox)
+
+        name_fee_hbox = QHBoxLayout()
+        self.name_fee_label = TxDetailLabel()
+        name_fee_hbox.addWidget(self.name_fee_label)
+        name_fee_hbox.addStretch(1)
+        vbox_left.addLayout(name_fee_hbox)
 
         vbox_left.addStretch(1)
         hbox_stats.addLayout(vbox_left, 50)

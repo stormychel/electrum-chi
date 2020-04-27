@@ -6,6 +6,7 @@ import shutil
 
 from io import StringIO
 from electrum.simple_config import (SimpleConfig, read_user_config)
+from electrum import simple_config
 
 from . import ElectrumTestCase
 
@@ -110,6 +111,11 @@ class Test_SimpleConfig(ElectrumTestCase):
         self.assertEqual({"something": "a"}, result)
 
     def test_depth_target_to_fee(self):
+        # Namecoin note: This test expects Bitcoin's relay fees, so we set them
+        # here.
+        simple_config.FEERATE_MAX_DYNAMIC = 1500000
+        simple_config.FEERATE_DEFAULT_RELAY = 1000
+
         config = SimpleConfig(self.options)
         config.mempool_fees = [[49, 100110], [10, 121301], [6, 153731], [5, 125872], [1, 36488810]]
         self.assertEqual( 2 * 1000, config.depth_target_to_fee(1000000))

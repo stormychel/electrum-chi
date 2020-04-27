@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Electrum-NMC - lightweight Namecoin client
-# Copyright (C) 2019 Namecoin Developers
+# Copyright (C) 2019-2020 Namecoin Developers
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -62,6 +62,10 @@ def frombtc(inp: str) -> str:
     if inp[:3].lower() == "tb1":
         return convert_bech32(inp, BitcoinTestnet.SEGWIT_HRP)
 
+    # Handle bech32 lightning addresses.
+    if inp[:4].lower() == "lnbc":
+        return convert_ln_bech32(inp, BitcoinMainnet.SEGWIT_HRP)
+
     # Otherwise, try to base58-decode it and then look at the version to
     # determine what it could have been.
     try:
@@ -96,4 +100,15 @@ def convert_bech32(inp: str, new_hrp: str) -> str:
     if data is None:
         raise AssertionError(f"Invalid bech32 for conversion: {inp}")
 
+    return segwit_addr.bech32_encode(new_hrp, data)
+
+
+def convert_ln_bech32(inp: str, new_base_hrp: str) -> str:
+    """Converts a Lightning address in bech32 format to another base HRP"""
+
+    old_hrp, data = segwit_addr.bech32_decode(inp, ignore_long_length=True)
+    if data is None:
+        raise AssertionError(f"Invalid bech32 for conversion: {inp}")
+
+    new_hrp = "ln" + new_base_hrp + old_hrp[4:]
     return segwit_addr.bech32_encode(new_hrp, data)

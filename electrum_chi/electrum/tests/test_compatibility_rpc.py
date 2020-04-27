@@ -74,9 +74,18 @@ class Test_compatibility_rpc (ElectrumTestCase):
     return future.result ()
 
   def test_validateaddress (self):
-    self.assertEqual (self.eval ("validateaddress", ADDR), True)
-    self.assertEqual (self.eval ("validateaddress", BECH32_ADDR), True)
-    self.assertEqual (self.eval ("validateaddress", "foo"), False)
+    self.assertEqual (self.eval ("validateaddress", ADDR), {
+      "address": ADDR,
+      "isvalid": True,
+    })
+    self.assertEqual (self.eval ("validateaddress", BECH32_ADDR), {
+      "address": BECH32_ADDR,
+      "isvalid": True,
+    })
+    self.assertEqual (self.eval ("validateaddress", "foo"), {
+      "address": "foo",
+      "isvalid": False,
+    })
 
   def test_verifymessage_with_address (self):
     self.assertEqual (self.eval ("verifymessage", ADDR, SGN, MSG), True)

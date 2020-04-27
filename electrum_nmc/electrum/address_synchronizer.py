@@ -29,7 +29,7 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, Optional, Set, Tuple, NamedTuple, Sequence, List
 
 from . import bitcoin
-from .bitcoin import COINBASE_MATURITY
+from .bitcoin import COIN, COINBASE_MATURITY
 from .util import profiler, bfh, TxMinedInfo
 from .transaction import Transaction, TxOutput, TxInput, PartialTxInput, TxOutpoint, PartialTransaction
 from .synchronizer import Synchronizer
@@ -37,6 +37,7 @@ from .verifier import SPV
 from .blockchain import hash_header
 from .i18n import _
 from .logging import Logger
+from .names import get_wallet_name_delta
 
 if TYPE_CHECKING:
     from .network import Network
@@ -473,6 +474,16 @@ class AddressSynchronizer(Logger):
         history = []
         for tx_hash in tx_deltas:
             delta = tx_deltas[tx_hash]
+
+            # Namecoin: hide 0.01 in name ops
+            tx = self.db.transactions.get(tx_hash)
+            if tx is not None:
+                sent_name, received_name, _ = get_wallet_name_delta(self, tx, domain)
+                if sent_name:
+                    delta += COIN // 100
+                if received_name:
+                    delta -= COIN // 100
+
             tx_mined_status = self.get_tx_height(tx_hash)
             fee = self.get_tx_fee(tx_hash)
             history.append((tx_hash, tx_mined_status, delta, fee))
@@ -802,15 +813,28 @@ class AddressSynchronizer(Logger):
         received, sent = self.get_addr_io(address)
         c = u = x = 0
         mempool_height = self.get_local_height() + 1  # height of next block
+
+        # Namecoin: get the utxos, so we can hide the 0.01 NMC in name ops
+        utxos = self.get_addr_utxo(address)
+
         for txo, (tx_height, v, is_cb) in received.items():
             if txo in excluded_coins:
                 continue
+
+            # Namecoin: check if it's a name op, so we can hide the 0.01 NMC
+            hidden_v = 0
+            if txo not in sent:
+                prevout = TxOutpoint.from_str(txo)
+                utxo = utxos[prevout]
+                if utxo.name_op is not None:
+                    hidden_v = COIN // 100
+
             if is_cb and tx_height + COINBASE_MATURITY > mempool_height:
-                x += v
+                x += v - hidden_v
             elif tx_height > 0:
-                c += v
+                c += v - hidden_v
             else:
-                u += v
+                u += v - hidden_v
             if txo in sent:
                 if sent[txo] > 0:
                     c -= v

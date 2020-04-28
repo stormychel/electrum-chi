@@ -3172,6 +3172,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.buy_names_available_vbox = QVBoxLayout()
 
         self.buy_names_available_label = QLabel("")
+        self.buy_names_available_label.setWordWrap(True)
         self.buy_names_available_vbox.addWidget(self.buy_names_available_label)
 
         self.buy_names_available_register_button = QPushButton(_("Register name..."))
@@ -3211,12 +3212,15 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         name_show = self.console.namespace.get('name_show')
 
         name_exists = True
+        name_pending_unverified = False
         name_valid = True
         name_mine = False
         chain_syncing = False
         try:
             name_show_result = name_show(identifier_ascii, wallet=self.wallet)
             name_mine = name_show_result["ismine"]
+        except commands.NameUnconfirmedError:
+            name_pending_unverified = True
         except commands.NameNotFoundError:
             name_exists = False
         except commands.NotSynchronizedException:
@@ -3241,10 +3245,14 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.buy_names_available_widget.hide()
             self.buy_names_already_exists_label.setText(_("You already own ") + identifier_formatted + _("!"))
             self.buy_names_already_exists_widget.show()
-        elif name_exists:
+        elif name_exists and not name_pending_unverified:
             self.buy_names_available_widget.hide()
             self.buy_names_already_exists_label.setText(identifier_formatted + _(" is already registered, sorry!"))
             self.buy_names_already_exists_widget.show()
+        elif name_pending_unverified:
+            self.buy_names_already_exists_widget.hide()
+            self.buy_names_available_label.setText(_("The server reports that ") + identifier_formatted + _(" was registered in approximately the past 2 hours, but Electrum-NMC couldn't verify this.  If you believe the server is wrong, you can try to register it, but you may forfeit the name registration fee."))
+            self.buy_names_available_widget.show()
         else:
             self.buy_names_already_exists_widget.hide()
             self.buy_names_available_label.setText(identifier_formatted + _(" is available to register!"))

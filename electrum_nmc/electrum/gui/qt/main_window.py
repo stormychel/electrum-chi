@@ -3163,6 +3163,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.buy_names_already_exists_vbox = QVBoxLayout()
         
         self.buy_names_already_exists_label = QLabel("")
+        self.buy_names_already_exists_label.setWordWrap(True)
         self.buy_names_already_exists_vbox.addWidget(self.buy_names_already_exists_label)
 
         self.buy_names_already_exists_widget = QWidget()
@@ -3213,6 +3214,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         name_show = self.console.namespace.get('name_show')
 
         name_exists = True
+        name_pending_mine = False
+        name_snipe_pending_mine = False
         name_pending_unverified = False
         name_valid = True
         name_mine = False
@@ -3236,10 +3239,34 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                         # Name has under 12 confirmations, we can't verify it.
                         name_mine_unverified = True
 
+            # Then we check the transaction broadcast queue.
+            for txid in self.wallet.db.queued_transactions:
+                queue_item = self.wallet.db.queued_transactions[txid]
+                tx_hex = queue_item["tx"]
+                tx = Transaction(tx_hex)
+                # Search for a name output with a matching identifier
+                for o in tx.outputs():
+                    if o.name_op is None:
+                        continue
+                    if "name" not in o.name_op:
+                        continue
+                    if o.name_op["name"] != identifier:
+                        continue
+                    # At this point we found a matching identifier.  Now we
+                    # check the send conditions.
+                    send_when = queue_item["sendWhen"]
+                    trigger_depth = send_when["confirmations"]
+                    if trigger_depth == 12:
+                        # This is a typical registration queued transaction.
+                        name_pending_mine = True
+                    if trigger_depth == constants.net.NAME_EXPIRATION + 1:
+                        # This is a snipe registration queued transaction.
+                        name_snipe_pending_mine = True
+
             # If the name doesn't show up in the local wallet, or if the local
             # UNO has under 12 confirmations, then we do a lookup operation via
             # name_show.
-            if not name_mine:
+            if not name_mine and not name_pending_mine and not name_snipe_pending_mine:
                 name_show_result = name_show(identifier_ascii, wallet=self.wallet)
                 name_mine = name_show_result["ismine"]
         except commands.NameUnconfirmedError:
@@ -3267,6 +3294,14 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         elif name_mine:
             self.buy_names_available_widget.hide()
             self.buy_names_already_exists_label.setText(_("You already own ") + identifier_formatted + _("!"))
+            self.buy_names_already_exists_widget.show()
+        elif name_pending_mine:
+            self.buy_names_available_widget.hide()
+            self.buy_names_already_exists_label.setText(_("You already have a registration pending for ") + identifier_formatted + _("!"))
+            self.buy_names_already_exists_widget.show()
+        elif name_snipe_pending_mine:
+            self.buy_names_available_widget.hide()
+            self.buy_names_already_exists_label.setText(_("You already have a snipe pending for ") + identifier_formatted + _("!  Your snipe will be broadcast if/when the name expires."))
             self.buy_names_already_exists_widget.show()
         elif name_exists and not name_pending_unverified:
             self.buy_names_available_widget.hide()

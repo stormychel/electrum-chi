@@ -393,15 +393,26 @@ def get_wallet_name_delta(wallet, tx, domain=None):
     name_input_value = None
     name_output_value = None
 
+    def nameop_is_mine(inout):
+        if inout.address is None:
+            return False
+        if not wallet.is_mine(inout.address):
+            return False
+        if inout.address not in domain:
+            return False
+        if inout.name_op is None:
+            return False
+        return True
+
     tx = PartialTransaction.from_tx(tx)
     for txin in tx.inputs():
         wallet.add_input_info(txin)
-        if txin.address is not None and wallet.is_mine(txin.address) and txin.address in domain and txin.name_op is not None:
+        if nameop_is_mine(txin):
             name_input_is_mine = True
             if 'value' in txin.name_op:
                 name_input_value = txin.name_op['value']
     for o in tx.outputs():
-        if o.address is not None and wallet.is_mine(o.address) and txin.address in domain and o.name_op is not None:
+        if nameop_is_mine(o):
             name_output_is_mine = True
             if 'value' in o.name_op:
                 name_output_value = o.name_op['value']

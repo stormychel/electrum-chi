@@ -96,7 +96,7 @@ class PayToEdit(CompletionTextEdit, ScanQRTextEdit, Logger):
         x, y = line.split(',')
         scriptpubkey = self.parse_output(x)
         amount = self.parse_amount(y)
-        return PartialTxOutput(scriptpubkey=scriptpubkey, value=amount)
+        return PartialTxOutput(scriptpubkey=scriptpubkey, value=amount, is_display=True)
 
     def parse_output(self, x) -> bytes:
         try:
@@ -172,10 +172,10 @@ class PayToEdit(CompletionTextEdit, ScanQRTextEdit, Logger):
                 self.errors.append(PayToLineError(idx=i, line_content=line.strip(), exc=e))
                 continue
             outputs.append(output)
-            if output.value == '!':
+            if output.value_display == '!':
                 is_max = True
             else:
-                total += output.value
+                total += output.value_display
         if outputs:
             self.win.set_onchain(True)
 
@@ -201,7 +201,7 @@ class PayToEdit(CompletionTextEdit, ScanQRTextEdit, Logger):
                 amount = '!'
             else:
                 amount = self.amount_edit.get_amount()
-            self.outputs = [PartialTxOutput(scriptpubkey=self.payto_scriptpubkey, value=amount)]
+            self.outputs = [PartialTxOutput(scriptpubkey=self.payto_scriptpubkey, value=amount, is_display=True)]
 
         return self.outputs[:]
 

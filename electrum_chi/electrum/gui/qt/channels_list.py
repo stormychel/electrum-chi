@@ -292,7 +292,7 @@ class ChannelsList(MyTreeView):
                 amount_e.setFrozen(False)
                 self.main_window.show_error(str(e))
                 return
-            amount = tx.output_value()
+            amount = tx.output_value_display()
             amount = min(amount, LN_MAX_FUNDING_SAT)
             amount_e.setAmount(amount)
         max_button = EnterButton(_("Max"), spend_max)

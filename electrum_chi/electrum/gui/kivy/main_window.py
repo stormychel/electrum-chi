@@ -917,7 +917,7 @@ class ElectrumWindow(App):
             self.show_error(str(e))
             send_exception_to_crash_reporter(e)
             return ''
-        amount = tx.output_value()
+        amount = tx.output_value_display()
         __, x_fee_amount = run_hook('get_tx_extra_fee', self.wallet, tx) or (None, 0)
         amount_after_all_fees = amount - x_fee_amount
         return format_satoshis_plain(amount_after_all_fees, self.decimal_point())

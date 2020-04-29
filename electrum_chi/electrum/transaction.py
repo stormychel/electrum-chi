@@ -91,11 +91,13 @@ SIGHASH_ALL = 1
 
 class TxOutput:
     scriptpubkey: bytes
-    value: Union[int, str]
+    value: Union[int, str] # Includes the 0.01 NMC locked inside name coins.
 
-    def __init__(self, *, scriptpubkey: bytes, value: Union[int, str]):
+    def __init__(self, *, scriptpubkey: bytes, value: Union[int, str], is_display: bool = False):
         self.scriptpubkey = scriptpubkey
         self.value = value  # str when the output is set to max: '!'  # in satoshis
+        if is_display:
+            self.value_display = value
 
     @classmethod
     def from_address_and_value(cls, address: str, value: Union[int, str]) -> Union['TxOutput', 'PartialTxOutput']:
@@ -106,13 +108,14 @@ class TxOutput:
         if self.name_op is not None:
             raise Exception("TxOutput already has a name operation")
 
+        value_display = self.value_display
+
         # Serialize the name script, and prepend it to the scriptpubkey
         name_script = bfh(name_op_to_script(name_op))
         self.scriptpubkey = name_script + self.scriptpubkey
 
         # Name ops include an extra 0.01 NMC locked inside the output
-        if type(self.value) is int:
-            self.value += COIN // 100
+        self.value_display = value_display
 
     def serialize_to_network(self) -> bytes:
         buf = int.to_bytes(self.value, 8, byteorder="little", signed=False)
@@ -156,6 +159,32 @@ class TxOutput:
         if addr is not None:
             return addr
         return f"SCRIPT {self.scriptpubkey.hex()}"
+
+    @property
+    def value_display(self) -> Union[int, str]:
+        if isinstance(self.value, str):
+            return self.value
+
+        if self.name_op is None:
+            return self.value
+
+        # Name ops include an extra 0.01 NMC locked inside the output, which we
+        # hide here.
+        return self.value - COIN // 100
+
+    @value_display.setter
+    def value_display(self, value: Union[int, str]):
+        if isinstance(value, str):
+            self.value = value
+            return
+
+        if self.name_op is None:
+            self.value = value
+            return
+
+        # Name ops include an extra 0.01 NMC locked inside the output, which we
+        # add here.
+        self.value = value + COIN // 100
 
     def __repr__(self):
         return f"<TxOutput script={self.scriptpubkey.hex()} address={self.address} value={self.value}>"
@@ -511,8 +540,6 @@ def parse_output(vds: BCDataStream) -> TxOutput:
         raise SerializationError('invalid output amount (too large)')
     if value < 0:
         raise SerializationError('invalid output amount (negative)')
-    # TODO: Namecoin: Subtract the 0.01 NMC that's permanently locked in the
-    # name, raise error if the result is less than 0.
     scriptpubkey = vds.read_bytes(vds.read_compact_size())
     return TxOutput(value=value, scriptpubkey=scriptpubkey)
 
@@ -1342,6 +1369,14 @@ class PartialTxInput(TxInput, PSBTSection):
             return self.witness_utxo.value
         return None
 
+    def value_sats_display(self) -> Optional[int]:
+        if self.name_op is None:
+            return self.value_sats()
+
+        # Name ops include an extra 0.01 NMC locked inside the output, which we
+        # hide here.
+        return self.value_sats() - COIN // 100
+
     @property
     def address(self) -> Optional[str]:
         if self._trusted_address is not None:
@@ -1809,12 +1844,27 @@ class PartialTransaction(Transaction):
             raise MissingTxInputAmount()
         return sum(input_values)
 
+    def input_value_display(self) -> int:
+        input_values = [txin.value_sats_display() for txin in self.inputs()]
+        if any([val is None for val in input_values]):
+            raise MissingTxInputAmount()
+        return sum(input_values)
+
     def output_value(self) -> int:
         return sum(o.value for o in self.outputs())
+
+    def output_value_display(self) -> int:
+        return sum(o.value_display for o in self.outputs())
 
     def get_fee(self) -> Optional[int]:
         try:
             return self.input_value() - self.output_value()
+        except MissingTxInputAmount:
+            return None
+
+    def get_fee_display(self) -> Optional[int]:
+        try:
+            return self.input_value_display() - self.output_value_display()
         except MissingTxInputAmount:
             return None
 

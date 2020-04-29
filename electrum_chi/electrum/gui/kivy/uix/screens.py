@@ -348,7 +348,7 @@ class SendScreen(CScreen):
     def _do_pay_onchain(self, invoice, rbf):
         # make unsigned transaction
         outputs = invoice['outputs']  # type: List[PartialTxOutput]
-        amount = sum(map(lambda x: x.value, outputs))
+        amount = sum(map(lambda x: x.value_display, outputs))
         coins = self.app.wallet.get_spendable_coins(None)
         try:
             tx = self.app.wallet.make_unsigned_transaction(coins=coins, outputs=outputs)
@@ -362,10 +362,14 @@ class SendScreen(CScreen):
         if rbf:
             tx.set_rbf(True)
         fee = tx.get_fee()
+        fee_display = tx.get_fee_display()
+        name_fee = None if (fee is None or fee_display is None) else (fee_display - fee)
         msg = [
             _("Amount to be sent") + ": " + self.app.format_amount_and_units(amount),
             _("Mining fee") + ": " + self.app.format_amount_and_units(fee),
         ]
+        if name_fee is not None and name_fee != 0:
+            msg.append(_("Name registration fee") + ": " + self.app.format_amount_and_units(name_fee))
         x_fee = run_hook('get_tx_extra_fee', self.app.wallet, tx)
         if x_fee:
             x_fee_address, x_fee_amount = x_fee

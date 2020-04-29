@@ -181,7 +181,11 @@ class Test_bitcoin(ElectrumTestCase):
         sig1_b64 = base64.b64encode(sig1)
         sig2_b64 = base64.b64encode(sig2)
 
-        # Re-signed these with Xaya Core, since the upstream Namecoin ones are invalid for Xaya's msg_magic.
+        # Due to a difference in low-r signing, Namecoin Core and Electrum-NMC
+        # produce different signatures.  The values here are produced by
+        # Electrum-NMC but have been checked to verify with Namecoin Core.
+        # The difference in signing behaviour was introduced in
+        # https://github.com/spesmilo/electrum/pull/5820.
         self.assertEqual(sig1_b64, b'IEAh/W+I7zGhzHdNK38hgbyZm8iDqJQiQx2tSAj0AMGxCX+z/hgzGw0Uk7GPADKj5TZF/c/Pkdn6FYBYeRyu7mo=')
         self.assertEqual(sig2_b64, b'HFIE8/lcdlOtxl7WG7cLYB5Wi8oElMx/3gJ0w6BfwJ9YLd7vBlUqKiTdUzaT4CukmlR5eCagrFW1sVguYS8dhr8=')
 

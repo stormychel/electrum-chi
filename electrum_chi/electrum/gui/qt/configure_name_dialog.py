@@ -156,6 +156,7 @@ class ConfigureNameDialog(QDialog, MessageBoxMixin):
             # TODO: support non-ASCII encodings
             tx = name_register(identifier.decode('utf-8'), value.decode('ascii'), destination=recipient_address, wallet=self.wallet)
         except NameAlreadyExistsError as e:
+            formatted_name = format_name_identifier(identifier)
             self.main_window.show_message(_("Error registering ") + formatted_name + ": " + str(e))
             return
         except (NotEnoughFunds, NoDynamicFeeEstimates) as e:

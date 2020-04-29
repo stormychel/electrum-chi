@@ -131,24 +131,31 @@ class ConfirmTxDialog(TxEditor, WindowModalDialog):
         grid.addWidget(HelpLabel(_("Mining fee") + ": ", msg), 1, 0)
         grid.addWidget(self.fee_label, 1, 1)
 
+        self.name_fee_label = QLabel(_("Name registration fee") + ": ")
+        self.name_fee_label.setVisible(False)
+        self.name_fee_value = QLabel('')
+        self.name_fee_value.setVisible(False)
+        grid.addWidget(self.name_fee_label, 2, 0)
+        grid.addWidget(self.name_fee_value, 2, 1)
+
         self.extra_fee_label = QLabel(_("Additional fees") + ": ")
         self.extra_fee_label.setVisible(False)
         self.extra_fee_value = QLabel('')
         self.extra_fee_value.setVisible(False)
-        grid.addWidget(self.extra_fee_label, 2, 0)
-        grid.addWidget(self.extra_fee_value, 2, 1)
+        grid.addWidget(self.extra_fee_label, 2+1, 0)
+        grid.addWidget(self.extra_fee_value, 2+1, 1)
 
         self.fee_slider = FeeSlider(self, self.config, self.fee_slider_callback)
-        grid.addWidget(self.fee_slider, 5, 1)
+        grid.addWidget(self.fee_slider, 5+1, 1)
 
         self.message_label = QLabel(self.default_message())
-        grid.addWidget(self.message_label, 6, 0, 1, -1)
+        grid.addWidget(self.message_label, 6+1, 0, 1, -1)
         self.pw_label = QLabel(_('Password'))
         self.pw_label.setVisible(self.password_required)
         self.pw = PasswordLineEdit()
         self.pw.setVisible(self.password_required)
-        grid.addWidget(self.pw_label, 8, 0)
-        grid.addWidget(self.pw, 8, 1, 1, -1)
+        grid.addWidget(self.pw_label, 8+1, 0)
+        grid.addWidget(self.pw, 8+1, 1, 1, -1)
         self.preview_button = QPushButton(_('Advanced'))
         self.preview_button.clicked.connect(self.on_preview)
         grid.addWidget(self.preview_button, 0, 2)
@@ -199,7 +206,7 @@ class ConfirmTxDialog(TxEditor, WindowModalDialog):
 
     def update(self):
         tx = self.tx
-        amount = tx.output_value() if self.output_value == '!' else self.output_value
+        amount = tx.output_value_display() if self.output_value == '!' else self.output_value
         self.amount_label.setText(self.main_window.format_amount_and_units(amount))
 
         if self.not_enough_funds:
@@ -216,7 +223,16 @@ class ConfirmTxDialog(TxEditor, WindowModalDialog):
             return
 
         fee = tx.get_fee()
+        fee_display = tx.get_fee_display()
+        name_fee = None if (fee is None or fee_display is None) else (fee_display - fee)
         self.fee_label.setText(self.main_window.format_amount_and_units(fee))
+        if name_fee is not None and name_fee != 0:
+            self.name_fee_label.setVisible(True)
+            self.name_fee_value.setVisible(True)
+            self.name_fee_value.setText(self.main_window.format_amount_and_units(name_fee))
+        else:
+            self.name_fee_label.setVisible(False)
+            self.name_fee_value.setVisible(False)
         x_fee = run_hook('get_tx_extra_fee', self.wallet, tx)
         if x_fee:
             x_fee_address, x_fee_amount = x_fee

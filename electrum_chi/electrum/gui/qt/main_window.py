@@ -1379,7 +1379,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             return
 
         self.max_button.setChecked(True)
-        amount = tx.output_value()
+        amount = tx.output_value_display()
         __, x_fee_amount = run_hook('get_tx_extra_fee', self.wallet, tx) or (None, 0)
         amount_after_all_fees = amount - x_fee_amount
         self.amount_e.setAmount(amount_after_all_fees)
@@ -1415,7 +1415,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             if o.scriptpubkey is None:
                 self.show_error(_('Address is None'))
                 return True
-            if o.value is None:
+            if o.value_display is None:
                 self.show_error(_('Invalid Amount'))
                 return True
 
@@ -1561,7 +1561,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             outputs=outputs,
             fee=fee_est,
             is_sweep=is_sweep)
-        output_values = [x.value for x in outputs]
+        output_values = [x.value_display for x in outputs]
         if output_values.count('!') > 1:
             self.show_error(_("More than one output set to spend max"))
             return
@@ -1958,7 +1958,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         grid.addWidget(QLabel(_("Requestor") + ':'), 0, 0)
         grid.addWidget(QLabel(pr.get_requestor()), 0, 1)
         grid.addWidget(QLabel(_("Amount") + ':'), 1, 0)
-        outputs_str = '\n'.join(map(lambda x: self.format_amount(x.value)+ self.base_unit() + ' @ ' + x.address, pr.get_outputs()))
+        outputs_str = '\n'.join(map(lambda x: self.format_amount(x.value_display)+ self.base_unit() + ' @ ' + x.address, pr.get_outputs()))
         grid.addWidget(QLabel(outputs_str), 1, 1)
         expires = pr.get_expiration_date()
         grid.addWidget(QLabel(_("Memo") + ':'), 2, 0)
@@ -2787,7 +2787,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.show_message(repr(e))
             return
         scriptpubkey = bfh(bitcoin.address_to_script(addr))
-        outputs = [PartialTxOutput(scriptpubkey=scriptpubkey, value='!')]
+        outputs = [PartialTxOutput(scriptpubkey=scriptpubkey, value='!', is_display=True)]
         self.warn_if_watching_only()
         self.pay_onchain_dialog(coins, outputs, external_keypairs=keypairs)
 

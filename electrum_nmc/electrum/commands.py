@@ -848,7 +848,7 @@ class Commands:
             # name renewal with that malicious value.  expires_in is None when
             # the transaction has 0 confirmations.
             expires_in = list_results["expires_in"]
-            if expires_in is None or expires_in > 36000 - 12:
+            if expires_in is None or expires_in > constants.net.NAME_EXPIRATION - 12:
                 raise NameUpdatedTooRecentlyError("Name was updated too recently to safely determine current value.  Either wait or specify an explicit value.")
 
             value = list_results["value"]
@@ -1222,7 +1222,7 @@ class Commands:
                     current_height = await self.name_show(trigger_name)["height"]
                     current_depth = chain_height - current_height + 1
                 except NameNotFoundError:
-                    current_depth = 36000
+                    current_depth = constants.net.NAME_EXPIRATION
                 except Exception:
                     continue
 
@@ -1324,7 +1324,7 @@ class Commands:
         # just skip it and look for an older transaction.  If it has more than
         # 18 server confirmations but under 12 local confirmations, then we're
         # probably still syncing, and we error.
-        unexpired_height = max_chain_height - 35999
+        unexpired_height = max_chain_height - constants.net.NAME_EXPIRATION + 1
         unverified_height = local_chain_height - 12
         unmined_height = max_chain_height - 18
 

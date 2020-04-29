@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Electrum-CHI - lightweight Xaya client
-# Copyright (C) 2019 The Xaya developers
+# Copyright (C) 2019-2020 The Xaya developers
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -54,6 +54,7 @@ class Logic (Logger):
 
   commands = [
     "getbalance",
+    "getblockcount",
     "getnewaddress",
     "sendtoaddress",
     "validateaddress",
@@ -98,6 +99,9 @@ class Logic (Logger):
   async def getbalance (self):
     bal = await self.cmd_runner.getbalance ()
     return bal["confirmed"]
+
+  async def getblockcount (self):
+    return self.cmd_runner.network.get_local_height ()
 
   async def getnewaddress (self, label="", address_type=None):
     addr = await self.cmd_runner.createnewaddress ()

@@ -140,10 +140,15 @@ def build_name_new(identifier, rand = None, address = None, password = None, wal
     if rand is None:
         rand = os.urandom(20)
 
+    commitment = build_name_commitment(identifier, rand)
+
+    return {"op": OP_NAME_NEW, "hash": commitment}, rand
+
+def build_name_commitment(identifier, rand):
     to_hash = rand + identifier
     commitment = hash_160(to_hash)
 
-    return {"op": OP_NAME_NEW, "hash": commitment}, rand
+    return commitment
 
 def name_identifier_to_scripthash(identifier_bytes):
     name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": bytes([])}

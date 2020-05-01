@@ -1850,6 +1850,10 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         index = self.get_address_index(addr)
         return self.keystore.decrypt_message(index, message, password)
 
+    def name_salt(self, identifier: bytes, address: str, password: Optional[str]) -> bytes:
+        index = self.get_address_index(address)
+        return self.keystore.name_salt(identifier, index, password)
+
     @abstractmethod
     def pubkeys_to_address(self, pubkeys: Sequence[str]) -> Optional[str]:
         pass

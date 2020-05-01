@@ -131,8 +131,11 @@ def validate_value_length(value):
     if value_length > value_length_limit:
         raise BitcoinException('value length {} exceeds limit of {}'.format(value_length, value_length_limit))
 
-def build_name_new(identifier, rand = None):
+def build_name_new(identifier, rand = None, address = None, password = None, wallet = None):
     validate_identifier_length(identifier)
+
+    if address is not None and wallet is not None:
+        rand = wallet.name_salt(identifier, address, password)
 
     if rand is None:
         rand = os.urandom(20)
@@ -141,9 +144,6 @@ def build_name_new(identifier, rand = None):
     commitment = hash_160(to_hash)
 
     return {"op": OP_NAME_NEW, "hash": commitment}, rand
-
-def deterministic_name_salt(identifier, privkey):
-    return hkdf_sha256_32_20(privkey, identifier, b"Namecoin Registration Salt")
 
 def name_identifier_to_scripthash(identifier_bytes):
     name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": bytes([])}
@@ -1340,7 +1340,7 @@ import os
 import re
 
 from .bitcoin import push_script, script_to_scripthash
-from .crypto import hash_160, hkdf_sha256_32_20
+from .crypto import hash_160
 from .transaction import MalformedBitcoinScript, match_script_against_template, opcodes, OPPushDataGeneric, PartialTransaction, script_GetOp, Transaction
 from .util import bh2u, BitcoinException
 

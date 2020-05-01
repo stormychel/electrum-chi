@@ -142,6 +142,9 @@ def build_name_new(identifier, rand = None):
 
     return {"op": OP_NAME_NEW, "hash": commitment}, rand
 
+def deterministic_name_salt(identifier, privkey):
+    return hkdf_sha256_32_20(privkey, identifier, b"Namecoin Registration Salt")
+
 def name_identifier_to_scripthash(identifier_bytes):
     name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": bytes([])}
     script = name_op_to_script(name_op)
@@ -1337,7 +1340,7 @@ import os
 import re
 
 from .bitcoin import push_script, script_to_scripthash
-from .crypto import hash_160
+from .crypto import hash_160, hkdf_sha256_32_20
 from .transaction import MalformedBitcoinScript, match_script_against_template, opcodes, OPPushDataGeneric, PartialTransaction, script_GetOp, Transaction
 from .util import bh2u, BitcoinException
 

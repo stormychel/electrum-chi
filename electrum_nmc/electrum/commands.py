@@ -806,7 +806,16 @@ class Commands:
         # TODO: enforce exact length of rand
         identifier_bytes = identifier.encode("ascii")
         value_bytes = value.encode("ascii")
-        rand_bytes = bfh(rand)
+
+        if rand is None:
+            # TODO: auto-detect name_new txid
+            name_inputs = wallet.get_spendable_coins(None, include_names=True, only_uno_txids=[name_new_txid])
+            # TODO: handle multiple inputs
+            new_input = name_inputs[0]
+            address = new_input.address
+            rand_bytes = wallet.name_salt(identifier_bytes, address, password)
+        else:
+            rand_bytes = bfh(rand)
         name_op = {"op": OP_NAME_FIRSTUPDATE, "name": identifier_bytes, "rand": rand_bytes, "value": value_bytes}
         memo = "Registration: " + format_name_identifier(identifier_bytes)
 

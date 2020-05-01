@@ -765,12 +765,13 @@ class Commands:
         # TODO: support non-ASCII encodings
         # TODO: enforce length limit on identifier
         identifier_bytes = identifier.encode("ascii")
-        name_op, rand = build_name_new(identifier_bytes)
         memo = "Pre-Registration: " + format_name_identifier(identifier_bytes)
 
         if destination is None:
             request = await self.add_request(None, memo=memo, wallet=wallet)
             destination = request['address']
+
+        name_op, rand = build_name_new(identifier_bytes, address=destination, password=password, wallet=wallet)
 
         tx = self._mktx(wallet,
                         outputs,

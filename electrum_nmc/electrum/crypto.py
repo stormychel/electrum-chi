@@ -41,6 +41,10 @@ try:
     from Cryptodome.Cipher import ChaCha20_Poly1305 as CD_ChaCha20_Poly1305
     from Cryptodome.Cipher import ChaCha20 as CD_ChaCha20
     from Cryptodome.Cipher import AES as CD_AES
+
+    # HKDF for Namecoin deterministic salts
+    from Cryptodome.Protocol.KDF import HKDF as CD_HKDF
+    from Cryptodome.Hash import SHA256 as CD_SHA256
 except:
     pass
 else:
@@ -55,6 +59,10 @@ try:
     from cryptography.hazmat.primitives.ciphers import modes as CG_modes
     from cryptography.hazmat.backends import default_backend as CG_default_backend
     import cryptography.hazmat.primitives.ciphers.aead as CG_aead
+
+    # HKDF for Namecoin deterministic salts
+    from cryptography.hazmat.primitives.kdf.hkdf import HKDF as CG_HKDF
+    from cryptography.hazmat.primitives.hashes import SHA256 as CG_SHA256
 except:
     pass
 else:
@@ -318,3 +326,11 @@ def chacha20_encrypt(*, key: bytes, nonce: bytes, data: bytes) -> bytes:
         encryptor = cipher.encryptor()
         return encryptor.update(data)
     raise Exception("no chacha20 backed found")
+
+
+def hkdf_sha256_32(ikm: bytes, salt: bytes, info: bytes) -> bytes:
+    if HAS_CRYPTODOME:
+        return CD_HKDF(ikm, 32, salt, CD_SHA256, context=info)
+    if HAS_CRYPTOGRAPHY:
+        return CG_HKDF(algorithm=CG_SHA256(), length=32, salt=salt, info=info, backend=CG_default_backend()).derive(ikm)
+    raise Exception("no hkdf backend found")

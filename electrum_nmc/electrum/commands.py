@@ -792,7 +792,7 @@ class Commands:
         return {"tx": tx.serialize(), "txid": tx.txid(), "rand": bh2u(rand)}
 
     @command('wp')
-    async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False, wallet: Abstract_Wallet = None):
+    async def name_firstupdate(self, identifier, rand=None, name_new_txid=None, value="", destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False, wallet: Abstract_Wallet = None):
         """Create a name_firstupdate transaction. """
         tx_fee = satoshis(fee)
         domain_addr = from_addr.split(',') if from_addr else None
@@ -1725,6 +1725,8 @@ command_options = {
     'value':       (None, "The value to assign to the name"),
     'name_encoding': (None, "Encoding for the name identifier ('ascii' or 'hex')"),
     'value_encoding': (None, "Encoding for the name value ('ascii' or 'hex')"),
+    'rand':        (None, "Salt for the name pre-registration commitment (returned by name_new; you can usually omit this)"),
+    'name_new_txid':(None, "Transaction ID for the name pre-registration (returned by name_new; you can usually omit this)"),
     'trigger_txid':(None, "Broadcast the transaction when this txid reaches the specified number of confirmations"),
     'trigger_name':(None, "Broadcast the transaction when this name reaches the specified number of confirmations"),
 }

@@ -83,6 +83,9 @@ class NameNotFoundError(Exception):
 class NameAlreadyExistsError(Exception):
     pass
 
+class NamePreRegistrationNotFound(Exception):
+    pass
+
 class NamePreRegistrationPendingError(Exception):
     pass
 
@@ -830,7 +833,7 @@ class Commands:
                     name_new_txid = new_input.prevout.txid.hex()
                     break
             else:
-                raise Exception("name_new input with matching commitment not found")
+                raise NamePreRegistrationNotFound("name_new input with matching commitment not found")
         else:
             rand_bytes = bfh(rand)
 

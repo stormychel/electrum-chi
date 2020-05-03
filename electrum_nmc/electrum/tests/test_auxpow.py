@@ -15,6 +15,14 @@ namecoin_header_37174 = '01010100d681bfa4acb5e0dc772a0099ce069ae4841ee2292ba731a
 namecoin_prev_hash_37174 = '8adc6de6bd46c73aa631a72b29e21e84e49a06ce99002a77dce0b5aca4bf81d6'
 namecoin_target_37174 = 0x242a4a0000000000000000000000000000000000000000000000
 
+# This is a header with auxpow whose parent block coinbase tx has no outputs.
+# Even though that coinbase tx would not be valid as a transaction, this is
+# valid as part of an auxpow.
+# It is testnet block 233'281 (5ca6bad276325045620eb532b4008bd4220d8d6a8384ac9b1b655fcf85649acb).
+header_zero_output_auxpow = '04010100917ef486bdc93073ae0cb87fcb099055458376bd40ffca2c960451f17fbc43ac69f594e5808d30c0e4c7fd4546596b77abb56cf03612355c3a2ed01419fae7e17d508a5effff0f1d0000000001000000010000000000000000000000000000000000000000000000000000000000000000ffffffff29285ca6bad276325045620eb532b4008bd4220d8d6a8384ac9b1b655fcf85649acb0100000000000000ffffffff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000dcdf08e5d7361bfdc6e62ce08265fb5d7680a65e4bfc7cdf52e9638f57b2d4e4000000000000000094a40000'
+prev_hash_zero_output_auxpow = 'ac43bc7ff15104962ccaff40bd768345559009cb7fb80cae7330c9bd86f47e91'
+target_zero_output_auxpow = blockchain.Blockchain.bits_to_target(0x1d0fffff)
+
 class Test_auxpow(SequentialTestCase):
 
     @staticmethod
@@ -123,6 +131,11 @@ class Test_auxpow(SequentialTestCase):
     def test_verify_auxpow_header_implicit_coinbase(self):
         header = self.deserialize_with_auxpow(namecoin_header_19414)
         blockchain.Blockchain.verify_header(header, namecoin_prev_hash_19414, namecoin_target_19414)
+
+    # Verify a header whose auxpow has a coinbase transaction without outputs.
+    def test_verify_auxpow_header_zero_output_coinbase(self):
+        header = self.deserialize_with_auxpow(header_zero_output_auxpow)
+        blockchain.Blockchain.verify_header(header, prev_hash_zero_output_auxpow, target_zero_output_auxpow)
 
     # Check that a non-generate AuxPoW transaction is rejected.
     # Equivalent to shouldRejectNonGenerateAuxPoW in libdohj tests.

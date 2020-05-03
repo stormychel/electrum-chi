@@ -86,6 +86,8 @@ You can also install Electrum-NMC on your system, by running this command::
 
 This will download and install the Python dependencies used by
 Electrum-NMC instead of using the 'packages' directory.
+It will also place an executable named :code:`electrum-nmc` in :code:`~/.local/bin`,
+so make sure that is on your :code:`PATH` variable.
 
 
 Development version (git clone)
@@ -99,7 +101,7 @@ Check out the code from GitHub::
 
 Run install (this should install dependencies)::
 
-    python3 -m pip install --user .
+    python3 -m pip install --user -e .
 
 
 Compile the Qt UI::
@@ -112,6 +114,9 @@ Create translations (optional)::
     sudo apt-get install python-requests gettext
     ./contrib/pull_locale
 
+Finally, to start Electrum::
+
+    ./run_electrum
 
 
 

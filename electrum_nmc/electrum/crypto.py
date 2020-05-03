@@ -334,3 +334,8 @@ def hkdf_sha256_32(ikm: bytes, salt: bytes, info: bytes) -> bytes:
     if HAS_CRYPTOGRAPHY:
         return CG_HKDF(algorithm=CG_SHA256(), length=32, salt=salt, info=info, backend=CG_default_backend()).derive(ikm)
     raise Exception("no hkdf backend found")
+
+
+# 20-byte truncated version of hkdf_sha256_32
+def hkdf_sha256_32_20(ikm: bytes, salt: bytes, info: bytes) -> bytes:
+    return hkdf_sha256_32(ikm, salt, info)[:20]

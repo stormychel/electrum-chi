@@ -25,6 +25,8 @@
 
 from typing import Dict
 
+from . import constants
+
 def split_name_script(decoded):
     # This case happens if a script was malformed and couldn't be decoded by
     # transaction.get_address_from_output_script.
@@ -478,7 +480,7 @@ def name_new_mature_in(name_height, chain_height):
 
 def name_expires_in(name_height, chain_height):
     # Names expire at 36000 confirmations.
-    return blocks_remaining_until_confirmations(name_height, chain_height, 36000)
+    return blocks_remaining_until_confirmations(name_height, chain_height, constants.net.NAME_EXPIRATION)
 
 def name_expiration_datetime_estimate(name_height, chain_height, chain_unixtime):
     expiration_blocks = name_expires_in(name_height, chain_height)

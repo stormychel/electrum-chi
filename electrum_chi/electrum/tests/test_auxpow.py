@@ -16,6 +16,13 @@ header_with_mm = "00000020cd3a2f096c83b363a907dd24d59438fe0a4f4fcc062ab36b46a4c2
 prev_hash_with_mm = "948183fa76c2a4466bb32a06cc4f4f0afe3894d524dd07a963b3836c092f3acd"
 target_with_mm = blockchain.Blockchain.bits_to_target(0x182ef6e5)
 
+# This is a header with auxpow whose parent block coinbase tx has no outputs.
+# Even though that coinbase tx would not be valid as a transaction, this is
+# valid as part of an auxpow.
+header_zero_output_auxpow = header_without_mm
+prev_hash_zero_output_auxpow = prev_hash_without_mm
+target_zero_output_auxpow = target_without_mm
+
 class Test_auxpow(SequentialTestCase):
 
     @staticmethod
@@ -121,6 +128,11 @@ class Test_auxpow(SequentialTestCase):
     def test_verify_auxpow_header_implicit_coinbase(self):
         header = self.deserialize_with_auxpow(header_without_mm)
         blockchain.Blockchain.verify_header(header, prev_hash_without_mm, target_without_mm)
+
+    # Verify a header whose auxpow has a coinbase transaction without outputs.
+    def test_verify_auxpow_header_zero_output_coinbase(self):
+        header = self.deserialize_with_auxpow(header_zero_output_auxpow)
+        blockchain.Blockchain.verify_header(header, prev_hash_zero_output_auxpow, target_zero_output_auxpow)
 
     # Check that a non-generate AuxPoW transaction is rejected.
     def test_should_reject_non_generate_auxpow(self):

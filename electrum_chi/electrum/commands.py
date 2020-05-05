@@ -55,11 +55,13 @@ from .wallet import Abstract_Wallet, create_new_wallet, restore_wallet_from_text
 from .address_synchronizer import TX_HEIGHT_LOCAL
 from .mnemonic import Mnemonic
 from .lnutil import SENT, RECEIVED
+from .lnutil import LnFeatures
 from .lnutil import ln_dummy_address
 from .lnpeer import channel_id_from_funding_tx
 from .plugin import run_hook
 from .version import ELECTRUM_VERSION
 from .simple_config import SimpleConfig
+from .lnaddr import parse_lightning_invoice
 from . import constants
 
 
@@ -194,7 +196,7 @@ class Commands:
         net_params = self.network.get_parameters()
         response = {
             'path': self.network.config.path,
-            'server': net_params.host,
+            'server': net_params.server.host,
             'blockchain_height': self.network.get_local_height(),
             'server_height': self.network.get_server_height(),
             'spv_nodes': len(self.network.get_interfaces()),
@@ -959,6 +961,7 @@ class Commands:
     async def list_requests(self, pending=False, expired=False, paid=False, wallet: Abstract_Wallet = None):
         """List the payment requests you made."""
         out = wallet.get_sorted_requests()
+        out = list(map(self._format_request, out))
         if pending:
             f = PR_UNPAID
         elif expired:
@@ -969,7 +972,7 @@ class Commands:
             f = None
         if f is not None:
             out = list(filter(lambda x: x.get('status')==f, out))
-        return list(map(self._format_request, out))
+        return out
 
     @command('w')
     async def createnewaddress(self, wallet: Abstract_Wallet = None):
@@ -1088,7 +1091,7 @@ class Commands:
                     current_height = await self.name_show(trigger_name)["height"]
                     current_depth = chain_height - current_height + 1
                 except NameNotFoundError:
-                    current_depth = 36000
+                    current_depth = constants.net.NAME_EXPIRATION
                 except Exception:
                     continue
 
@@ -1308,9 +1311,21 @@ class Commands:
 
     # lightning network commands
     @command('wn')
-    async def add_peer(self, connection_string, timeout=20, wallet: Abstract_Wallet = None):
-        await wallet.lnworker.add_peer(connection_string)
+    async def add_peer(self, connection_string, timeout=20, gossip=False, wallet: Abstract_Wallet = None):
+        lnworker = self.network.lngossip if gossip else wallet.lnworker
+        await lnworker.add_peer(connection_string)
         return True
+
+    @command('wn')
+    async def list_peers(self, gossip=False, wallet: Abstract_Wallet = None):
+        lnworker = self.network.lngossip if gossip else wallet.lnworker
+        return [{
+            'node_id':p.pubkey.hex(),
+            'address':p.transport.name(),
+            'initialized':p.is_initialized(),
+            'features': str(LnFeatures(p.features)),
+            'channels': [c.funding_outpoint.to_str() for c in p.channels.values()],
+        } for p in lnworker.peers.values()]
 
     @command('wpn')
     async def open_channel(self, connection_string, amount, push_amount=0, password=None, wallet: Abstract_Wallet = None):
@@ -1324,6 +1339,10 @@ class Commands:
                                                                          push_sat=push_sat,
                                                                          password=password)
         return chan.funding_outpoint.to_str()
+
+    @command('')
+    async def decode_invoice(self, invoice):
+        return parse_lightning_invoice(invoice)
 
     @command('wn')
     async def lnpay(self, invoice, attempts=1, timeout=10, wallet: Abstract_Wallet = None):
@@ -1358,8 +1377,8 @@ class Commands:
                 'remote_pubkey': bh2u(chan.node_id),
                 'local_balance': chan.balance(LOCAL)//1000,
                 'remote_balance': chan.balance(REMOTE)//1000,
-                'local_reserve': chan.config[LOCAL].reserve_sat,
-                'remote_reserve': chan.config[REMOTE].reserve_sat,
+                'local_reserve': chan.config[REMOTE].reserve_sat, # their config has our reserve
+                'remote_reserve': chan.config[LOCAL].reserve_sat,
                 'local_unsettled_sent': chan.balance_tied_up_in_htlcs_by_direction(LOCAL, direction=SENT) // 1000,
                 'remote_unsettled_sent': chan.balance_tied_up_in_htlcs_by_direction(REMOTE, direction=SENT) // 1000,
             } for channel_id, chan in l
@@ -1394,6 +1413,16 @@ class Commands:
         chan_id, _ = channel_id_from_funding_tx(txid, int(index))
         coro = wallet.lnworker.force_close_channel(chan_id) if force else wallet.lnworker.close_channel(chan_id)
         return await coro
+
+    @command('w')
+    async def export_channel_backup(self, channel_point, wallet: Abstract_Wallet = None):
+        txid, index = channel_point.split(':')
+        chan_id, _ = channel_id_from_funding_tx(txid, int(index))
+        return wallet.lnworker.export_channel_backup(chan_id)
+
+    @command('w')
+    async def import_channel_backup(self, encrypted, wallet: Abstract_Wallet = None):
+        return wallet.lnbackups.import_channel_backup(encrypted)
 
     @command('wn')
     async def get_channel_ctx(self, channel_point, iknowwhatimdoing=False, wallet: Abstract_Wallet = None):
@@ -1485,7 +1514,8 @@ command_options = {
     'from_height': (None, "Only show transactions that confirmed after given block height"),
     'to_height':   (None, "Only show transactions that confirmed before given block height"),
     'iknowwhatimdoing': (None, "Acknowledge that I understand the full implications of what I am about to do"),
-    'destination': (None, "Address, contact or alias"),
+    'gossip':      (None, "Apply command to gossip node instead of wallet"),
+    'destination': (None, "Namecoin address, contact or alias"),
     'amount':      (None, "Amount to be sent (in CHI). Type \'!\' to send the maximum available."),
     'outputs':     (None, "Currency outputs to add to a transaction in addition to a name operation."),
     'allow_existing': (None, "Allow pre-registering a name that already is registered.  Your registration fee will be forfeited until you can register the name after it expires."),

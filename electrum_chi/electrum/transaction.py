@@ -335,6 +335,10 @@ class BCDataStream(object):
         else:
             raise SerializationError('attempt to read past end of buffer')
 
+    def write_bytes(self, _bytes: Union[bytes, bytearray], length: int):
+        assert len(_bytes) == length, len(_bytes)
+        self.write(_bytes)
+
     def can_read_more(self) -> bool:
         if not self.input:
             return False
@@ -812,8 +816,6 @@ class Transaction:
             return push_script(redeem_script)
         raise UnknownTxinType(f'cannot construct scriptSig for txin_type: {_type}')
 
-    # TODO: Namecoin: Prepend name op to P2PK and P2PKH scripts.  (P2SH and
-    # SegWit do not prepend the name op.)
     @classmethod
     def get_preimage_script(cls, txin: 'PartialTxInput') -> str:
         if txin.witness_script:
@@ -824,16 +826,23 @@ class Transaction:
 
         pubkeys = [pk.hex() for pk in txin.pubkeys]
         if txin.script_type in ['p2sh', 'p2wsh', 'p2wsh-p2sh']:
-            return multisig_script(pubkeys, txin.num_sig)
+            res = multisig_script(pubkeys, txin.num_sig)
         elif txin.script_type in ['p2pkh', 'p2wpkh', 'p2wpkh-p2sh']:
             pubkey = pubkeys[0]
             pkh = bh2u(hash_160(bfh(pubkey)))
-            return bitcoin.pubkeyhash_to_p2pkh_script(pkh)
+            res = bitcoin.pubkeyhash_to_p2pkh_script(pkh)
         elif txin.script_type == 'p2pk':
             pubkey = pubkeys[0]
-            return bitcoin.public_key_to_p2pk_script(pubkey)
+            res = bitcoin.public_key_to_p2pk_script(pubkey)
         else:
             raise UnknownTxinType(f'cannot construct preimage_script for txin_type: {txin.script_type}')
+
+        # Namecoin:  For P2PK and P2PKH scripts, the preimage includes also
+        # the name prefix.  P2SH and segwit do not.
+        if txin.script_type in ['p2pkh', 'p2pk']:
+            res = name_op_to_script(txin.name_op) + res
+
+        return res
 
     # TODO: Namecoin: Add the 0.01 NMC that's permanently locked in the name
     # when serializing outputs

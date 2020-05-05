@@ -60,7 +60,8 @@ CKCC_SIMULATED_PID = CKCC_PID ^ 0x55aa
 
 class CKCCClient(HardwareClientBase):
 
-    def __init__(self, plugin, handler, dev_path, is_simulator=False):
+    def __init__(self, plugin, handler, dev_path, *, is_simulator=False):
+        HardwareClientBase.__init__(self, plugin=plugin)
         self.device = plugin.device
         self.handler = handler
 
@@ -71,9 +72,9 @@ class CKCCClient(HardwareClientBase):
             self.dev = ElectrumColdcardDevice(dev_path, encrypt=True)
         else:
             # open the real HID device
-            import hid
-            hd = hid.device(path=dev_path)
-            hd.open_path(dev_path)
+            with self.device_manager().hid_lock:
+                hd = hid.device(path=dev_path)
+                hd.open_path(dev_path)
 
             self.dev = ElectrumColdcardDevice(dev=hd, encrypt=True)
 
@@ -126,7 +127,8 @@ class CKCCClient(HardwareClientBase):
 
     def close(self):
         # close the HID device (so can be reused)
-        self.dev.close()
+        with self.device_manager().hid_lock:
+            self.dev.close()
         self.dev = None
 
     def is_initialized(self):
@@ -477,7 +479,7 @@ class ColdcardPlugin(HW_PluginBase):
         if not self.libraries_available:
             return
 
-        self.device_manager().register_devices(self.DEVICE_IDS)
+        self.device_manager().register_devices(self.DEVICE_IDS, plugin=self)
         self.device_manager().register_enumerate_func(self.detect_simulator)
 
     def get_library_version(self):
@@ -515,7 +517,7 @@ class ColdcardPlugin(HW_PluginBase):
         # the 'path' is unabiguous, so we'll use that.
         try:
             rv = CKCCClient(self, handler, device.path,
-                    is_simulator=(device.product_key[1] == CKCC_SIMULATED_PID))
+                            is_simulator=(device.product_key[1] == CKCC_SIMULATED_PID))
             return rv
         except:
             self.logger.info('late failure connecting to device?')
@@ -524,6 +526,7 @@ class ColdcardPlugin(HW_PluginBase):
     def setup_device(self, device_info, wizard, purpose):
         device_id = device_info.device.id_
         client = self.scan_and_create_client_for_device(device_id=device_id, wizard=wizard)
+        return client
 
     def get_xpub(self, device_id, derivation, xtype, wizard):
         # this seems to be part of the pairing process only, not during normal ops?

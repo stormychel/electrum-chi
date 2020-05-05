@@ -1085,8 +1085,8 @@ def tx_from_any(raw: Union[str, bytes], *,
         return PartialTransaction.from_raw_psbt(raw)
     except BadHeaderMagic:
         if raw[:10] == b'EPTF\xff'.hex():
-            raise SerializationError("Partial transactions generated with old Electrum-NMC versions "
-                                     "(< 4.0) are no longer supported. Please upgrade Electrum-NMC on "
+            raise SerializationError("Partial transactions generated with old Electrum-CHI versions "
+                                     "(< 4.0) are no longer supported. Please upgrade Electrum-CHI on "
                                      "the other machine where this transaction was created.")
     try:
         tx = Transaction(raw)

@@ -75,7 +75,7 @@ setup(
         'electrum_chi.electrum.gui.qt',
         'electrum_chi.electrum.gui.qt.forms',
         'electrum_chi.electrum.plugins',
-    ] + [('electrum_chi.electrum.plugins.'+pkg) for pkg in find_packages('electrum_nmc/electrum/plugins')],
+    ] + [('electrum_chi.electrum.plugins.'+pkg) for pkg in find_packages('electrum_chi/electrum/plugins')],
     package_dir={
         'electrum_chi': 'electrum_chi',
     },

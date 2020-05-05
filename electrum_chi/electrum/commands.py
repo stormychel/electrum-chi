@@ -1515,7 +1515,7 @@ command_options = {
     'to_height':   (None, "Only show transactions that confirmed before given block height"),
     'iknowwhatimdoing': (None, "Acknowledge that I understand the full implications of what I am about to do"),
     'gossip':      (None, "Apply command to gossip node instead of wallet"),
-    'destination': (None, "Namecoin address, contact or alias"),
+    'destination': (None, "Address, contact or alias"),
     'amount':      (None, "Amount to be sent (in CHI). Type \'!\' to send the maximum available."),
     'outputs':     (None, "Currency outputs to add to a transaction in addition to a name operation."),
     'allow_existing': (None, "Allow pre-registering a name that already is registered.  Your registration fee will be forfeited until you can register the name after it expires."),

@@ -8,5 +8,10 @@
         "pruning": "-",
         "s": "51002",
         "version": "1.4"
+    },
+    "styx.xaya.io": {
+        "pruning": "-",
+        "s": "51002",
+        "version": "1.4"
     }
 }

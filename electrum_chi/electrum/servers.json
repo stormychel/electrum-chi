@@ -8,5 +8,25 @@
         "pruning": "-",
         "s": "50002",
         "version": "1.4"
+    },
+    "styx.xaya.io": {
+        "pruning": "-",
+        "s": "50002",
+        "version": "1.4"
+    },
+    "aquarion.xaya.io": {
+        "pruning": "-",
+        "s": "50002",
+        "version": "1.4"
+    },
+    "verdis.xaya.io": {
+        "pruning": "-",
+        "s": "50002",
+        "version": "1.4"
+    },
+    "lionis.xaya.io": {
+        "pruning": "-",
+        "s": "50002",
+        "version": "1.4"
     }
 }

@@ -80,6 +80,15 @@ class NotSynchronizedException(Exception):
 class NameNotFoundError(Exception):
     pass
 
+class NameUnconfirmedError(NameNotFoundError):
+    pass
+
+class NameExpiredError(NameNotFoundError):
+    pass
+
+class NameNeverExistedError(NameNotFoundError):
+    pass
+
 class NameAlreadyExistsError(Exception):
     pass
 
@@ -1358,11 +1367,11 @@ class Commands:
             break
 
         if unmined_tx_exists:
-            raise NameNotFoundError("Name is purportedly unconfirmed")
+            raise NameUnconfirmedError("Name is purportedly unconfirmed")
         if expired_tx_exists:
-            raise NameNotFoundError("Name is purportedly expired")
+            raise NameExpiredError("Name is purportedly expired")
         if tx_best is None:
-            raise NameNotFoundError("Name purportedly never existed")
+            raise NameNeverExistedError("Name purportedly never existed")
         txid = tx_best["tx_hash"]
         height = tx_best["height"]
 

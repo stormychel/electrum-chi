@@ -30,6 +30,7 @@ import re
 from typing import Tuple, TYPE_CHECKING, Union, Sequence, Optional, Dict, List, NamedTuple
 from functools import lru_cache
 from abc import ABC, abstractmethod
+from os import urandom
 
 from . import bitcoin, ecc, constants, bip32
 from .bitcoin import deserialize_privkey, serialize_privkey
@@ -39,7 +40,7 @@ from .bip32 import (convert_bip32_path_to_list_of_uint32, BIP32_PRIME,
                     convert_bip32_intpath_to_strpath, is_xkey_consistent_with_key_origin_info)
 from .ecc import string_to_number
 from .crypto import (pw_decode, pw_encode, sha256, sha256d, PW_HASH_VERSION_LATEST,
-                     SUPPORTED_PW_HASH_VERSIONS, UnsupportedPasswordHashVersion, hash_160)
+                     SUPPORTED_PW_HASH_VERSIONS, UnsupportedPasswordHashVersion, hash_160, hkdf_sha256_32_20)
 from .util import (InvalidPassword, WalletFileException,
                    BitcoinException, bh2u, bfh, inv_dict, is_hex_str)
 from .mnemonic import Mnemonic, Wordlist, seed_type, is_seed
@@ -136,6 +137,10 @@ class KeyStore(Logger, ABC):
         pass
 
     @abstractmethod
+    def name_salt(self, identifier: bytes, sequence: 'AddressIndexGeneric', password) -> bytes:
+        pass
+
+    @abstractmethod
     def get_pubkey_derivation(self, pubkey: bytes,
                               txinout: Union['PartialTxInput', 'PartialTxOutput'],
                               *, only_der_suffix=True) \
@@ -192,6 +197,10 @@ class Software_KeyStore(KeyStore):
         # Sign
         if keypairs:
             tx.sign(keypairs)
+
+    def name_salt(self, identifier: bytes, sequence: 'AddressIndexGeneric', password) -> bytes:
+        privkey, compressed = self.get_private_key(sequence, password)
+        return hkdf_sha256_32_20(privkey, identifier, b"Namecoin Registration Salt")
 
     @abstractmethod
     def update_password(self, old_password, new_password):
@@ -793,6 +802,10 @@ class Hardware_KeyStore(Xpub, KeyStore):
         if self.soft_device_id != client.get_soft_device_id():
             self.soft_device_id = client.get_soft_device_id()
             self.is_requesting_to_be_rewritten_to_wallet_file = True
+
+    # TODO: deterministically derive salts on the hardware wallet
+    def name_salt(self, identifier: bytes, sequence: 'AddressIndexGeneric', password) -> bytes:
+        return urandom(20)
 
 
 KeyStoreWithMPK = Union[KeyStore, MasterPublicKeyMixin]  # intersection really...

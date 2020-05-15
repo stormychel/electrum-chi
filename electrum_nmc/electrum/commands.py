@@ -45,7 +45,7 @@ from . import bitcoin
 from .bitcoin import is_address,  hash_160, COIN
 from .bip32 import BIP32Node
 from .i18n import _
-from .names import build_name_new, format_name_identifier, name_expires_in, name_identifier_to_scripthash, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE, validate_value_length
+from .names import build_name_commitment, build_name_new, format_name_identifier, name_expires_in, name_identifier_to_scripthash, OP_NAME_NEW, OP_NAME_FIRSTUPDATE, OP_NAME_UPDATE, validate_value_length
 from .verifier import verify_tx_is_in_block
 from .transaction import (Transaction, multisig_script, TxOutput, PartialTransaction, PartialTxOutput,
                           tx_from_any, PartialTxInput, TxOutpoint)
@@ -90,6 +90,9 @@ class NameNeverExistedError(NameNotFoundError):
     pass
 
 class NameAlreadyExistsError(Exception):
+    pass
+
+class NamePreRegistrationNotFound(Exception):
     pass
 
 class NamePreRegistrationPendingError(Exception):
@@ -774,12 +777,13 @@ class Commands:
         # TODO: support non-ASCII encodings
         # TODO: enforce length limit on identifier
         identifier_bytes = identifier.encode("ascii")
-        name_op, rand = build_name_new(identifier_bytes)
         memo = "Pre-Registration: " + format_name_identifier(identifier_bytes)
 
         if destination is None:
             request = await self.add_request(None, memo=memo, wallet=wallet)
             destination = request['address']
+
+        name_op, rand = build_name_new(identifier_bytes, address=destination, password=password, wallet=wallet)
 
         tx = self._mktx(wallet,
                         outputs,
@@ -797,14 +801,8 @@ class Commands:
         return {"tx": tx.serialize(), "txid": tx.txid(), "rand": bh2u(rand)}
 
     @command('wp')
-    async def name_firstupdate(self, identifier, rand, name_new_txid, value, destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False, wallet: Abstract_Wallet = None):
+    async def name_firstupdate(self, identifier, rand=None, name_new_txid=None, value="", destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_early=False, wallet: Abstract_Wallet = None):
         """Create a name_firstupdate transaction. """
-        if not allow_early:
-            conf = wallet.get_tx_height(name_new_txid).conf
-            if conf < 12:
-                remaining_conf = 12 - conf
-                raise NamePreRegistrationPendingError("The name pre-registration is still pending; wait " + str(remaining_conf) + "more blocks")
-
         tx_fee = satoshis(fee)
         domain_addr = from_addr.split(',') if from_addr else None
         domain_coins = from_coins.split(',') if from_coins else None
@@ -814,7 +812,46 @@ class Commands:
         # TODO: enforce exact length of rand
         identifier_bytes = identifier.encode("ascii")
         value_bytes = value.encode("ascii")
-        rand_bytes = bfh(rand)
+
+        if rand is None:
+            if name_new_txid is None:
+                txid_filter = None
+            else:
+                txid_filter = [name_new_txid]
+            # Get a list of inputs.  If the user supplied an input txid, use
+            # that as a hint.
+            name_inputs = wallet.get_spendable_coins(None, include_names=True, only_uno_txids=txid_filter)
+            # Check all the inputs to see if any of them have a commitment that
+            # matches the salt we can calculate.
+            for new_input in name_inputs:
+                # Skip any inputs that aren't a name_new.
+                if new_input.name_op is None:
+                    continue
+                new_op = new_input.name_op
+                if new_op["op"] != OP_NAME_NEW:
+                    continue
+
+                # Calculate the salt
+                address = new_input.address
+                rand_bytes = wallet.name_salt(identifier_bytes, address, password)
+
+                # Calculate the commitment, and check if it matches
+                commitment = build_name_commitment(identifier_bytes, rand_bytes)
+                if commitment == new_op["hash"]:
+                    # We found the commitment.
+                    name_new_txid = new_input.prevout.txid.hex()
+                    break
+            else:
+                raise NamePreRegistrationNotFound("name_new input with matching commitment not found")
+        else:
+            rand_bytes = bfh(rand)
+
+        if not allow_early:
+            conf = wallet.get_tx_height(name_new_txid).conf
+            if conf < 12:
+                remaining_conf = 12 - conf
+                raise NamePreRegistrationPendingError("The name pre-registration is still pending; wait " + str(remaining_conf) + "more blocks")
+
         name_op = {"op": OP_NAME_FIRSTUPDATE, "name": identifier_bytes, "rand": rand_bytes, "value": value_bytes}
         memo = "Registration: " + format_name_identifier(identifier_bytes)
 
@@ -1697,6 +1734,8 @@ command_options = {
     'value':       (None, "The value to assign to the name"),
     'name_encoding': (None, "Encoding for the name identifier ('ascii' or 'hex')"),
     'value_encoding': (None, "Encoding for the name value ('ascii' or 'hex')"),
+    'rand':        (None, "Salt for the name pre-registration commitment (returned by name_new; you can usually omit this)"),
+    'name_new_txid':(None, "Transaction ID for the name pre-registration (returned by name_new; you can usually omit this)"),
     'trigger_txid':(None, "Broadcast the transaction when this txid reaches the specified number of confirmations"),
     'trigger_name':(None, "Broadcast the transaction when this name reaches the specified number of confirmations"),
 }

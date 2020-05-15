@@ -131,16 +131,24 @@ def validate_value_length(value):
     if value_length > value_length_limit:
         raise BitcoinException('value length {} exceeds limit of {}'.format(value_length, value_length_limit))
 
-def build_name_new(identifier, rand = None):
+def build_name_new(identifier, rand = None, address = None, password = None, wallet = None):
     validate_identifier_length(identifier)
+
+    if address is not None and wallet is not None:
+        rand = wallet.name_salt(identifier, address, password)
 
     if rand is None:
         rand = os.urandom(20)
 
+    commitment = build_name_commitment(identifier, rand)
+
+    return {"op": OP_NAME_NEW, "hash": commitment}, rand
+
+def build_name_commitment(identifier, rand):
     to_hash = rand + identifier
     commitment = hash_160(to_hash)
 
-    return {"op": OP_NAME_NEW, "hash": commitment}, rand
+    return commitment
 
 def name_identifier_to_scripthash(identifier_bytes):
     name_op = {"op": OP_NAME_UPDATE, "name": identifier_bytes, "value": bytes([])}

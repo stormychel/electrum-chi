@@ -1850,6 +1850,22 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         index = self.get_address_index(addr)
         return self.keystore.decrypt_message(index, message, password)
 
+    def name_salt(self, identifier: bytes, address: str, password: Optional[str]) -> bytes:
+        deterministic = True
+
+        if self.is_watching_only():
+            deterministic = False
+        if not is_address(address):
+            raise Exception(f"Invalid address: {address}")
+        if not self.is_mine(address):
+            deterministic = False
+
+        if deterministic:
+            index = self.get_address_index(address)
+            return self.keystore.name_salt(identifier, index, password)
+
+        return os.urandom(20)
+
     @abstractmethod
     def pubkeys_to_address(self, pubkeys: Sequence[str]) -> Optional[str]:
         pass

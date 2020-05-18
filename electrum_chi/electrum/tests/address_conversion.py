@@ -59,7 +59,7 @@ def frombtc(inp: str) -> str:
     # Handle bech32 segwit data first.
     if inp[:3].lower() == "bc1":
         return convert_bech32(inp, BitcoinMainnet.SEGWIT_HRP)
-    if inp[:3].lower() == "tb1":
+    if inp[:3].lower() in ["tb1", "tn1"]:
         return convert_bech32(inp, BitcoinTestnet.SEGWIT_HRP)
 
     # Handle bech32 lightning addresses.

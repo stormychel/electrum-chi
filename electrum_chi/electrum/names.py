@@ -23,7 +23,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Dict
+from typing import Dict, Optional
 
 from . import constants
 
@@ -347,7 +347,7 @@ def get_wallet_name_count(wallet, network):
             confirmed_count += 1
     return confirmed_count, pending_count
 
-def blocks_remaining_until_confirmations(name_height, chain_height, confirmations):
+def blocks_remaining_until_confirmations(name_height: Optional[int], chain_height, confirmations) -> Optional[int]:
     if name_height is None:
         return None
 

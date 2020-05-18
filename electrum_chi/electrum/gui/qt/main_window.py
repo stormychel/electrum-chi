@@ -3157,6 +3157,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.buy_names_already_exists_vbox = QVBoxLayout()
         
         self.buy_names_already_exists_label = QLabel("")
+        self.buy_names_already_exists_label.setWordWrap(True)
         self.buy_names_already_exists_vbox.addWidget(self.buy_names_already_exists_label)
 
         self.buy_names_already_exists_widget = QWidget()
@@ -3166,6 +3167,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.buy_names_available_vbox = QVBoxLayout()
 
         self.buy_names_available_label = QLabel("")
+        self.buy_names_available_label.setWordWrap(True)
         self.buy_names_available_vbox.addWidget(self.buy_names_available_label)
 
         self.buy_names_available_register_button = QPushButton(_("Register name..."))
@@ -3202,15 +3204,67 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         identifier_formatted = format_name_identifier(identifier)
 
+        name_list = self.console.namespace.get('name_list')
         name_show = self.console.namespace.get('name_show')
 
         name_exists = True
+        name_pending_mine = False
+        name_snipe_pending_mine = False
+        name_pending_unverified = False
         name_valid = True
         name_mine = False
+        name_mine_unverified = False
         chain_syncing = False
         try:
-            name_show_result = name_show(identifier_ascii, wallet=self.wallet)
-            name_mine = name_show_result["ismine"]
+            # First we try looking up the name in the local wallet via
+            # name_list.
+            name_list_result = name_list(identifier=identifier_ascii, wallet=self.wallet)
+            for name_list_item in name_list_result:
+                # We should only have 0 or 1 items.
+                if not name_list_item["expired"] and name_list_item["ismine"]:
+                    # Name item purports to be active and mine.
+                    chain_height = self.network.get_local_height()
+                    mature_in = name_new_mature_in(name_list_item["height"], chain_height)
+                    if mature_in is not None and mature_in <= 0:
+                        # Name has at least 12 confirmations, we can confirm
+                        # that it's mine.
+                        name_mine = True
+                    else:
+                        # Name has under 12 confirmations, we can't verify it.
+                        name_mine_unverified = True
+
+            # Then we check the transaction broadcast queue.
+            for txid in self.wallet.db.queued_transactions:
+                queue_item = self.wallet.db.queued_transactions[txid]
+                tx_hex = queue_item["tx"]
+                tx = Transaction(tx_hex)
+                # Search for a name output with a matching identifier
+                for o in tx.outputs():
+                    if o.name_op is None:
+                        continue
+                    if "name" not in o.name_op:
+                        continue
+                    if o.name_op["name"] != identifier:
+                        continue
+                    # At this point we found a matching identifier.  Now we
+                    # check the send conditions.
+                    send_when = queue_item["sendWhen"]
+                    trigger_depth = send_when["confirmations"]
+                    if trigger_depth == 12:
+                        # This is a typical registration queued transaction.
+                        name_pending_mine = True
+                    if trigger_depth == constants.net.NAME_EXPIRATION + 1:
+                        # This is a snipe registration queued transaction.
+                        name_snipe_pending_mine = True
+
+            # If the name doesn't show up in the local wallet, or if the local
+            # UNO has under 12 confirmations, then we do a lookup operation via
+            # name_show.
+            if not name_mine and not name_pending_mine and not name_snipe_pending_mine:
+                name_show_result = name_show(identifier_ascii, wallet=self.wallet)
+                name_mine = name_show_result["ismine"]
+        except commands.NameUnconfirmedError:
+            name_pending_unverified = True
         except commands.NameNotFoundError:
             name_exists = False
         except commands.NotSynchronizedException:
@@ -3235,10 +3289,25 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.buy_names_available_widget.hide()
             self.buy_names_already_exists_label.setText(_("You already own ") + identifier_formatted + _("!"))
             self.buy_names_already_exists_widget.show()
-        elif name_exists:
+        elif name_pending_mine:
+            self.buy_names_available_widget.hide()
+            self.buy_names_already_exists_label.setText(_("You already have a registration pending for ") + identifier_formatted + _("!"))
+            self.buy_names_already_exists_widget.show()
+        elif name_snipe_pending_mine:
+            self.buy_names_available_widget.hide()
+            self.buy_names_already_exists_label.setText(_("You already have a snipe pending for ") + identifier_formatted + _("!  Your snipe will be broadcast if/when the name expires."))
+            self.buy_names_already_exists_widget.show()
+        elif name_exists and not name_pending_unverified:
             self.buy_names_available_widget.hide()
             self.buy_names_already_exists_label.setText(identifier_formatted + _(" is already registered, sorry!"))
             self.buy_names_already_exists_widget.show()
+        elif name_pending_unverified:
+            self.buy_names_already_exists_widget.hide()
+            if name_mine_unverified:
+                self.buy_names_available_label.setText(_("The server reports that you already registered ") + identifier_formatted + _(" in approximately the past 2 hours, but Electrum-CHI couldn't verify this.  If you believe the server is wrong, you can try to register it, but you may forfeit the name registration fee."))
+            else:
+                self.buy_names_available_label.setText(_("The server reports that someone else already registered ") + identifier_formatted + _(" in approximately the past 2 hours, but Electrum-CHI couldn't verify this.  If you believe the server is wrong, you can try to register it, but you may forfeit the name registration fee."))
+            self.buy_names_available_widget.show()
         else:
             self.buy_names_already_exists_widget.hide()
             self.buy_names_available_label.setText(identifier_formatted + _(" is available to register!"))

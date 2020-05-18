@@ -19,6 +19,7 @@ for i in **/*.py; do
     if ./contrib/print_python_strings "$i" "namecoin" \
         | grep -v 'electrum/tests/test_util\.py.*notnamecoin:' \
         | grep -v 'dnsdialog\.py' \
+        | grep -v 'Namecoin Registration Salt' \
         | grep -v 'Electrum-NMC by the Namecoin developers'; then
         echo "Rebranding needed"
         exit 1

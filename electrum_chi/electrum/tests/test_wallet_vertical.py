@@ -21,6 +21,7 @@ from . import TestCaseForTestnet
 from . import ElectrumTestCase
 
 from .address_conversion import frombtc
+from .test_bitcoin import needs_test_with_all_chacha20_implementations as needs_test_with_all_hkdf_implementations
 
 
 UNICODE_HORROR_HEX = 'e282bf20f09f988020f09f98882020202020e3818620e38191e3819fe381be20e3828fe3828b2077cda2cda2cd9d68cda16fcda2cda120ccb8cda26bccb5cd9f6eccb4cd98c7ab77ccb8cc9b73cd9820cc80cc8177cd98cda2e1b8a9ccb561d289cca1cda27420cca7cc9568cc816fccb572cd8fccb5726f7273cca120ccb6cda1cda06cc4afccb665cd9fcd9f20ccb6cd9d696ecda220cd8f74cc9568ccb7cca1cd9f6520cd9fcd9f64cc9b61cd9c72cc95cda16bcca2cca820cda168ccb465cd8f61ccb7cca2cca17274cc81cd8f20ccb4ccb7cda0c3b2ccb5ccb666ccb82075cca7cd986ec3adcc9bcd9c63cda2cd8f6fccb7cd8f64ccb8cda265cca1cd9d3fcd9e'
@@ -2390,3 +2391,97 @@ class TestWalletHistory_DoubleSpend(TestCaseForTestnet):
         txC = Transaction(self.transactions["2c9aa33d9c8ec649f9bfb84af027a5414b760be5231fe9eca4a95b9eb3f8a017"])
         w.add_transaction(txC)
         self.assertEqual(999890, sum(w.get_balance()))
+
+
+class TestWalletNames_Salts(TestCaseForTestnet):
+    def setUp(self):
+        super().setUp()
+        self.config = SimpleConfig({'electrum_path': self.electrum_path})
+
+    @needs_test_with_all_hkdf_implementations
+    @mock.patch.object(wallet.Abstract_Wallet, 'save_db')
+    def test_name_salt_addr_p2pkh(self, mock_save_db):
+        wallet = WalletIntegrityHelper.create_imported_wallet(privkeys=True, config=self.config)
+        wallet.import_private_key(frombtc('p2pkh:cQDxbmQfwRV3vP1mdnVHq37nJekHLsuD3wdSQseBRA2ct4MFk5Pq'), password=None)
+
+        address = frombtc('mg2jk6S5WGDhUPA8mLSxDLWpUoQnX1zzoG')
+        identifier = b'd/wikileaks'
+
+        salt = wallet.name_salt(identifier, address, None)
+
+        self.assertEqual(len(salt), 20)
+        self.assertEqual(bh2u(salt), 'c33f6d84c93d769da2a8882ed9d4a69e2052dd9a')
+
+    @needs_test_with_all_hkdf_implementations
+    @mock.patch.object(wallet.Abstract_Wallet, 'save_db')
+    def test_name_salt_addr_p2wpkh_p2sh(self, mock_save_db):
+        wallet = WalletIntegrityHelper.create_imported_wallet(privkeys=True, config=self.config)
+        wallet.import_private_key(frombtc('p2wpkh-p2sh:cU9hVzhpvfn91u2zTVn8uqF2ymS7ucYH8V5TmsTDmuyMHgRk9WsJ'), password=None)
+
+        address = frombtc('2NA2JbUVK7HGWUCK5RXSVNHrkgUYF8d9zV8')
+        identifier = b'd/wikileaks'
+
+        salt = wallet.name_salt(identifier, address, None)
+
+        self.assertEqual(len(salt), 20)
+        self.assertEqual(bh2u(salt), 'b14763659b268460865db01b2b10b80a9cbe9ceb')
+
+    @needs_test_with_all_hkdf_implementations
+    @mock.patch.object(wallet.Abstract_Wallet, 'save_db')
+    def test_name_salt_addr_p2wpkh(self, mock_save_db):
+        wallet = WalletIntegrityHelper.create_imported_wallet(privkeys=True, config=self.config)
+        wallet.import_private_key(frombtc('p2wpkh:cPuQzcNEgbeYZ5at9VdGkCwkPA9r34gvEVJjuoz384rTfYpahfe7'), password=None)
+
+        address = frombtc('tb1qm2eh4787lwanrzr6pf0ekf5c7jnmghm2y9k529')
+        identifier = b'd/wikileaks'
+
+        salt = wallet.name_salt(identifier, address, None)
+
+        self.assertEqual(len(salt), 20)
+        self.assertEqual(bh2u(salt), 'a39038cddfcc17d391b8620639a72178dc73b19a')
+
+    @needs_test_with_all_hkdf_implementations
+    @mock.patch.object(wallet.Abstract_Wallet, 'save_db')
+    def test_name_salt_multisig_p2sh_2of3(self, mock_save_db):
+        wallet = WalletIntegrityHelper.create_multisig_wallet(
+            [
+                keystore.from_seed('blast uniform dragon fiscal ensure vast young utility dinosaur abandon rookie sure', '', True),
+                keystore.from_xpub('tpubD6NzVbkrYhZ4YTPEgwk4zzr8wyo7pXGmbbVUnfYNtx6SgAMF5q3LN3Kch58P9hxGNsTmP7Dn49nnrmpE6upoRb1Xojg12FGLuLHkVpVtS44'),
+                keystore.from_xpub('tpubD6NzVbkrYhZ4XJzYkhsCbDCcZRmDAKSD7bXi9mdCni7acVt45fxbTVZyU6jRGh29ULKTjoapkfFsSJvQHitcVKbQgzgkkYsAmaovcro7Mhf')
+            ],
+            '2of3', gap_limit=2,
+            config=self.config
+        )
+        self.assertEqual(wallet.txin_type, 'p2sh')
+
+        address = wallet.get_receiving_address()
+        self.assertEqual(address, frombtc('2N4z38eTKcWTZnfugCCfRyXtXWMLnn8HDfw'))
+        identifier = b'd/wikileaks'
+
+        salt = wallet.name_salt(identifier, address, None)
+
+        self.assertEqual(len(salt), 20)
+        self.assertEqual(bh2u(salt), '56e39f1b9c9fecc9f7263578b0a4743cf5c25c73')
+
+    @needs_test_with_all_hkdf_implementations
+    @mock.patch.object(wallet.Abstract_Wallet, 'save_db')
+    def test_name_salt_multisig_p2wsh_2of3(self, mock_save_db):
+        wallet = WalletIntegrityHelper.create_multisig_wallet(
+            [
+                keystore.from_seed('bitter grass shiver impose acquire brush forget axis eager alone wine silver', '', True),
+                keystore.from_xpub('Vpub5fcdcgEwTJmbmqAktuK8Kyq92fMf7sWkcP6oqAii2tG47dNbfkGEGUbfS9NuZaRywLkHE6EmUksrqo32ZL3ouLN1HTar6oRiHpDzKMAF1tf'),
+                keystore.from_xpub('Vpub5fjkKyYnvSS4wBuakWTkNvZDaBM2vQ1MeXWq368VJHNr2eT8efqhpmZ6UUkb7s2dwCXv2Vuggjdhk4vZVyiAQTwUftvff73XcUGq2NQmWra')
+            ],
+            '2of3', gap_limit=2,
+            config=self.config
+        )
+        self.assertEqual(wallet.txin_type, 'p2wsh')
+
+        address = wallet.get_receiving_address()
+        self.assertEqual(address, frombtc('tn1q83p6eqxkuvq4eumcha46crpzg4nj84s9p0hnynkxg8nhvfzqcc7qeyx664'))
+        identifier = b'd/wikileaks'
+
+        salt = wallet.name_salt(identifier, address, None)
+
+        self.assertEqual(len(salt), 20)
+        self.assertEqual(bh2u(salt), '1169f1af8cadc1696460b8720b5ad324f95e650c')

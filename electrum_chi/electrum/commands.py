@@ -80,6 +80,15 @@ class NotSynchronizedException(Exception):
 class NameNotFoundError(Exception):
     pass
 
+class NameUnconfirmedError(NameNotFoundError):
+    pass
+
+class NameExpiredError(NameNotFoundError):
+    pass
+
+class NameNeverExistedError(NameNotFoundError):
+    pass
+
 class NameAlreadyExistsError(Exception):
     pass
 
@@ -355,7 +364,8 @@ class Commands:
             if name_encoding == "hex":
                 name = name_op["name"]
             elif name_encoding == "utf-8":
-                name = name_op["name"].decode("utf-8")
+                name_bytes = bfh(name_op["name"])
+                name = name_bytes.decode("utf-8")
             elif name_encoding == "ascii":
                 name_bytes = bfh(name_op["name"])
                 name = name_bytes.decode("ascii")
@@ -1196,11 +1206,11 @@ class Commands:
             break
 
         if unmined_tx_exists:
-            raise NameNotFoundError("Name is purportedly unconfirmed")
+            raise NameUnconfirmedError("Name is purportedly unconfirmed")
         if expired_tx_exists:
-            raise NameNotFoundError("Name is purportedly expired")
+            raise NameExpiredError("Name is purportedly expired")
         if tx_best is None:
-            raise NameNotFoundError("Name purportedly never existed")
+            raise NameNeverExistedError("Name purportedly never existed")
         txid = tx_best["tx_hash"]
         height = tx_best["height"]
 
@@ -1524,6 +1534,8 @@ command_options = {
     'value':       (None, "The value to assign to the name"),
     'name_encoding': (None, "Encoding for the name identifier ('ascii' or 'hex')"),
     'value_encoding': (None, "Encoding for the name value ('ascii' or 'hex')"),
+    'rand':        (None, "Salt for the name pre-registration commitment (returned by name_new; you can usually omit this)"),
+    'name_new_txid':(None, "Transaction ID for the name pre-registration (returned by name_new; you can usually omit this)"),
     'trigger_txid':(None, "Broadcast the transaction when this txid reaches the specified number of confirmations"),
     'trigger_name':(None, "Broadcast the transaction when this name reaches the specified number of confirmations"),
 }

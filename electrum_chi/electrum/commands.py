@@ -1091,7 +1091,7 @@ class Commands:
                     current_height = await self.name_show(trigger_name)["height"]
                     current_depth = chain_height - current_height + 1
                 except NameNotFoundError:
-                    current_depth = constants.net.NAME_EXPIRATION
+                    current_depth = None
                 except Exception:
                     continue
 

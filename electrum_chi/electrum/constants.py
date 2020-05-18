@@ -92,8 +92,6 @@ class BitcoinMainnet(AbstractNet):
 
     AUXPOW_CHAIN_ID = 1829
 
-    NAME_EXPIRATION = 36000
-
 
 class BitcoinTestnet(AbstractNet):
 
@@ -130,8 +128,6 @@ class BitcoinTestnet(AbstractNet):
     AUXPOW_CHAIN_ID = 0x0001
     AUXPOW_START_HEIGHT = 0
 
-    NAME_EXPIRATION = 36000
-
 
 class BitcoinRegtest(BitcoinTestnet):
 
@@ -140,8 +136,6 @@ class BitcoinRegtest(BitcoinTestnet):
     DEFAULT_SERVERS = read_json('servers_regtest.json', {})
     CHECKPOINTS = []
     LN_DNS_SEEDS = []
-
-    NAME_EXPIRATION = 30
 
 
 class BitcoinSimnet(BitcoinTestnet):

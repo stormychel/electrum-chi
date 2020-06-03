@@ -116,7 +116,7 @@ Create translations (optional)::
 
 Finally, to start Electrum::
 
-    ./run_electrum
+    ./run_electrum_nmc
 
 
 

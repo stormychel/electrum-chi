@@ -383,7 +383,7 @@ class SendScreen(CScreen):
                        + f' ({fee_ratio*100:.2f}% of amount)')
         elif feerate > FEERATE_WARNING_HIGH_FEE / 1000:
             msg.append(_('Warning') + ': ' + _("The fee for this transaction seems unusually high.")
-                       + f' (feerate: {feerate:.2f} sat/byte)')
+                       + f' (feerate: {feerate:.2f} swartz/byte)')
         self.app.protected('\n'.join(msg), self.send_tx, (tx,))
 
     def send_tx(self, tx, password):

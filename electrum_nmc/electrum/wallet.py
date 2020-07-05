@@ -1746,7 +1746,7 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         d = {
             'is_lightning': is_lightning,
             'amount': x.amount,
-            'amount_BTC': format_satoshis(x.amount),
+            'amount_NMC': format_satoshis(x.amount),
             'message': x.message,
             'timestamp': x.time,
             'expiration': x.exp,
@@ -1786,7 +1786,7 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         d = {
             'is_lightning': is_lightning,
             'amount': x.amount,
-            'amount_BTC': format_satoshis(x.amount),
+            'amount_NMC': format_satoshis(x.amount),
             'message': x.message,
             'timestamp': x.time,
             'expiration': x.exp,

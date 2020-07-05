@@ -77,7 +77,9 @@ NUM_RECENT_SERVERS = 20
 
 
 def parse_servers(result: Sequence[Tuple[str, str, List[str]]]) -> Dict[str, dict]:
-    """ parse servers list into dict format"""
+    """Convert servers list (from protocol method "server.peers.subscribe") into dict format.
+    Also validate values, such as IP addresses and ports.
+    """
     servers = {}
     for item in result:
         host = item[1]
@@ -89,6 +91,7 @@ def parse_servers(result: Sequence[Tuple[str, str, List[str]]]) -> Dict[str, dic
                 if re.match(r"[st]\d*", v):
                     protocol, port = v[0], v[1:]
                     if port == '': port = constants.net.DEFAULT_PORTS[protocol]
+                    ServerAddr(host, port, protocol=protocol)  # check if raises
                     out[protocol] = port
                 elif re.match("v(.?)+", v):
                     version = v[1:]
@@ -317,6 +320,7 @@ class Network(Logger, NetworkRetryManager[ServerAddr]):
         self.auto_connect = self.config.get('auto_connect', True)
         self._connecting = set()
         self.proxy = None
+        self._maybe_set_oneserver()
 
         # Dump network messages (all interfaces).  Set at runtime from the console.
         self.debug = False
@@ -327,7 +331,7 @@ class Network(Logger, NetworkRetryManager[ServerAddr]):
         self.channel_db = None  # type: Optional[ChannelDB]
         self.lngossip = None  # type: Optional[LNGossip]
         self.local_watchtower = None  # type: Optional[WatchTower]
-        if self.config.get('run_watchtower', False):
+        if self.config.get('run_local_watchtower', False):
             from . import lnwatcher
             self.local_watchtower = lnwatcher.WatchTower(self)
             self.local_watchtower.start_network(self)
@@ -430,6 +434,7 @@ class Network(Logger, NetworkRetryManager[ServerAddr]):
             random.shuffle(server_peers)
             max_accepted_peers = len(constants.net.DEFAULT_SERVERS) + NUM_RECENT_SERVERS
             server_peers = server_peers[:max_accepted_peers]
+            # note that 'parse_servers' also validates the data (which is untrusted input!)
             self.server_peers = parse_servers(server_peers)
             self.notify('servers')
         async def get_relay_fee():
@@ -609,9 +614,10 @@ class Network(Logger, NetworkRetryManager[ServerAddr]):
             else:
                 await self.switch_lagging_interface()
 
-    def _set_oneserver(self, oneserver: bool):
+    def _maybe_set_oneserver(self) -> None:
+        oneserver = bool(self.config.get('oneserver', False))
+        self.oneserver = oneserver
         self.num_server = NUM_TARGET_CONNECTED_SERVERS if not oneserver else 0
-        self.oneserver = bool(oneserver)
 
     async def _switch_to_random_interface(self):
         '''Switch to a random connected server other than the current one'''
@@ -1198,7 +1204,7 @@ class Network(Logger, NetworkRetryManager[ServerAddr]):
         self.logger.info('starting network')
         self._clear_addr_retry_times()
         self._set_proxy(deserialize_proxy(self.config.get('proxy')))
-        self._set_oneserver(self.config.get('oneserver', False))
+        self._maybe_set_oneserver()
         await self.taskgroup.spawn(self._run_new_interface(self.default_server))
 
         async def main():

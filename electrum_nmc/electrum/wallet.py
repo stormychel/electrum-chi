@@ -46,6 +46,7 @@ import itertools
 from .i18n import _
 from .bip32 import BIP32Node, convert_bip32_intpath_to_strpath, convert_bip32_path_to_list_of_uint32
 from .crypto import sha256
+from . import util
 from .util import (NotEnoughFunds, UserCancelled, profiler,
                    format_satoshis, format_fee_satoshis, NoDynamicFeeEstimates,
                    WalletFileException, BitcoinException, MultipleSpendMaxTxOutputs,
@@ -210,6 +211,7 @@ class TxWalletDetails(NamedTuple):
     tx_mined_status: TxMinedInfo
     mempool_depth_bytes: Optional[int]
     can_remove: bool  # whether user should be allowed to delete tx
+    is_lightning_funding_tx: bool
 
 
 class Abstract_Wallet(AddressSynchronizer, ABC):
@@ -220,10 +222,12 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
 
     LOGGING_SHORTCUT = 'w'
     max_change_outputs = 3
-    gap_limit_for_change = 6
+    gap_limit_for_change = 10
 
     txin_type: str
     wallet_type: str
+    lnworker: Optional['LNWallet']
+    lnbackups: Optional['LNBackups']
 
     def __init__(self, db: WalletDB, storage: Optional[WalletStorage], *, config: SimpleConfig):
         if not db.is_ready_to_be_used_by_wallet():
@@ -247,6 +251,7 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         self.fiat_value            = db.get_dict('fiat_value')
         self.receive_requests      = db.get_dict('payment_requests')
         self.invoices              = db.get_dict('invoices')
+        self._reserved_addresses   = set(db.get('reserved_addresses', []))
 
         self._prepare_onchain_invoice_paid_detection()
         self.calc_unused_change_addresses()
@@ -312,10 +317,16 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         self.db.put('lightning_privkey2', None)
         self.save_db()
 
-    def stop_threads(self):
-        super().stop_threads()
+    def stop(self):
+        super().stop()
         if any([ks.is_requesting_to_be_rewritten_to_wallet_file for ks in self.get_keystores()]):
             self.save_keystore()
+        if self.network:
+            if self.lnworker:
+                self.lnworker.stop()
+                self.lnworker = None
+            self.lnbackups.stop()
+            self.lnbackups = None
         self.save_db()
 
     def set_up_to_date(self, b):
@@ -367,14 +378,29 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
                 raise WalletFileException(f'The addresses in this wallet are not namecoin addresses.\n'
                                           f'e.g. {neutered_addr} (length: {len(addr)})')
 
-    def calc_unused_change_addresses(self):
+    def check_returned_address_for_corruption(func):
+        def wrapper(self, *args, **kwargs):
+            addr = func(self, *args, **kwargs)
+            self.check_address_for_corruption(addr)
+            return addr
+        return wrapper
+
+    def calc_unused_change_addresses(self) -> Sequence[str]:
+        """Returns a list of change addresses to choose from, for usage in e.g. new transactions.
+        The caller should give priority to earlier ones in the list.
+        """
         with self.lock:
-            if hasattr(self, '_unused_change_addresses'):
-                addrs = self._unused_change_addresses
-            else:
-                addrs = self.get_change_addresses()
-            self._unused_change_addresses = [addr for addr in addrs if not self.is_used(addr)]
-            return list(self._unused_change_addresses)
+            # We want a list of unused change addresses.
+            # As a performance optimisation, to avoid checking all addresses every time,
+            # we maintain a list of "not old" addresses ("old" addresses have deeply confirmed history),
+            # and only check those.
+            if not hasattr(self, '_not_old_change_addresses'):
+                self._not_old_change_addresses = self.get_change_addresses()
+            self._not_old_change_addresses = [addr for addr in self._not_old_change_addresses
+                                              if not self.address_is_old(addr)]
+            unused_addrs = [addr for addr in self._not_old_change_addresses
+                            if not self.is_used(addr) and not self.is_address_reserved(addr)]
+            return unused_addrs
 
     def is_deterministic(self) -> bool:
         return self.keystore.is_deterministic()
@@ -499,7 +525,11 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         exp_n = None
         can_broadcast = False
         can_bump = False
-        tx_hash = tx.txid()
+        tx_hash = tx.txid()  # note: txid can be None! e.g. when called from GUI tx dialog
+        is_lightning_funding_tx = False
+        if self.has_lightning() and tx_hash is not None:
+            is_lightning_funding_tx = any([chan.funding_outpoint.txid == tx_hash
+                                           for chan in self.lnworker.channels.values()])
         tx_we_already_have_in_db = self.db.get_transaction(tx_hash)
         can_save_as_local = (is_relevant and tx.txid() is not None
                              and (tx_we_already_have_in_db is None or not tx_we_already_have_in_db.is_complete()))
@@ -549,6 +579,9 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         else:
             amount = None
 
+        if is_lightning_funding_tx:
+            can_bump = False  # would change txid
+
         return TxWalletDetails(
             txid=tx_hash,
             status=status,
@@ -561,6 +594,7 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
             tx_mined_status=tx_mined_status,
             mempool_depth_bytes=exp_n,
             can_remove=can_remove,
+            is_lightning_funding_tx=is_lightning_funding_tx,
         )
 
     def get_spendable_coins(self, domain, *, nonlocal_only=False, include_names=False, only_uno_txids=None, only_uno_identifiers=None) -> Sequence[PartialTxInput]:
@@ -611,7 +645,7 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
     def get_onchain_history(self, *, domain=None):
         monotonic_timestamp = 0
         for hist_item in self.get_history(domain=domain):
-            monotonic_timestamp = max(monotonic_timestamp, (hist_item.tx_mined_status.timestamp or float('inf')))
+            monotonic_timestamp = max(monotonic_timestamp, (hist_item.tx_mined_status.timestamp or 999_999_999_999))
             yield {
                 'txid': hist_item.txid,
                 'fee_sat': hist_item.fee,
@@ -1060,9 +1094,25 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
             assert is_address(addr), f"not valid namecoin address: {addr}"
             # note that change addresses are not necessarily ismine
             # in which case this is a no-op
-            self.check_address(addr)
+            self.check_address_for_corruption(addr)
         max_change = self.max_change_outputs if self.multiple_change else 1
         return change_addrs[:max_change]
+
+    @check_returned_address_for_corruption
+    def get_new_sweep_address_for_channel(self) -> str:
+        # Recalc and get unused change addresses
+        addrs = self.calc_unused_change_addresses()
+        if addrs:
+            selected_addr = addrs[0]
+        else:
+            # if there are none, take one randomly from the last few
+            addrs = self.get_change_addresses(slice_start=-self.gap_limit_for_change)
+            if addrs:
+                selected_addr = random.choice(addrs)
+            else:  # fallback for e.g. imported wallets
+                selected_addr = self.get_receiving_address()
+        assert is_address(selected_addr), f"not valid bitcoin address: {selected_addr}"
+        return selected_addr
 
     def make_unsigned_transaction(self, *, coins: Sequence[PartialTxInput],
                                   outputs: List[PartialTxOutput], fee=None,
@@ -1219,6 +1269,20 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         else:
             self.frozen_coins -= set(utxos)
         self.db.put('frozen_coins', list(self.frozen_coins))
+
+    def is_address_reserved(self, addr: str) -> bool:
+        # note: atm 'reserved' status is only taken into consideration for 'change addresses'
+        return addr in self._reserved_addresses
+
+    def set_reserved_state_of_address(self, addr: str, *, reserved: bool) -> None:
+        if not self.is_mine(addr):
+            return
+        with self.lock:
+            if reserved:
+                self._reserved_addresses.add(addr)
+            else:
+                self._reserved_addresses.discard(addr)
+            self.db.put('reserved_addresses', list(self._reserved_addresses))
 
     def can_export(self):
         return not self.is_watching_only() and hasattr(self.keystore, 'get_private_key')
@@ -1557,15 +1621,8 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
     def try_detecting_internal_addresses_corruption(self) -> None:
         pass
 
-    def check_address(self, addr: str) -> None:
+    def check_address_for_corruption(self, addr: str) -> None:
         pass
-
-    def check_returned_address(func):
-        def wrapper(self, *args, **kwargs):
-            addr = func(self, *args, **kwargs)
-            self.check_address(addr)
-            return addr
-        return wrapper
 
     def get_unused_addresses(self) -> Sequence[str]:
         domain = self.get_receiving_addresses()
@@ -1573,18 +1630,18 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         return [addr for addr in domain if not self.is_used(addr)
                 and addr not in in_use_by_request]
 
-    @check_returned_address
+    @check_returned_address_for_corruption
     def get_unused_address(self) -> Optional[str]:
         addrs = self.get_unused_addresses()
         if addrs:
             return addrs[0]
 
-    @check_returned_address
-    def get_receiving_address(self):
+    @check_returned_address_for_corruption
+    def get_receiving_address(self) -> str:
         # always return an address
         domain = self.get_receiving_addresses()
         if not domain:
-            return
+            raise Exception("no receiving addresses in wallet?!")
         choice = domain[0]
         for addr in domain:
             if not self.is_used(addr):
@@ -1596,6 +1653,16 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
 
     def create_new_address(self, for_change: bool = False):
         raise Exception("this wallet cannot generate new addresses")
+
+    def import_address(self, address: str) -> str:
+        raise Exception("this wallet cannot import addresses")
+
+    def import_addresses(self, addresses: List[str], *,
+                         write_to_disk=True) -> Tuple[List[str], List[Tuple[str, str]]]:
+        raise Exception("this wallet cannot import addresses")
+
+    def delete_address(self, address: str) -> None:
+        raise Exception("this wallet cannot delete addresses")
 
     def get_payment_status(self, address, amount):
         local_height = self.get_local_height()
@@ -1672,13 +1739,12 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         else:
             return
         # add URL if we are running a payserver
-        if self.config.get('run_payserver'):
-            host = self.config.get('payserver_host', 'localhost')
-            port = self.config.get('payserver_port', 8002)
+        payserver = self.config.get_netaddress('payserver_address')
+        if payserver:
             root = self.config.get('payserver_root', '/r')
             use_ssl = bool(self.config.get('ssl_keyfile'))
             protocol = 'https' if use_ssl else 'http'
-            base = '%s://%s:%d'%(protocol, host, port)
+            base = '%s://%s:%d'%(protocol, payserver.host, payserver.port)
             req['view_url'] = base + root + '/pay?id=' + key
             if use_ssl and 'URI' in req:
                 request_url = base + '/bip70/' + key + '.bip70'
@@ -1691,7 +1757,7 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
             addr = self.get_txout_address(txo)
             if addr in self.receive_requests:
                 status, conf = self.get_request_status(addr)
-                self.network.trigger_callback('payment_received', self, addr, status)
+                util.trigger_callback('request_status', addr, status)
 
     def make_payment_request(self, addr, amount, message, expiration):
         timestamp = int(time.time())
@@ -1960,6 +2026,45 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
     def get_all_known_addresses_beyond_gap_limit(self) -> Set[str]:
         pass
 
+    def create_transaction(self, outputs, *, fee=None, feerate=None, change_addr=None, domain_addr=None, domain_coins=None,
+              unsigned=False, rbf=None, password=None, locktime=None,
+              name_input_txids=[], name_input_identifiers=[]):
+        if fee is not None and feerate is not None:
+            raise Exception("Cannot specify both 'fee' and 'feerate' at the same time!")
+
+        # The domain_addr map will (for unknown reasons) delete its contents when
+        # read.  Since we want to use it multiple times for Namecoin, the most
+        # obvious workaround is to simply make copies of it before we cast it
+        # into a map.
+        name_txid_domain = copy.deepcopy(domain_addr)
+        name_identifier_domain = copy.deepcopy(domain_addr)
+
+        coins = self.get_spendable_coins(domain_addr)
+        if domain_coins is not None:
+            coins = [coin for coin in coins if (coin.prevout.to_str() in domain_coins)]
+        name_coins = self.get_spendable_coins(name_txid_domain, include_names=True, only_uno_txids=name_input_txids)
+        name_coins += self.get_spendable_coins(name_identifier_domain, include_names=True, only_uno_identifiers=name_input_identifiers)
+        if feerate is not None:
+            fee_per_kb = 1000 * Decimal(feerate)
+            fee_estimator = partial(SimpleConfig.estimate_fee_for_feerate, fee_per_kb)
+        else:
+            fee_estimator = fee
+        tx = self.make_unsigned_transaction(
+            coins=coins,
+            outputs=outputs,
+            fee=fee_estimator,
+            change_addr=change_addr,
+            name_inputs=name_coins)
+        if locktime is not None:
+            tx.locktime = locktime
+        if rbf is None:
+            rbf = self.config.get('use_rbf', True)
+        if rbf:
+            tx.set_rbf(True)
+        if not unsigned:
+            self.sign_transaction(tx, password)
+        return tx
+
 
 class Simple_Wallet(Abstract_Wallet):
     # wallet with a single keystore
@@ -2074,9 +2179,11 @@ class Imported_Wallet(Simple_Wallet):
         else:
             raise BitcoinException(str(bad_addr[0][1]))
 
-    def delete_address(self, address: str):
+    def delete_address(self, address: str) -> None:
         if not self.db.has_imported_address(address):
             return
+        if len(self.get_addresses()) <= 1:
+            raise Exception("cannot delete last remaining address from wallet")
         transactions_to_remove = set()  # only referred to by this address
         transactions_new = set()  # txs that are not only referred to by address
         with self.lock:
@@ -2220,9 +2327,9 @@ class Deterministic_Wallet(Abstract_Wallet):
         addresses_rand = addresses_all[10:]
         addresses_sample2 = random.sample(addresses_rand, min(len(addresses_rand), 10))
         for addr_found in itertools.chain(addresses_sample1, addresses_sample2):
-            self.check_address(addr_found)
+            self.check_address_for_corruption(addr_found)
 
-    def check_address(self, addr):
+    def check_address_for_corruption(self, addr):
         if addr and self.is_mine(addr):
             if addr != self.derive_address(*self.get_address_index(addr)):
                 raise InternalAddressCorruption()
@@ -2307,8 +2414,8 @@ class Deterministic_Wallet(Abstract_Wallet):
             self.db.add_change_address(address) if for_change else self.db.add_receiving_address(address)
             self.add_address(address)
             if for_change:
-                # note: if it's actually used, it will get filtered later
-                self._unused_change_addresses.append(address)
+                # note: if it's actually "old", it will get filtered later
+                self._not_old_change_addresses.append(address)
             return address
 
     def synchronize_sequence(self, for_change):

@@ -71,9 +71,9 @@ class Logic (Logger):
     Logger.__init__ (self)
     self.cmd_runner = cmd_runner
 
-    self.methods = jsonrpcserver.methods.Methods ()
+    self.methods = {}
     for cmdname in self.commands:
-      self.methods.add (getattr (self, cmdname))
+      self.methods[cmdname] = getattr (self, cmdname)
 
   def interpretNameOpOptions (self, opt):
     """

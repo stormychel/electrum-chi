@@ -178,7 +178,10 @@ class AuthenticatedServer(Logger):
             await asyncio.sleep(0.050)
             raise AuthenticationCredentialsInvalid('Invalid Credentials')
 
-    async def handle(self, request):
+    async def handle(self, request, methods=None):
+        if methods is None:
+            methods = self._methods
+
         async with self.auth_lock:
             try:
                 await self.authenticate(request.headers)
@@ -195,7 +198,7 @@ class AuthenticatedServer(Logger):
             params = request.get('params', [])  # type: Union[Sequence, Mapping]
             if method not in self._methods:
                 raise Exception(f"attempting to use unregistered method: {method}")
-            f = self._methods[method]
+            f = methods[method]
         except Exception as e:
             self.logger.exception("invalid request")
             return web.Response(text='Invalid Request', status=500)

@@ -1351,7 +1351,7 @@ class Commands:
         lnaddr = lndecode(invoice)
         return {
             'pubkey': lnaddr.pubkey.serialize().hex(),
-            'amount_NMC': lnaddr.amount,
+            'amount_CHI': lnaddr.amount,
             'rhash': lnaddr.paymenthash.hex(),
             'description': lnaddr.get_description(),
             'exp': lnaddr.get_expiry(),

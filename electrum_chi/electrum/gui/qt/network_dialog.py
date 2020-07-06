@@ -280,7 +280,7 @@ class NetworkChoiceLayout(object):
         self.server_e = QLineEdit()
         self.server_e.setFixedWidth(fixed_width_hostname + fixed_width_port)
         self.server_e.editingFinished.connect(self.set_server)
-        msg = _("Electrum-NMC sends your wallet addresses to a single server, in order to receive your transaction history.")
+        msg = _("Electrum-CHI sends your wallet addresses to a single server, in order to receive your transaction history.")
         grid.addWidget(QLabel(_('Server') + ':'), 2, 0)
         grid.addWidget(self.server_e, 2, 1, 1, 3)
         grid.addWidget(HelpButton(msg), 2, 4)

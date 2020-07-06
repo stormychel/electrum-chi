@@ -3204,7 +3204,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.showing_cert_mismatch_error = True
         self.show_critical(title=_("Certificate mismatch"),
                            msg=_("The SSL certificate provided by the main server did not match the fingerprint passed in with the --serverfingerprint option.") + "\n\n" +
-                               _("Electrum-NMC will now exit."))
+                               _("Electrum-CHI will now exit."))
         self.showing_cert_mismatch_error = False
         self.close()
 

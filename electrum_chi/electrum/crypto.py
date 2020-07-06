@@ -289,7 +289,7 @@ def chacha20_poly1305_encrypt(*, key: bytes, nonce: bytes, associated_data: byte
     if HAS_CRYPTOGRAPHY:
         a = CG_aead.ChaCha20Poly1305(key)
         return a.encrypt(nonce, data, associated_data)
-    raise Exception("no chacha20 backed found")
+    raise Exception("no chacha20 backend found")
 
 
 def chacha20_poly1305_decrypt(*, key: bytes, nonce: bytes, associated_data: bytes, data: bytes) -> bytes:
@@ -308,7 +308,7 @@ def chacha20_poly1305_decrypt(*, key: bytes, nonce: bytes, associated_data: byte
             return a.decrypt(nonce, data, associated_data)
         except cryptography.exceptions.InvalidTag as e:
             raise ValueError("invalid tag") from e
-    raise Exception("no chacha20 backed found")
+    raise Exception("no chacha20 backend found")
 
 
 def chacha20_encrypt(*, key: bytes, nonce: bytes, data: bytes) -> bytes:
@@ -325,7 +325,7 @@ def chacha20_encrypt(*, key: bytes, nonce: bytes, data: bytes) -> bytes:
         cipher = CG_Cipher(algo, mode=None, backend=CG_default_backend())
         encryptor = cipher.encryptor()
         return encryptor.update(data)
-    raise Exception("no chacha20 backed found")
+    raise Exception("no chacha20 backend found")
 
 
 def hkdf_sha256_32(ikm: bytes, salt: bytes, info: bytes) -> bytes:

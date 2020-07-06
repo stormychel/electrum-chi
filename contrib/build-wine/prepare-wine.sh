@@ -17,7 +17,7 @@ PYINSTALLER_REPO="https://github.com/SomberNight/pyinstaller.git"
 PYINSTALLER_COMMIT=e934539374e30d1500fcdbe8e4eb0860413935b2
 # ^ tag 3.6, plus a custom commit that fixes cross-compilation with MinGW
 
-PYTHON_VERSION=3.7.6
+PYTHON_VERSION=3.7.7
 
 ## These settings probably don't need change
 export WINEPREFIX=/opt/wine64
@@ -102,7 +102,7 @@ cp "$CACHEDIR/libusb/libusb/.libs/libusb-1.0.dll" $WINEPREFIX/drive_c/tmp/  || f
 
 
 # copy libsecp dll (already built)
-cp "$PROJECT_ROOT/electrum/libsecp256k1-0.dll" $WINEPREFIX/drive_c/tmp/ || fail "Could not copy libsecp to its destination"
+cp "$PROJECT_ROOT/electrum_nmc/electrum/libsecp256k1-0.dll" $WINEPREFIX/drive_c/tmp/ || fail "Could not copy libsecp to its destination"
 
 
 info "Building PyInstaller."

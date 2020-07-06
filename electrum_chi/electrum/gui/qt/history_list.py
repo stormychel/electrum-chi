@@ -664,8 +664,9 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
                 child_tx = self.wallet.cpfp(tx, 0)
                 if child_tx:
                     menu.addAction(_("Child pays for parent"), lambda: self.parent.cpfp(tx, child_tx))
-        if invoice_keys:
-           menu.addAction(read_QIcon("seal"), _("View invoice"), lambda: [self.parent.show_invoice(key) for key in invoice_keys])
+        for key in invoice_keys:
+            invoice = self.parent.wallet.get_invoice(key)
+            menu.addAction(_("View invoice"), lambda: self.parent.show_onchain_invoice(invoice))
         if tx_URL:
             menu.addAction(_("View on block explorer"), lambda: webopen(tx_URL))
         menu.exec_(self.viewport().mapToGlobal(position))
@@ -755,7 +756,7 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
                 from electrum.util import json_encode
                 f.write(json_encode(txns))
 
-    def text_txid_from_coordinate(self, row, col):
+    def get_text_and_userrole_from_coordinate(self, row, col):
         idx = self.model().mapToSource(self.model().index(row, col))
         tx_item = self.hm.transactions.value_from_pos(idx.row())
         return self.hm.data(idx, Qt.DisplayRole).value(), get_item_key(tx_item)

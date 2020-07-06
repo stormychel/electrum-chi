@@ -33,6 +33,7 @@ but the code under test requires the Namecoin forms."""
 from electrum import bitcoin
 from electrum.constants import BitcoinMainnet, BitcoinTestnet
 from electrum import segwit_addr
+from electrum.util import bfh
 
 
 def frombtc(inp: str) -> str:
@@ -65,6 +66,14 @@ def frombtc(inp: str) -> str:
     # Handle bech32 lightning addresses.
     if inp[:4].lower() == "lnbc":
         return convert_ln_bech32(inp, BitcoinMainnet.SEGWIT_HRP)
+
+    # Handle genesis block hashes, e.g. from Lightning messages
+    bitcoin_mainnet_rev_genesis = bitcoin.rev_hex("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f")
+    if bitcoin_mainnet_rev_genesis in inp:
+        return inp.replace(bitcoin_mainnet_rev_genesis, bitcoin.rev_hex(BitcoinMainnet.GENESIS))
+    bitcoin_testnet_rev_genesis = bitcoin.rev_hex("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943")
+    if bitcoin_testnet_rev_genesis in inp:
+        return inp.replace(bitcoin_testnet_rev_genesis, bitcoin.rev_hex(BitcoinTestnet.GENESIS))
 
     # Otherwise, try to base58-decode it and then look at the version to
     # determine what it could have been.
@@ -118,3 +127,14 @@ def convert_ln_bech32(inp: str, new_base_hrp: str) -> str:
 
     new_hrp = "ln" + new_base_hrp + old_hrp[4:]
     return segwit_addr.bech32_encode(new_hrp, data)
+
+def frombtcbytes(inp: bytes) -> bytes:
+    # Handle genesis block hashes, e.g. from Lightning messages
+    bitcoin_mainnet_rev_genesis = bfh(bitcoin.rev_hex("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"))
+    if bitcoin_mainnet_rev_genesis in inp:
+        return inp.replace(bitcoin_mainnet_rev_genesis, BitcoinMainnet.rev_genesis_bytes())
+    bitcoin_testnet_rev_genesis = bfh(bitcoin.rev_hex("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"))
+    if bitcoin_testnet_rev_genesis in inp:
+        return inp.replace(bitcoin_testnet_rev_genesis, BitcoinTestnet.rev_genesis_bytes())
+
+    raise AssertionError(f"Invalid input for format conversion: {inp}")

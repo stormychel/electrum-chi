@@ -9,11 +9,13 @@ from typing import Union, Optional
 from numbers import Real
 
 from copy import deepcopy
+from aiorpcx import NetAddress
 
 from . import util
 from . import constants
-from .util import (user_dir, make_dir,
-                   NoDynamicFeeEstimates, format_fee_satoshis, quantize_feerate)
+from .util import base_units, base_unit_name_to_decimal_point, decimal_point_to_base_unit_name, UnknownBaseUnit, DECIMAL_POINT_DEFAULT
+from .util import format_satoshis, format_fee_satoshis
+from .util import user_dir, make_dir, NoDynamicFeeEstimates, quantize_feerate
 from .i18n import _
 from .logging import get_logger, Logger
 
@@ -31,7 +33,10 @@ FEERATE_DEFAULT_RELAY = 1000 * 100
 FEERATE_MAX_RELAY = 50000 * 100
 FEERATE_STATIC_VALUES = [1000 * 100, 2000 * 100, 5000 * 100, 10000 * 100, 20000 * 100, 30000 * 100,
                          50000 * 100, 70000 * 100, 100000 * 100, 150000 * 100, 200000 * 100, 300000 * 100]
-FEERATE_REGTEST_HARDCODED = 180000 * 100  # for eclair compat
+# Regtest feerate doesn't need Namecoin's 100x adjustment.
+FEERATE_REGTEST_HARDCODED = 180000  # for eclair compat
+
+FEE_RATIO_HIGH_WARNING = 0.05  # warn user if fee/amount for on-chain tx is higher than this
 
 
 _logger = get_logger(__name__)
@@ -89,6 +94,8 @@ class SimpleConfig(Logger):
             # avoid new config getting upgraded
             self.user_config = {'config_version': FINAL_CONFIG_VERSION}
 
+        self._not_modifiable_keys = set()
+
         # config "upgrade" - CLI options
         self.rename_config_keys(
             self.cmdline_options, {'auto_cycle': 'auto_connect'}, True)
@@ -96,6 +103,16 @@ class SimpleConfig(Logger):
         # config upgrade - user config
         if self.requires_upgrade():
             self.upgrade()
+
+        self._check_dependent_keys()
+
+        # units and formatting
+        self.decimal_point = self.get('decimal_point', DECIMAL_POINT_DEFAULT)
+        try:
+            decimal_point_to_base_unit_name(self.decimal_point)
+        except UnknownBaseUnit:
+            self.decimal_point = DECIMAL_POINT_DEFAULT
+        self.num_zeros = int(self.get('num_zeros', 0))
 
     def electrum_path(self):
         # Read electrum_path from command line
@@ -160,6 +177,12 @@ class SimpleConfig(Logger):
                 out = self.user_config.get(key, default)
         return out
 
+    def _check_dependent_keys(self) -> None:
+        if self.get('serverfingerprint'):
+            if not self.get('server'):
+                raise Exception("config key 'serverfingerprint' requires 'server' to also be set")
+            self.make_key_not_modifiable('server')
+
     def requires_upgrade(self):
         return self.get_config_version() < FINAL_CONFIG_VERSION
 
@@ -222,8 +245,12 @@ class SimpleConfig(Logger):
                                 .format(config_version, FINAL_CONFIG_VERSION))
         return config_version
 
-    def is_modifiable(self, key):
-        return key not in self.cmdline_options
+    def is_modifiable(self, key) -> bool:
+        return (key not in self.cmdline_options
+                and key not in self._not_modifiable_keys)
+
+    def make_key_not_modifiable(self, key) -> None:
+        self._not_modifiable_keys.add(key)
 
     def save_user_config(self):
         if self.get('forget_config'):
@@ -570,6 +597,43 @@ class SimpleConfig(Logger):
             ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
             ssl_context.load_cert_chain(ssl_certfile, ssl_keyfile)
             return ssl_context
+
+    def get_ssl_domain(self):
+        from .paymentrequest import check_ssl_config
+        if self.get('ssl_keyfile') and self.get('ssl_certfile'):
+            SSL_identity = check_ssl_config(self)
+        else:
+            SSL_identity = None
+        return SSL_identity
+
+    def get_netaddress(self, key: str) -> Optional[NetAddress]:
+        text = self.get(key)
+        if text:
+            try:
+                host, port = text.split(':')
+                return NetAddress(host, port)
+            except:
+                pass
+
+    def format_amount(self, x, is_diff=False, whitespaces=False):
+        return format_satoshis(x, self.num_zeros, self.decimal_point, is_diff=is_diff, whitespaces=whitespaces)
+
+    def format_amount_and_units(self, amount):
+        return self.format_amount(amount) + ' '+ self.get_base_unit()
+
+    def format_fee_rate(self, fee_rate):
+        return format_fee_satoshis(fee_rate/1000, num_zeros=self.num_zeros) + ' swartz/byte'
+
+    def get_base_unit(self):
+        return decimal_point_to_base_unit_name(self.decimal_point)
+
+    def set_base_unit(self, unit):
+        assert unit in base_units.keys()
+        self.decimal_point = base_unit_name_to_decimal_point(unit)
+        self.set_key('decimal_point', self.decimal_point, True)
+
+    def get_decimal_point(self):
+        return self.decimal_point
 
 
 def read_user_config(path):

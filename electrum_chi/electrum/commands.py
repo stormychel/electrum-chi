@@ -41,7 +41,7 @@ from .import util, ecc
 from .util import bfh, bh2u, format_satoshis, json_decode, json_encode, is_hash256_str, is_hex_str, to_bytes, timestamp_to_datetime
 from .util import standardize_path
 from . import bitcoin
-from .bitcoin import is_address,  hash_160, COIN, TYPE_ADDRESS
+from .bitcoin import is_address,  hash_160, push_script, COIN, TYPE_ADDRESS, TYPE_SCRIPT
 from .bip32 import BIP32Node
 from .i18n import _
 from .names import format_name_identifier, name_identifier_to_scripthash, OP_NAME_REGISTER, OP_NAME_UPDATE
@@ -588,7 +588,7 @@ class Commands:
         return ecc.verify_message_with_address(address, sig, message)
 
     def _mktx(self, wallet: Abstract_Wallet, outputs, *, fee=None, feerate=None, change_addr=None, domain_addr=None, domain_coins=None,
-              nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, name_input_txids=[], name_input_identifiers=[], name_outputs=[]):
+              nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, name_input_txids=[], name_input_identifiers=[], name_outputs=[], burns=[]):
         if fee is not None and feerate is not None:
             raise Exception("Cannot specify both 'fee' and 'feerate' at the same time!")
         self.nocheck = nocheck
@@ -613,6 +613,10 @@ class Commands:
             address = self._resolver(address, wallet)
             amount = satoshis(amount)
             final_outputs.append(TxOutput(TYPE_ADDRESS, address, amount))
+        for data, amount in burns:
+            script = '6a'   # OP_RETURN
+            script += push_script(bh2u(data))
+            final_outputs.append(TxOutput(TYPE_SCRIPT, script, amount))
 
         coins = wallet.get_spendable_coins(domain_addr)
         if domain_coins is not None:
@@ -678,7 +682,7 @@ class Commands:
         return tx.as_dict()
 
     @command('wp')
-    async def name_register(self, identifier, value, destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
+    async def name_register(self, identifier, value, destination=None, amount=0.0, outputs=[], burns=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
         """Create a name_register transaction. """
         if not allow_existing:
             name_exists = True
@@ -716,11 +720,12 @@ class Commands:
                         rbf=rbf,
                         password=password,
                         locktime=locktime,
-                        name_outputs=[(destination, amount, name_op, memo)])
+                        name_outputs=[(destination, amount, name_op, memo)],
+                        burns=burns)
         return tx.as_dict()
 
     @command('wpn')
-    async def name_update(self, identifier, value=None, destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
+    async def name_update(self, identifier, value=None, destination=None, amount=0.0, outputs=[], burns=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
         """Create a name_update transaction. """
 
         tx_fee = satoshis(fee)
@@ -751,7 +756,8 @@ class Commands:
                         password=password,
                         locktime=locktime,
                         name_input_identifiers=[identifier_bytes],
-                        name_outputs=[(destination, amount, name_op, memo)])
+                        name_outputs=[(destination, amount, name_op, memo)],
+                        burns=burns)
         return tx.as_dict()
 
     @command('w')
@@ -1341,6 +1347,7 @@ command_options = {
     'destination': (None, "Address, contact or alias"),
     'amount':      (None, "Amount to be sent (in CHI). Type \'!\' to send the maximum available."),
     'outputs':     (None, "Coin outputs to add to a transaction in addition to a name operation."),
+    'burns':       (None, "CHI burns with data to add to a transaction."),
     'allow_existing': (None, "Allow pre-registering a name that already is registered.  Your registration fee will be forfeited until you can register the name after it expires."),
     'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
     'identifier':  (None, "The requested name identifier"),

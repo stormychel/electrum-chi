@@ -36,6 +36,7 @@ from . import crypto
 from . import ecc
 from . import util
 
+from .bitcoin import COIN
 from .commands import Commands
 from .logging import Logger
 
@@ -91,6 +92,8 @@ class Logic (Logger):
         res["destination"] = val
       elif nm == "sendCoins":
         res["outputs"] = list (val.items ())
+      elif nm == "burn":
+        res["burns"] = [(d.encode ("ascii"), COIN * n) for d, n in val.items ()]
       else:
         self.logger.warning (f"Unknown name-operation option: {nm}")
 

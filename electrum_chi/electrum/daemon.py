@@ -196,7 +196,7 @@ class AuthenticatedServer(Logger):
             method = request['method']
             _id = request['id']
             params = request.get('params', [])  # type: Union[Sequence, Mapping]
-            if method not in self._methods:
+            if method not in methods:
                 raise Exception(f"attempting to use unregistered method: {method}")
             f = methods[method]
         except Exception as e:

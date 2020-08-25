@@ -723,7 +723,7 @@ class Commands:
         return tx.serialize()
 
     @command('wp')
-    async def name_register(self, identifier, value=None, destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
+    async def name_register(self, identifier, value=None, destination=None, amount=0.0, outputs=[], burns=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, allow_existing=False, wallet: Abstract_Wallet = None):
         """Create a name_register transaction. """
         if not allow_existing:
             name_exists = True
@@ -756,6 +756,9 @@ class Commands:
             o_address = self._resolver(o_address, wallet)
             amount_sat = satoshis(o_amount)
             final_outputs.append(PartialTxOutput.from_address_and_value(o_address, amount_sat))
+        for b_data, b_amount in burns:
+            amount_sat = satoshis(b_amount)
+            final_outputs.append(PartialTxOutput.for_burn(b_data, amount_sat))
         destination = self._resolver(destination, wallet)
         amount_sat = satoshis(amount)
         name_output = PartialTxOutput.from_address_and_value(destination, amount_sat)
@@ -776,7 +779,7 @@ class Commands:
         return tx.serialize()
 
     @command('wpn')
-    async def name_update(self, identifier, value=None, destination=None, amount=0.0, outputs=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
+    async def name_update(self, identifier, value=None, destination=None, amount=0.0, outputs=[], burns=[], fee=None, feerate=None, from_addr=None, from_coins=None, change_addr=None, nocheck=False, unsigned=False, rbf=None, password=None, locktime=None, wallet: Abstract_Wallet = None):
         """Create a name_update transaction. """
 
         self.nocheck = nocheck
@@ -802,6 +805,9 @@ class Commands:
             o_address = self._resolver(o_address, wallet)
             amount_sat = satoshis(o_amount)
             final_outputs.append(PartialTxOutput.from_address_and_value(o_address, amount_sat))
+        for b_data, b_amount in burns:
+            amount_sat = satoshis(b_amount)
+            final_outputs.append(PartialTxOutput.for_burn(b_data, amount_sat))
         destination = self._resolver(destination, wallet)
         amount_sat = satoshis(amount)
         name_output = PartialTxOutput.from_address_and_value(destination, amount_sat)
@@ -1536,6 +1542,7 @@ command_options = {
     'destination': (None, "Address, contact or alias"),
     'amount':      (None, "Amount to be sent (in CHI). Type \'!\' to send the maximum available."),
     'outputs':     (None, "Currency outputs to add to a transaction in addition to a name operation."),
+    'burns':       (None, "Data outputs for burning CHI in a transaction."),
     'allow_existing': (None, "Allow pre-registering a name that already is registered.  Your registration fee will be forfeited until you can register the name after it expires."),
     'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
     'identifier':  (None, "The requested name identifier"),

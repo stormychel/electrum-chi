@@ -91,6 +91,8 @@ class Logic (Logger):
         res["destination"] = val
       elif nm == "sendCoins":
         res["outputs"] = list (val.items ())
+      elif nm == "burn":
+        res["burns"] = [(d.encode ("ascii"), n) for d, n in val.items ()]
       else:
         self.logger.warning (f"Unknown name-operation option: {nm}")
 

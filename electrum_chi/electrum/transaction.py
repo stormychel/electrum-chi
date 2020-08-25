@@ -104,6 +104,12 @@ class TxOutput:
         return cls(scriptpubkey=bfh(bitcoin.address_to_script(address)),
                    value=value)
 
+    @classmethod
+    def for_burn(cls, data: bytes, value: Union[int, str]) -> Union['TxOutput', 'PartialTxOutput']:
+        script = '6a'  # OP_RETURN
+        script += push_script(bh2u(data))
+        return cls(scriptpubkey=bfh(script), value=value)
+
     def add_name_op(self, name_op: dict) -> None:
         if self.name_op is not None:
             raise Exception("TxOutput already has a name operation")

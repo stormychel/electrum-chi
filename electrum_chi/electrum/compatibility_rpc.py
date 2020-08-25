@@ -118,7 +118,7 @@ class Logic (Logger):
 
   async def sendtoaddress (self, address, amount):
     tx = await self.cmd_runner.payto (address, amount)
-    return await self.cmd_runner.broadcast (tx["hex"])
+    return await self.cmd_runner.broadcast (tx)
 
   async def validateaddress (self, address):
     valid = await self.cmd_runner.validateaddress (address)
@@ -162,9 +162,9 @@ class Logic (Logger):
   async def name_register (self, name, value, options=None):
     opts = self.interpretNameOpOptions (options)
     tx = await self.cmd_runner.name_register (name, value, **opts)
-    return await self.cmd_runner.broadcast (tx["hex"])
+    return await self.cmd_runner.broadcast (tx)
 
   async def name_update (self, name, value, options=None):
     opts = self.interpretNameOpOptions (options)
     tx = await self.cmd_runner.name_update (name, value, **opts)
-    return await self.cmd_runner.broadcast (tx["hex"])
+    return await self.cmd_runner.broadcast (tx)

@@ -100,7 +100,13 @@ class Logic (Logger):
 
   async def getbalance (self):
     bal = await self.cmd_runner.getbalance ()
-    return bal["confirmed"]
+
+    res = 0
+    for key in ["confirmed", "unconfirmed"]:
+      if key in bal:
+        res += float (bal[key])
+
+    return res
 
   async def getblockcount (self):
     return self.cmd_runner.network.get_local_height ()

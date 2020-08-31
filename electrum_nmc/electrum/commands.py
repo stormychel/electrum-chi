@@ -375,7 +375,7 @@ class Commands:
         """List unspent name outputs. Returns the list of unspent name_anyupdate
         outputs in your wallet."""
 
-        coins = await self.listunspent(wallet)
+        coins = await self.listunspent(wallet=wallet)
 
         result = []
 

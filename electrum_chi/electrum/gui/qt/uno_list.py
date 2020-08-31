@@ -226,7 +226,9 @@ class UNOList(UTXOList):
         item = selected[0]
 
         identifier = item.data(Qt.UserRole + USER_ROLE_NAME)
-        initial_value = item.data(Qt.UserRole + USER_ROLE_VALUE)
+        # In Xaya, we do not want to keep the existing value, as values
+        # are not about "state" but about "changes".
+        initial_value = b"{}"
 
         show_configure_name(identifier, initial_value, self.parent, False)
 

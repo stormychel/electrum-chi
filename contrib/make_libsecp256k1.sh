@@ -54,6 +54,6 @@ info "Building $pkgname..."
     make install || fail "Could not install $pkgname"
     . "$here/$pkgname/dist/lib/libsecp256k1.la"
     host_strip "$here/$pkgname/dist/lib/$dlname"
-    cp -fpv "$here/$pkgname/dist/lib/$dlname" "$PROJECT_ROOT/electrum_nmc/electrum" || fail "Could not copy the $pkgname binary to its destination"
+    cp -fpv "$here/$pkgname/dist/lib/$dlname" "$PROJECT_ROOT/electrum_chi/electrum" || fail "Could not copy the $pkgname binary to its destination"
     info "$dlname has been placed in the inner 'electrum' folder."
 )

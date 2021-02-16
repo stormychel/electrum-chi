@@ -412,7 +412,7 @@ if __name__ == '__main__':
             try:
                 result = daemon.request(config, 'run_cmdline', (config_options,), timeout)
             except daemon.DaemonNotRunning:
-                print_msg("Daemon not running; try 'electrum_nmc daemon -d'")
+                print_msg("Daemon not running; try 'electrum_chi daemon -d'")
                 if not cmd.requires_network:
                     print_msg("To run this command without a daemon, use --offline")
                 sys_exit(1)

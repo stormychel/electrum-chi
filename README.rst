@@ -112,7 +112,7 @@ Create translations (optional)::
 
 Finally, to start Electrum::
 
-    ./run_electrum_nmc
+    ./run_electrum_chi
 
 
 

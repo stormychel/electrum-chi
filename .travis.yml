@@ -37,10 +37,10 @@ jobs:
         - pip install .[tests]
         - pip install electrumx
       before_script:
-          - electrum_nmc/electrum/tests/regtest/start_bitcoind.sh
-          - electrum_nmc/electrum/tests/regtest/start_electrumx.sh
+          - electrum_chi/electrum/tests/regtest/start_bitcoind.sh
+          - electrum_chi/electrum/tests/regtest/start_electrumx.sh
       script:
-        - PYTHONPATH=$PYTHONPATH:$(pwd)/electrum_nmc python -m unittest electrum_nmc/electrum/tests/regtest.py
+        - PYTHONPATH=$PYTHONPATH:$(pwd)/electrum_chi python -m unittest electrum_chi/electrum/tests/regtest.py
       after_success: True
     - name: "Flake8 linter tests"
       language: python

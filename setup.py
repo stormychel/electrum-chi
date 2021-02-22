@@ -56,6 +56,11 @@ extras_require = {
     'crypto': ['pycryptodomex>=3.7'],
     'tests': ['pycryptodomex>=3.7', 'cryptography>=2.1'],
 }
+
+#for item in extras_require["hardware"]:
+#    print (item)
+
+
 # 'full' extra that tries to grab everything an enduser would need (except for libsecp256k1...)
 extras_require['full'] = [pkg for sublist in ['hardware', 'gui', 'crypto'] for pkg in sublist]
 # legacy. keep 'fast' extra working

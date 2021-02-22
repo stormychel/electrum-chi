@@ -2,7 +2,7 @@
 
 # Parameterize
 PYTHON_VERSION=3.9.0
-BUILDDIR=/tmp/electrum-chi-build
+BUILIR=/tmp/electrum-chi-build
 PACKAGE=Electrum-CHI
 GIT_REPO=https://github.com/xaya/electrum-chi
 
@@ -82,11 +82,11 @@ pyenv global $PYTHON_VERSION || \
 fail "Unable to use Python $PYTHON_VERSION"
 
 
-info "Upgrading current PIP (MS)"
-python3 -m pip install --no-cache-dir --upgrade pip
+# info "Upgrading current PIP (MS)"
+# python3 -m pip install --no-cache-dir --upgrade pip
 
-info "Installing PEP 517 (MS)"
-pip install pep517 --no-cache-dir
+# info "Installing PEP 517 (MS)"
+# pip install pep517 --no-cache-dir
 
 info "Installing build dependencies"
 python3 -m pip install --no-dependencies --no-cache-dir -Ir ./contrib/deterministic-build/requirements-mac-build.txt --user \
